@@ -1,7 +1,9 @@
 package fazzdb
 
 import (
+	"github.com/satori/go.uuid"
 	"reflect"
+	"strings"
 	"unicode"
 )
 
@@ -10,8 +12,10 @@ type ModelInterface interface {
 	GetModel() *Model
 	GetTable() string
 	GetColumns() []string
-	GetPrimaryKey() string
+	GetPK() string
 	Get(key string) interface{}
+	GeneratePK()
+	GenerateId(v interface{})
 	ColumnCount() int
 	IsTimestamps() bool
 	IsSoftDelete() bool
@@ -31,6 +35,24 @@ type Model struct {
 	SoftDelete    bool
 }
 
+// MUST OVERRIDE
+
+func (m *Model) GeneratePK() {
+	panic("Please override GeneratePK() method in your model")
+}
+
+func (m *Model) Get(key string) interface{} {
+	panic("Please override Get(key string) method in your model")
+	return nil
+}
+
+func (m *Model) Payload() map[string]interface{} {
+	panic("Please override Payload() method in your model")
+	return make(map[string]interface{})
+}
+
+// LEAVE ALONE
+
 func (m *Model) SetModel(v *Model) {
 	m = v
 }
@@ -47,12 +69,18 @@ func (m *Model) GetColumns() []string {
 	return m.Columns
 }
 
-func (m *Model) GetPrimaryKey() string {
+func (m *Model) GetPK() string {
 	return m.PrimaryKey
 }
 
-func (m *Model) Get(key string) interface{} {
-	return nil
+func (m *Model) GenerateId(v interface{}) {
+	if !m.Uuid {
+		return
+	}
+
+	pkField := strings.Title(m.GetPK())
+	id := uuid.NewV4().String()
+	reflect.ValueOf(v).Elem().FieldByName(pkField).Set(reflect.ValueOf(id))
 }
 
 func (m *Model) ColumnCount() int {
@@ -73,10 +101,6 @@ func (m *Model) IsUuid() bool {
 
 func (m *Model) IsAutoIncrement() bool {
 	return m.AutoIncrement
-}
-
-func (m *Model) Payload() map[string]interface{} {
-	return make(map[string]interface{})
 }
 
 func (m *Model) MapPayload(v interface{}) map[string]interface{} {
@@ -106,7 +130,7 @@ func (m *Model) toLowerFirst(str string) string {
 	return str
 }
 
-func NewUuidModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
+func UuidModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
 	return &Model{
 		Table:         table,
 		Columns:       columns,
@@ -118,7 +142,7 @@ func NewUuidModel(table string, columns []string, primaryKey string, timestamps 
 	}
 }
 
-func NewPlainModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
+func PlainModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
 	return &Model{
 		Table:         table,
 		Columns:       columns,
@@ -130,7 +154,7 @@ func NewPlainModel(table string, columns []string, primaryKey string, timestamps
 	}
 }
 
-func NewModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
+func AutoIncrementModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
 	return &Model{
 		Table:         table,
 		Columns:       columns,

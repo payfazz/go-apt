@@ -1,7 +1,7 @@
 package model
 
 import (
-	"db/fazzdb"
+	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
 type Student struct {
@@ -13,7 +13,7 @@ type Student struct {
 }
 
 func (s *Student) Get(key string) interface{} {
-	return s.Model.Payload()[key]
+	return s.Payload()[key]
 }
 
 func (s *Student) Payload() map[string]interface{} {
@@ -21,7 +21,7 @@ func (s *Student) Payload() map[string]interface{} {
 }
 
 func NewStudent() *Student {
-	model := fazzdb.NewModel(
+	model := fazzdb.AutoIncrementModel(
 		"students",
 		[]string{
 			"id",

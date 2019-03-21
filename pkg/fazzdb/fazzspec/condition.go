@@ -7,6 +7,7 @@ import (
 type Condition struct {
 	Table      string
 	Key        string
+	Prefix     string
 	Operator   Operator
 	Connector  Connector
 	Conditions []Condition
@@ -14,7 +15,7 @@ type Condition struct {
 
 func (c *Condition) QueryString() string {
 	if len(c.Conditions) > 0 {
-		var query = "("
+		var query = fmt.Sprintf("%s (", c.Connector)
 		for _, cond := range c.Conditions {
 			query = fmt.Sprintf("%s %s", query, cond.NamedString())
 		}
@@ -33,7 +34,7 @@ func (c *Condition) NamedString() string {
 	case OP_IS_NULL:
 		query = fmt.Sprintf("%s %s.%s %s", c.Connector, c.Table, c.Key, c.Operator)
 	default:
-		query = fmt.Sprintf("%s %s.%s %s :%s", c.Connector, c.Table, c.Key, c.Operator, c.Key)
+		query = fmt.Sprintf("%s %s.%s %s :%s", c.Connector, c.Table, c.Key, c.Operator, c.Prefix)
 	}
 	return query
 }

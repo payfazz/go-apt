@@ -1,9 +1,8 @@
 package fazzdb
 
 import (
-	"db/fazzdb/fazzspec"
 	"fmt"
-	"log"
+	"github.com/payfazz/go-apt/pkg/fazzdb/fazzspec"
 )
 
 type Builder struct {}
@@ -48,7 +47,7 @@ func (b *Builder) BuildInsert(m ModelInterface) string {
 	query = b.generateValues(query, m, b.isAutoIncrementPrimaryKey, b.generateInsertValues)
 
 	// SET RETURNING
-	query = fmt.Sprintf("%s ) RETURNING %s;", query, m.GetPrimaryKey())
+	query = fmt.Sprintf("%s ) RETURNING %s;", query, m.GetPK())
 	return query
 }
 
@@ -57,7 +56,6 @@ func (b *Builder) BuildSelect(m ModelInterface, param *Parameter) string {
 
 	// SET TABLE COLUMNS
 	if m.ColumnCount() != 0 {
-		log.Println("Column count > 0")
 		query = b.generateValues(query, m, b.alwaysFalse, b.generateSelectColumns)
 	} else {
 		query = fmt.Sprintf("%s *", query)
@@ -101,11 +99,11 @@ func (b *Builder) alwaysFalse(column string, m ModelInterface) bool {
 }
 
 func (b *Builder) isAutoIncrementPrimaryKey(column string, m ModelInterface) bool {
-	return column == m.GetPrimaryKey() && !m.IsUuid() && m.IsAutoIncrement()
+	return column == m.GetPK() && !m.IsUuid() && m.IsAutoIncrement()
 }
 
 func (b *Builder) isPrimaryKey(column string, m ModelInterface) bool {
-	return column == m.GetPrimaryKey()
+	return column == m.GetPK()
 }
 
 func (b *Builder) generateInsertValues(query string, column string, first bool) (string, bool) {
@@ -151,7 +149,6 @@ func (b *Builder) generateValues(
 		}
 		query, first = generate(query, column, first)
 	}
-	log.Println(query)
 	return query
 }
 
