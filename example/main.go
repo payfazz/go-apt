@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/payfazz/go-apt/model"
+	"github.com/payfazz/go-apt/example/config"
+	"github.com/payfazz/go-apt/example/model"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
-	"github.com/payfazz/go-apt/pkg/fazzdb/fazzorder"
-	"github.com/payfazz/go-apt/pkg/fazzdb/fazzspec"
 )
 
 func main() {
@@ -15,7 +14,21 @@ func main() {
 
 	db, _ := sqlx.Connect("postgres", conn)
 	tx, _ := db.Beginx()
-	query := fazzdb.QueryTx(tx)
+	query := fazzdb.QueryTx(tx, config.Db)
+
+	//arg := map[string]interface{}{
+	//	"published": true,
+	//	"authors": []interface{}{8, 19, 32, 44},
+	//}
+	//log.Println(arg)
+	//a, args, _ := sqlx.Named("SELECT * FROM articles WHERE published=:published AND author_id IN (:authors)", arg)
+	//log.Println(a)
+	//log.Println(args)
+	//a, args, _ = sqlx.In(a, args...)
+	//log.Println(a)
+	//log.Println(args)
+	//a = db.Rebind(a)
+	//log.Println(a)
 
 	//n := model.NewUid()
 	//n.Data = 10
@@ -31,11 +44,11 @@ func main() {
 	n := model.NewStudent()
 	results, err := query.Use(n).
 		GroupWhere(func(query *fazzdb.Query) *fazzdb.Query {
-			return query.WhereOp("name", fazzspec.OP_LIKE, "%i%").
-				WhereOp("age", fazzspec.OP_LESS_THAN, 25)
+			return query.WhereOp("name", fazzdb.OP_LIKE, "%i%").
+				WhereOp("age", fazzdb.OP_IN, []interface{}{22, 23, 24, 25})
 		}).
-		WhereOp("address", fazzspec.OP_LIKE, "%i%").
-		OrderBy("age", fazzorder.DIR_DESC).
+		WhereOp("address", fazzdb.OP_LIKE, "%i%").
+		OrderBy("age", fazzdb.DIR_DESC).
 		GetAll()
 
 	if nil != err {

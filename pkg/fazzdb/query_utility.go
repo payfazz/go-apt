@@ -1,9 +1,10 @@
 package fazzdb
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx"
-	"log"
 	"reflect"
+	"strings"
 )
 
 func (q *Query) assignModelSlices(results interface{}, m *Model) interface{} {
@@ -26,7 +27,8 @@ func (q *Query) assignModel(result interface{}, m *Model) interface{} {
 
 func (q *Query) prepareSelect() (*sqlx.NamedStmt, map[string]interface{}, error) {
 	query := q.Builder.BuildSelect(q.Model, q.Parameter)
-	log.Println(query)
+	query = q.bindIn(query)
+
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
 		return nil, nil, err
@@ -35,7 +37,28 @@ func (q *Query) prepareSelect() (*sqlx.NamedStmt, map[string]interface{}, error)
 	return stmt, q.Parameter.Values, err
 }
 
-func (q *Query) setPrimaryKeyParameter() {
+func (q *Query) bindIn(query string) string {
+	for i, value := range q.Parameter.Values {
+		if reflect.TypeOf(value).Kind() == reflect.Slice {
+			inValueQuery := ""
+			sliceValue := reflect.ValueOf(value)
+			for j := 0; j < sliceValue.Len(); j++ {
+				prefix := fmt.Sprintf("%s%d", i, j)
+				if j == 0 {
+					inValueQuery = fmt.Sprintf("%s :%s", inValueQuery, prefix)
+				} else {
+					inValueQuery = fmt.Sprintf("%s, :%s", inValueQuery, prefix)
+				}
+				q.Parameter.Values[prefix] = sliceValue.Index(j).Interface()
+			}
+			query = strings.ReplaceAll(query, fmt.Sprintf(":%s", i), inValueQuery)
+		}
+	}
+
+	return query
+}
+
+func (q *Query) setPKCondition() {
 	pkConditionExist := false
 	for _, condition := range q.Conditions {
 		if condition.Key == q.Model.GetPK() {
@@ -70,5 +93,5 @@ func (q *Query) autoRollback() {
 }
 
 func (q *Query) clearParameter() {
-	q.Parameter = NewParameter()
+	q.Parameter = NewParameter(q.Config)
 }

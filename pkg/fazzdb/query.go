@@ -5,21 +5,22 @@ import (
 	"reflect"
 )
 
-func QueryDb(db *sqlx.DB) (*Query, error) {
+func QueryDb(db *sqlx.DB, config Config) (*Query, error) {
 	tx, err := db.Beginx()
 	if nil != err {
 		return nil, err
 	}
 
-	q := QueryTx(tx)
+	q := QueryTx(tx, config)
 	q.AutoCommit = true
 
 	return q, nil
 }
 
-func QueryTx(tx *sqlx.Tx) *Query {
+func QueryTx(tx *sqlx.Tx, config Config) *Query {
 	return &Query{
-		Parameter:  NewParameter(),
+		Config:     config,
+		Parameter:  NewParameter(config),
 		Model:      nil,
 		Builder:    &Builder{},
 		Tx:         tx,
@@ -29,6 +30,7 @@ func QueryTx(tx *sqlx.Tx) *Query {
 
 type Query struct {
 	*Parameter
+	Config     Config
 	Model      ModelInterface
 	Builder    *Builder
 	Tx         *sqlx.Tx
@@ -80,6 +82,7 @@ func (q *Query) Insert() (*interface{}, error) {
 	q.Model.GeneratePK()
 
 	query := q.Builder.BuildInsert(q.Model)
+
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
 		q.autoRollback()
@@ -99,9 +102,11 @@ func (q *Query) Insert() (*interface{}, error) {
 func (q *Query) Update() (bool, error) {
 	defer q.clearParameter()
 
-	q.setPrimaryKeyParameter()
+	q.setPKCondition()
 
 	query := q.Builder.BuildUpdate(q.Model, q.Parameter)
+	query = q.bindIn(query)
+
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
 		q.autoRollback()
@@ -121,9 +126,11 @@ func (q *Query) Update() (bool, error) {
 func (q *Query) Delete() (bool, error) {
 	defer q.clearParameter()
 
-	q.setPrimaryKeyParameter()
+	q.setPKCondition()
 
 	query := q.Builder.BuildDelete(q.Model, q.Parameter)
+	query = q.bindIn(query)
+
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
 		q.autoRollback()

@@ -2,7 +2,6 @@ package fazzdb
 
 import (
 	"fmt"
-	"github.com/payfazz/go-apt/pkg/fazzdb/fazzspec"
 )
 
 type Builder struct {}
@@ -75,6 +74,18 @@ func (b *Builder) BuildSelect(m ModelInterface, param *Parameter) string {
 				query = fmt.Sprintf("%s %s.%s %s", query, order.Table, order.Key, order.Direction)
 			} else {
 				query = fmt.Sprintf("%s, %s.%s %s", query, order.Table, order.Key, order.Direction)
+			}
+		}
+	}
+
+	// SET GROUP BY
+	if len(param.Groups) > 0 {
+		query = fmt.Sprintf("%s GROUP BY", query)
+		for i, group := range param.Groups {
+			if i == 0 {
+				query = fmt.Sprintf("%s %s.%s", query, m.GetTable(), group)
+			} else {
+				query = fmt.Sprintf("%s, %s.%s", query, m.GetTable(), group)
 			}
 		}
 	}
@@ -154,7 +165,7 @@ func (b *Builder) generateValues(
 
 func (b *Builder) generateConditions(query string, param *Parameter) string {
 	if len(param.Conditions) > 0 {
-		param.Conditions[0].Connector = fazzspec.CO_EMPTY
+		param.Conditions[0].Connector = CO_EMPTY
 
 		query = fmt.Sprintf("%s WHERE", query)
 		for _, cond := range param.Conditions {

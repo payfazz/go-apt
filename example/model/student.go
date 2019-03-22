@@ -1,8 +1,6 @@
 package model
 
-import (
-	"github.com/payfazz/go-apt/pkg/fazzdb"
-)
+import "github.com/payfazz/go-apt/pkg/fazzdb"
 
 type Student struct {
 	*fazzdb.Model

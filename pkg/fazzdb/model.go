@@ -43,12 +43,10 @@ func (m *Model) GeneratePK() {
 
 func (m *Model) Get(key string) interface{} {
 	panic("Please override Get(key string) method in your model")
-	return nil
 }
 
 func (m *Model) Payload() map[string]interface{} {
 	panic("Please override Payload() method in your model")
-	return make(map[string]interface{})
 }
 
 // LEAVE ALONE

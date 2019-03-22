@@ -1,31 +1,28 @@
 package fazzdb
 
 import (
-	"github.com/payfazz/go-apt/config"
-	"github.com/payfazz/go-apt/pkg/fazzdb/fazzorder"
-	"github.com/payfazz/go-apt/pkg/fazzdb/fazzspec"
 	"strconv"
 	"time"
 )
 
 type Parameter struct {
-	Conditions []fazzspec.Condition
+	Conditions []Condition
 	Values     map[string]interface{}
-	Orders     []fazzorder.Order
+	Orders     []Order
 	Groups     []string
-	Lock       fazzspec.Lock
+	Lock       Lock
 	Limit      int
 	Offset     int
 }
 
-func (p *Parameter) appendGroupConditions(param *Parameter, connector fazzspec.Connector) *Parameter {
+func (p *Parameter) appendGroupConditions(param *Parameter, connector Connector) *Parameter {
 	// Append Condition
-	parent := fazzspec.Condition{
+	parent := Condition{
 		Connector: connector,
 	}
 	for i, condition := range param.Conditions {
 		if i == 0 {
-			condition.Connector = fazzspec.CO_EMPTY
+			condition.Connector = CO_EMPTY
 		}
 		parent.Conditions = append(parent.Conditions, condition)
 	}
@@ -41,13 +38,13 @@ func (p *Parameter) appendGroupConditions(param *Parameter, connector fazzspec.C
 
 func (p *Parameter) appendCondition(
 	table string,
-	connector fazzspec.Connector,
+	connector Connector,
 	key string,
-	operator fazzspec.Operator,
+	operator Operator,
 	value interface{},
 ) *Parameter {
 	prefix := p.getPrefix()
-	p.Conditions = append(p.Conditions, fazzspec.Condition{
+	p.Conditions = append(p.Conditions, Condition{
 		Table:     table,
 		Key:       key,
 		Operator:  operator,
@@ -58,8 +55,8 @@ func (p *Parameter) appendCondition(
 	return p
 }
 
-func (p *Parameter) appendOrderBy(table string, key string, direction fazzorder.OrderDirection) *Parameter {
-	p.Orders = append(p.Orders, fazzorder.Order{
+func (p *Parameter) appendOrderBy(table string, key string, direction OrderDirection) *Parameter {
+	p.Orders = append(p.Orders, Order{
 		Table:     table,
 		Key:       key,
 		Direction: direction,
@@ -72,7 +69,7 @@ func (p *Parameter) appendGroupBy(column string) *Parameter {
 	return p
 }
 
-func (p *Parameter) setLock(lock fazzspec.Lock) *Parameter {
+func (p *Parameter) setLock(lock Lock) *Parameter {
 	p.Lock = lock
 	return p
 }
@@ -92,11 +89,11 @@ func (p *Parameter) getPrefix() string {
 	return strconv.Itoa(int(prefix))
 }
 
-func NewParameter() *Parameter {
+func NewParameter(config Config) *Parameter {
 	return &Parameter{
 		Values: make(map[string]interface{}, 0),
-		Offset: config.QUERY_OFFSET,
-		Limit:  config.QUERY_LIMIT,
-		Lock:   config.QUERY_LOCK,
+		Offset: config.Offset,
+		Limit:  config.Limit,
+		Lock:   config.Lock,
 	}
 }

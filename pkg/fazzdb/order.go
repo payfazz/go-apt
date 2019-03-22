@@ -1,4 +1,4 @@
-package fazzorder
+package fazzdb
 
 type Order struct {
 	Table     string

@@ -1,8 +1,9 @@
-package fazzspec
+package fazzdb
 
-type Operator string
 type Connector string
 type Lock string
+type Operator string
+type OrderDirection string
 
 const (
 	OP_EQUALS           Operator = "="
@@ -14,7 +15,8 @@ const (
 	OP_LIKE             Operator = "LIKE"
 	OP_NOT_LIKE         Operator = "NOT LIKE"
 	OP_IS_NULL          Operator = "IS NULL"
-	OP_IS_NOT_NULL		Operator = "IS NOT NULL"
+	OP_IS_NOT_NULL      Operator = "IS NOT NULL"
+	OP_IN               Operator = "IN"
 )
 
 const (
@@ -27,4 +29,9 @@ const (
 	LO_FOR_SHARE  Lock = "FOR SHARE"
 	LO_FOR_UPDATE Lock = "FOR UPDATE"
 	LO_EMPTY      Lock = ""
+)
+
+const (
+	DIR_ASC  OrderDirection = "ASC"
+	DIR_DESC OrderDirection = "DESC"
 )

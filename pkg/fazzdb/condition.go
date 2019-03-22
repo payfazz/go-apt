@@ -1,4 +1,4 @@
-package fazzspec
+package fazzdb
 
 import (
 	"fmt"
@@ -33,6 +33,8 @@ func (c *Condition) NamedString() string {
 		fallthrough
 	case OP_IS_NULL:
 		query = fmt.Sprintf("%s %s.%s %s", c.Connector, c.Table, c.Key, c.Operator)
+	case OP_IN:
+		query = fmt.Sprintf("%s %s.%s %s (:%s)", c.Connector, c.Table, c.Key, c.Operator, c.Prefix)
 	default:
 		query = fmt.Sprintf("%s %s.%s %s :%s", c.Connector, c.Table, c.Key, c.Operator, c.Prefix)
 	}

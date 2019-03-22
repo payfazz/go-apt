@@ -1,37 +1,32 @@
 package fazzdb
 
-import (
-	"github.com/payfazz/go-apt/pkg/fazzdb/fazzorder"
-	"github.com/payfazz/go-apt/pkg/fazzdb/fazzspec"
-)
-
 func (q *Query) Where(key string, value interface{}) *Query {
-	return q.AppendCondition(fazzspec.CO_AND, key, fazzspec.OP_EQUALS, value)
+	return q.AppendCondition(CO_AND, key, OP_EQUALS, value)
 }
 
-func (q *Query) WhereOp(key string, operator fazzspec.Operator, value interface{}) *Query {
-	return q.AppendCondition(fazzspec.CO_AND, key, operator, value)
+func (q *Query) WhereOp(key string, operator Operator, value interface{}) *Query {
+	return q.AppendCondition(CO_AND, key, operator, value)
 }
 
 func (q *Query) OrWhere(key string, value interface{}) *Query {
-	return q.AppendCondition(fazzspec.CO_OR, key, fazzspec.OP_EQUALS, value)
+	return q.AppendCondition(CO_OR, key, OP_EQUALS, value)
 }
 
-func (q *Query) OrWhereOp(key string, operator fazzspec.Operator, value interface{}) *Query {
-	return q.AppendCondition(fazzspec.CO_OR, key, operator, value)
+func (q *Query) OrWhereOp(key string, operator Operator, value interface{}) *Query {
+	return q.AppendCondition(CO_OR, key, operator, value)
 }
 
 func (q *Query) GroupWhere(conditionFunc func(query *Query) *Query) *Query {
-	query := QueryTx(q.Tx).Use(q.Model)
+	query := QueryTx(q.Tx, q.Config).Use(q.Model)
 	param := conditionFunc(query).Parameter
-	q.appendGroupConditions(param, fazzspec.CO_AND)
+	q.appendGroupConditions(param, CO_AND)
 	return q
 }
 
 func (q *Query) OrGroupWhere(conditionFunc func(query *Query) *Query) *Query {
-	query := QueryTx(q.Tx).Use(q.Model)
+	query := QueryTx(q.Tx, q.Config).Use(q.Model)
 	param := conditionFunc(query).Parameter
-	q.appendGroupConditions(param, fazzspec.CO_OR)
+	q.appendGroupConditions(param, CO_OR)
 	return q
 }
 
@@ -40,7 +35,7 @@ func (q *Query) GroupBy(column string) *Query {
 	return q
 }
 
-func (q *Query) OrderBy(key string, direction fazzorder.OrderDirection) *Query {
+func (q *Query) OrderBy(key string, direction OrderDirection) *Query {
 	q.appendOrderBy(q.Model.GetTable(), key, direction)
 	return q
 }
@@ -55,12 +50,12 @@ func (q *Query) WithOffset(offset int) *Query {
 	return q
 }
 
-func (q *Query) WithLock(lock fazzspec.Lock) *Query {
+func (q *Query) WithLock(lock Lock) *Query {
 	q.setLock(lock)
 	return q
 }
 
-func (q *Query) AppendCondition(connector fazzspec.Connector, key string, operator fazzspec.Operator, value interface{}) *Query {
+func (q *Query) AppendCondition(connector Connector, key string, operator Operator, value interface{}) *Query {
 	q.appendCondition(q.Model.GetTable(), connector, key, operator, value)
 	return q
 }
