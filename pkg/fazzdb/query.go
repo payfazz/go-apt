@@ -44,7 +44,7 @@ func (q *Query) First() (interface{}, error) {
 	result := reflect.New(element).Interface()
 
 	q.setLimit(1)
-	stmt, args, err := q.prepareSelect()
+	stmt, args, err := q.prepareSelect(AG_NONE, "")
 	if nil != err {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (q *Query) GetAll() (interface{}, error) {
 	element := reflect.TypeOf(q.Model).Elem()
 	results := reflect.New(reflect.SliceOf(element)).Interface()
 
-	stmt, args, err := q.prepareSelect()
+	stmt, args, err := q.prepareSelect(AG_NONE, "")
 	if nil != err {
 		return nil, err
 	}
@@ -145,6 +145,44 @@ func (q *Query) Delete() (bool, error) {
 
 	q.autoCommit()
 	return true, nil
+}
+
+func (q *Query) Aggregate(aggregate Aggregate, column string) (*float64, error) {
+	defer q.clearParameter()
+
+	var result float64
+
+	stmt, args, err := q.prepareSelect(aggregate, column)
+	if nil != err {
+		return nil, err
+	}
+
+	err = stmt.Get(&result, args)
+	if nil != err {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func (q *Query) Avg(column string) (*float64, error) {
+	return q.Aggregate(AG_AVG, column)
+}
+
+func (q *Query) Min(column string) (*float64, error) {
+	return q.Aggregate(AG_MIN, column)
+}
+
+func (q *Query) Max(column string) (*float64, error) {
+	return q.Aggregate(AG_MAX, column)
+}
+
+func (q *Query) Sum(column string) (*float64, error) {
+	return q.Aggregate(AG_SUM, column)
+}
+
+func (q *Query) Count() (*float64, error) {
+	return q.Aggregate(AG_COUNT, "*")
 }
 
 func (q *Query) Use(m ModelInterface) *Query {

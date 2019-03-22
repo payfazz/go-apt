@@ -50,11 +50,13 @@ func (b *Builder) BuildInsert(m ModelInterface) string {
 	return query
 }
 
-func (b *Builder) BuildSelect(m ModelInterface, param *Parameter) string {
+func (b *Builder) BuildSelect(m ModelInterface, param *Parameter, aggregate Aggregate, aggregateColumn string) string {
 	query := "SELECT "
 
 	// SET TABLE COLUMNS
-	if m.ColumnCount() != 0 {
+	if aggregate != AG_NONE {
+		query = fmt.Sprintf("%s %s(%s)", query, aggregate, aggregateColumn)
+	} else if m.ColumnCount() != 0 {
 		query = b.generateValues(query, m, b.alwaysFalse, b.generateSelectColumns)
 	} else {
 		query = fmt.Sprintf("%s *", query)

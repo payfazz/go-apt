@@ -4,6 +4,7 @@ type Connector string
 type Lock string
 type Operator string
 type OrderDirection string
+type Aggregate string
 
 const (
 	OP_EQUALS           Operator = "="
@@ -34,4 +35,13 @@ const (
 const (
 	DIR_ASC  OrderDirection = "ASC"
 	DIR_DESC OrderDirection = "DESC"
+)
+
+const (
+	AG_NONE  Aggregate = ""
+	AG_COUNT Aggregate = "COUNT"
+	AG_SUM   Aggregate = "SUM"
+	AG_AVG   Aggregate = "AVG"
+	AG_MIN   Aggregate = "MIN"
+	AG_MAX   Aggregate = "MAX"
 )

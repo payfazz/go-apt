@@ -16,31 +16,43 @@ func main() {
 	tx, _ := db.Beginx()
 	query := fazzdb.QueryTx(tx, config.Db)
 
-	//arg := map[string]interface{}{
-	//	"published": true,
-	//	"authors": []interface{}{8, 19, 32, 44},
-	//}
-	//log.Println(arg)
-	//a, args, _ := sqlx.Named("SELECT * FROM articles WHERE published=:published AND author_id IN (:authors)", arg)
-	//log.Println(a)
-	//log.Println(args)
-	//a, args, _ = sqlx.In(a, args...)
-	//log.Println(a)
-	//log.Println(args)
-	//a = db.Rebind(a)
-	//log.Println(a)
+	//student := SelectOne(query)
+	//Update(query, student)
 
-	//n := model.NewUid()
-	//n.Data = 10
-	//_, err := query.Use(n).
-	//	Insert()
-	//if nil != err {
-	//	log.Println(err)
-	//}
-	//
-	//fmt.Println(n.Id)
+	Aggregate(query, fazzdb.AG_COUNT, "age")
 
-	// Select Many
+	_ = tx.Commit()
+}
+
+func SelectOne(query *fazzdb.Query) *model.Student {
+	// Select One
+	n := model.NewStudent()
+	result, err := query.Use(n).
+		First()
+
+	if nil != err {
+		panic(err)
+	}
+	student := result.(model.Student)
+	fmt.Printf("%d - %s - %s - %d\n", student.Id, student.Name, student.Address, student.Age)
+
+	return &student
+}
+
+func Update(query *fazzdb.Query, student *model.Student) {
+	student.Name = "Hi"
+	_, err := query.Use(student).Update()
+	if nil != err {
+		panic(err)
+	}
+}
+
+func Delete(query *fazzdb.Query, student *model.Student) {
+	_, _ = query.Use(student).
+		Delete()
+}
+
+func SelectMany(query *fazzdb.Query) {
 	n := model.NewStudent()
 	results, err := query.Use(n).
 		GroupWhere(func(query *fazzdb.Query) *fazzdb.Query {
@@ -59,41 +71,16 @@ func main() {
 	for _, s := range students {
 		fmt.Printf("%d - %s - %s - %d\n", s.Id, s.Name, s.Address, s.Age)
 	}
+}
 
-	//p := model.NewPhone()
-	//_, err := query.Use(p).
-	//	GetAll()
-	//
-	//if nil != err {
-	//	panic(err)
-	//}
+func Aggregate(query *fazzdb.Query, aggregate fazzdb.Aggregate, column string) {
+	n := model.NewStudent()
+	result, err := query.Use(n).
+		Aggregate(aggregate, column)
 
-	//
-	//phones := results2.([]model.Phone)
-	//for _, p2 := range phones {
-	//	fmt.Println(p2.Model)
-	//}
+	if nil != err {
+		panic(err)
+	}
 
-	// Select One
-	//n := model.NewStudent()
-	//result, err := query.Use(n).
-	//	First()
-	//
-	//if nil != err {
-	//	panic(err)
-	//}
-	//student := result.(model.Student)
-	//fmt.Printf("%d - %s - %s - %d\n", student.Id, student.Name, student.Address, student.Age)
-	//
-	//student.Name = "Hi"
-	//_, err = query.Use(&student).Update()
-	//if nil != err {
-	//	panic(err)
-	//}
-
-	// Delete
-	//_, _ = query.Use(&student).
-	//	Delete()
-
-	_ = tx.Commit()
+	fmt.Println(aggregate, ": ", *result)
 }

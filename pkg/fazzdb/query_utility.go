@@ -25,8 +25,8 @@ func (q *Query) assignModel(result interface{}, m *Model) interface{} {
 	return complete.Interface()
 }
 
-func (q *Query) prepareSelect() (*sqlx.NamedStmt, map[string]interface{}, error) {
-	query := q.Builder.BuildSelect(q.Model, q.Parameter)
+func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string) (*sqlx.NamedStmt, map[string]interface{}, error) {
+	query := q.Builder.BuildSelect(q.Model, q.Parameter, aggregate, aggregateColumn)
 	query = q.bindIn(query)
 
 	stmt, err := q.Tx.PrepareNamed(query)
