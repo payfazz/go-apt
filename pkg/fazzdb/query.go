@@ -2,6 +2,7 @@ package fazzdb
 
 import (
 	"github.com/jmoiron/sqlx"
+	"log"
 	"reflect"
 )
 
@@ -37,11 +38,117 @@ type Query struct {
 	AutoCommit bool
 }
 
+func (q *Query) RawExec(query string, payload ...interface{}) (bool, error) {
+	_, err := q.Tx.Exec(query, payload)
+	if nil != err {
+		q.autoRollback()
+		return false, err
+	}
+	return true, err
+}
+
+func (q *Query) RawFirst(sample interface{}, query string, payload ...interface{}) (interface{}, error) {
+	result, err := q.makeTypeOf(sample)
+	if nil != err {
+		return nil, err
+	}
+
+	stmt, err := q.Tx.Preparex(query)
+	if nil != err {
+		return nil, err
+	}
+
+	err = stmt.Get(result, payload...)
+	if nil != err {
+		return nil, err
+	}
+
+	return reflect.ValueOf(result).Elem().Interface(), nil
+}
+
+func (q *Query) RawAll(sample interface{}, query string, payload ...interface{}) (interface{}, error) {
+	results, err := q.makeSliceOf(sample)
+	if nil != err {
+		return nil, err
+	}
+
+	stmt, err := q.Tx.Preparex(query)
+	if nil != err {
+		return nil, err
+	}
+
+	err = stmt.Select(results, payload...)
+	if nil != err {
+		return nil, err
+	}
+
+	return reflect.ValueOf(results).Elem().Interface(), nil
+}
+
+func (q *Query) RawNamedExec(query string, payload map[string]interface{}) (bool, error) {
+	stmt, err := q.Tx.PrepareNamed(query)
+	if nil != err {
+		q.autoRollback()
+		return false, err
+	}
+
+	_, err = stmt.Exec(payload)
+	if nil != err {
+		q.autoRollback()
+		return false, err
+	}
+
+	q.autoCommit()
+	return true, nil
+}
+
+func (q *Query) RawNamedFirst(sample interface{}, query string, payload map[string]interface{}) (interface{}, error) {
+	result, err := q.makeTypeOf(sample)
+	if nil != err {
+		return nil, err
+	}
+
+	stmt, err := q.Tx.PrepareNamed(query)
+	if nil != err {
+		return nil, err
+	}
+
+	err = stmt.Get(result, payload)
+	if nil != err {
+		return nil, err
+	}
+
+	return reflect.ValueOf(result).Elem().Interface(), nil
+}
+
+func (q *Query) RawNamedAll(sample interface{}, query string, payload map[string]interface{}) (interface{}, error) {
+	results, err := q.makeSliceOf(sample)
+	if nil != err {
+		return nil, err
+	}
+
+	stmt, err := q.Tx.PrepareNamed(query)
+	if nil != err {
+		return nil, err
+	}
+
+	log.Println(stmt)
+
+	err = stmt.Select(results, payload)
+	if nil != err {
+		return nil, err
+	}
+
+	return reflect.ValueOf(results).Elem().Interface(), nil
+}
+
 func (q *Query) First() (interface{}, error) {
 	defer q.clearParameter()
 
-	element := reflect.TypeOf(q.Model).Elem()
-	result := reflect.New(element).Interface()
+	result, err := q.makeTypeOf(q.Model)
+	if nil != err {
+		return nil, err
+	}
 
 	q.setLimit(1)
 	stmt, args, err := q.prepareSelect(AG_NONE, "")
@@ -57,11 +164,13 @@ func (q *Query) First() (interface{}, error) {
 	return q.assignModel(result, q.Model.GetModel()), nil
 }
 
-func (q *Query) GetAll() (interface{}, error) {
+func (q *Query) All() (interface{}, error) {
 	defer q.clearParameter()
 
-	element := reflect.TypeOf(q.Model).Elem()
-	results := reflect.New(reflect.SliceOf(element)).Interface()
+	results, err := q.makeSliceOf(q.Model)
+	if nil != err {
+		return nil, err
+	}
 
 	stmt, args, err := q.prepareSelect(AG_NONE, "")
 	if nil != err {

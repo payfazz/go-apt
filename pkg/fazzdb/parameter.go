@@ -7,6 +7,7 @@ import (
 
 type Parameter struct {
 	Conditions []Condition
+	Havings    []Condition
 	Values     map[string]interface{}
 	Orders     []Order
 	Groups     []string
@@ -16,17 +17,37 @@ type Parameter struct {
 }
 
 func (p *Parameter) appendGroupConditions(param *Parameter, connector Connector) *Parameter {
+	return p.appendConditionFromParameter(param, connector)
+}
+
+func (p *Parameter) appendGroupHavings(param *Parameter, connector Connector) *Parameter {
+	return p.appendConditionFromParameter(param, connector)
+}
+
+func (p *Parameter) appendConditionFromParameter(param *Parameter, connector Connector) *Parameter {
 	// Append Condition
-	parent := Condition{
+	conditionParent := Condition{
 		Connector: connector,
 	}
 	for i, condition := range param.Conditions {
 		if i == 0 {
 			condition.Connector = CO_EMPTY
 		}
-		parent.Conditions = append(parent.Conditions, condition)
+		conditionParent.Conditions = append(conditionParent.Conditions, condition)
 	}
-	p.Conditions = append(p.Conditions, parent)
+	p.Conditions = append(p.Conditions, conditionParent)
+
+	// Append Having
+	havingParent := Condition{
+		Connector: connector,
+	}
+	for i, having := range param.Havings {
+		if i == 0 {
+			having.Connector = CO_EMPTY
+		}
+		havingParent.Conditions = append(havingParent.Conditions, having)
+	}
+	p.Havings = append(p.Havings, havingParent)
 
 	// Append Values
 	for i, value := range param.Values {
@@ -45,6 +66,25 @@ func (p *Parameter) appendCondition(
 ) *Parameter {
 	prefix := p.getPrefix()
 	p.Conditions = append(p.Conditions, Condition{
+		Table:     table,
+		Key:       key,
+		Operator:  operator,
+		Connector: connector,
+		Prefix:    prefix,
+	})
+	p.Values[prefix] = value
+	return p
+}
+
+func (p *Parameter) appendHaving(
+	table string,
+	connector Connector,
+	key string,
+	operator Operator,
+	value interface{},
+) *Parameter {
+	prefix := p.getPrefix()
+	p.Havings = append(p.Havings, Condition{
 		Table:     table,
 		Key:       key,
 		Operator:  operator,

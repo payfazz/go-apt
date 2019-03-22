@@ -95,3 +95,19 @@ func (q *Query) autoRollback() {
 func (q *Query) clearParameter() {
 	q.Parameter = NewParameter(q.Config)
 }
+
+func (q *Query) makeTypeOf(sample interface{}) (interface{}, error) {
+	if reflect.TypeOf(sample).Kind() != reflect.Ptr {
+		return nil, fmt.Errorf("sample must be a pointer to reference model")
+	}
+	element := reflect.TypeOf(sample).Elem()
+	return reflect.New(element).Interface(), nil
+}
+
+func (q *Query) makeSliceOf(sample interface{}) (interface{}, error) {
+	if reflect.TypeOf(sample).Kind() != reflect.Ptr {
+		return nil, fmt.Errorf("sample must be a pointer to reference model")
+	}
+	element := reflect.TypeOf(sample).Elem()
+	return reflect.New(reflect.SliceOf(element)).Interface(), nil
+}
