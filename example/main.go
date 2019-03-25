@@ -7,6 +7,7 @@ import (
 	"github.com/payfazz/go-apt/example/config"
 	"github.com/payfazz/go-apt/example/model"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
+	"log"
 )
 
 func main() {
@@ -16,8 +17,14 @@ func main() {
 	tx, _ := db.Beginx()
 	query := fazzdb.QueryTx(tx, config.Db)
 
-	RawFirst(query)
-	RawAll(query)
+	//Insert(query)
+	//RawFirst(query)
+	//RawAll(query)
+	//student := SelectOne(query)
+	//Delete(query, student)
+	//Update(query, student)
+
+	SelectAll(query)
 
 	_ = tx.Commit()
 }
@@ -122,8 +129,21 @@ func SelectOne(query *fazzdb.Query) *model.Student {
 	return &student
 }
 
+func Insert(query *fazzdb.Query) {
+	student := model.NewStudent()
+	student.Name = "sby"
+	student.Address = "Solo"
+	student.Age = 20
+
+	id, err := query.Use(student).Insert()
+	if nil != err {
+		panic(err)
+	}
+	log.Println("Inserted id:", *id)
+}
+
 func Update(query *fazzdb.Query, student *model.Student) {
-	student.Name = "Hi"
+	student.Name = "Hi123"
 	_, err := query.Use(student).Update()
 	if nil != err {
 		_ = query.Tx.Rollback()
@@ -137,6 +157,22 @@ func Delete(query *fazzdb.Query, student *model.Student) {
 	if nil != err {
 		_ = query.Tx.Rollback()
 		panic(err)
+	}
+}
+
+func SelectAll(query *fazzdb.Query) {
+	n := model.NewStudent()
+	results, err := query.Use(n).
+		All()
+
+	if nil != err {
+		_ = query.Tx.Rollback()
+		panic(err)
+	}
+
+	students := results.([]model.Student)
+	for _, s := range students {
+		fmt.Printf("%d - %s - %s - %d\n", s.Id, s.Name, s.Address, s.Age)
 	}
 }
 

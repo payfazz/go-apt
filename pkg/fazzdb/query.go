@@ -2,7 +2,6 @@ package fazzdb
 
 import (
 	"github.com/jmoiron/sqlx"
-	"log"
 	"reflect"
 )
 
@@ -132,8 +131,6 @@ func (q *Query) RawNamedAll(sample interface{}, query string, payload map[string
 		return nil, err
 	}
 
-	log.Println(stmt)
-
 	err = stmt.Select(results, payload)
 	if nil != err {
 		return nil, err
@@ -143,52 +140,29 @@ func (q *Query) RawNamedAll(sample interface{}, query string, payload map[string
 }
 
 func (q *Query) First() (interface{}, error) {
-	defer q.clearParameter()
+	return q.first(NO_TRASH)
+}
 
-	result, err := q.makeTypeOf(q.Model)
-	if nil != err {
-		return nil, err
-	}
-
-	q.setLimit(1)
-	stmt, args, err := q.prepareSelect(AG_NONE, "")
-	if nil != err {
-		return nil, err
-	}
-
-	err = stmt.Get(result, args)
-	if nil != err {
-		return nil, err
-	}
-
-	return q.assignModel(result, q.Model.GetModel()), nil
+func (q *Query) FirstWithTrash() (interface{}, error) {
+	return q.first(WITH_TRASH)
 }
 
 func (q *Query) All() (interface{}, error) {
-	defer q.clearParameter()
+	return q.all(NO_TRASH)
+}
 
-	results, err := q.makeSliceOf(q.Model)
-	if nil != err {
-		return nil, err
-	}
-
-	stmt, args, err := q.prepareSelect(AG_NONE, "")
-	if nil != err {
-		return nil, err
-	}
-
-	err = stmt.Select(results, args)
-	if nil != err {
-		return nil, err
-	}
-
-	return q.assignModelSlices(results, q.Model.GetModel()), nil
+func (q *Query) AllWithTrash() (interface{}, error) {
+	return q.all(WITH_TRASH)
 }
 
 func (q *Query) Insert() (*interface{}, error) {
 	var id interface{}
 
 	q.Model.GeneratePK()
+
+	if q.Model.IsTimestamps() {
+		q.Model.Created()
+	}
 
 	query := q.Builder.BuildInsert(q.Model)
 
@@ -212,6 +186,10 @@ func (q *Query) Update() (bool, error) {
 	defer q.clearParameter()
 
 	q.setPKCondition()
+
+	if q.Model.IsTimestamps() {
+		q.Model.Updated()
+	}
 
 	query := q.Builder.BuildUpdate(q.Model, q.Parameter)
 	query = q.bindIn(query)
@@ -237,6 +215,11 @@ func (q *Query) Delete() (bool, error) {
 
 	q.setPKCondition()
 
+	if q.Model.IsSoftDelete() {
+		q.Model.Deleted()
+		return q.Update()
+	}
+
 	query := q.Builder.BuildDelete(q.Model, q.Parameter)
 	query = q.bindIn(query)
 
@@ -257,21 +240,11 @@ func (q *Query) Delete() (bool, error) {
 }
 
 func (q *Query) Aggregate(aggregate Aggregate, column string) (*float64, error) {
-	defer q.clearParameter()
+	return q.aggregate(aggregate, column, NO_TRASH)
+}
 
-	var result float64
-
-	stmt, args, err := q.prepareSelect(aggregate, column)
-	if nil != err {
-		return nil, err
-	}
-
-	err = stmt.Get(&result, args)
-	if nil != err {
-		return nil, err
-	}
-
-	return &result, nil
+func (q *Query) AggregateWithTrash(aggregate Aggregate, column string) (*float64, error) {
+	return q.aggregate(aggregate, column, WITH_TRASH)
 }
 
 func (q *Query) Avg(column string) (*float64, error) {

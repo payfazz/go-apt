@@ -5,6 +5,7 @@ type Lock string
 type Operator string
 type OrderDirection string
 type Aggregate string
+type TrashStatus bool
 
 const (
 	OP_EQUALS           Operator = "="
@@ -44,4 +45,9 @@ const (
 	AG_AVG   Aggregate = "AVG"
 	AG_MIN   Aggregate = "MIN"
 	AG_MAX   Aggregate = "MAX"
+)
+
+const (
+	WITH_TRASH TrashStatus = true
+	NO_TRASH   TrashStatus = false
 )

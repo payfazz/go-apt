@@ -4,11 +4,11 @@ import (
 	"github.com/satori/go.uuid"
 	"reflect"
 	"strings"
+	"time"
 	"unicode"
 )
 
 type ModelInterface interface {
-	SetModel(v *Model)
 	GetModel() *Model
 	GetTable() string
 	GetColumns() []string
@@ -23,6 +23,61 @@ type ModelInterface interface {
 	IsAutoIncrement() bool
 	Payload() map[string]interface{}
 	MapPayload(v interface{}) map[string]interface{}
+	Created()
+	Updated()
+	Deleted()
+	Recovered()
+}
+
+func UuidModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
+	model := &Model{
+		Table:         table,
+		Columns:       columns,
+		PrimaryKey:    primaryKey,
+		Uuid:          true,
+		AutoIncrement: false,
+		Timestamps:    timestamps,
+		SoftDelete:    softDelete,
+	}
+
+	model.handleTimestamp()
+	model.handleSoftDelete()
+
+	return model
+}
+
+func PlainModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
+	model := &Model{
+		Table:         table,
+		Columns:       columns,
+		PrimaryKey:    primaryKey,
+		Uuid:          false,
+		AutoIncrement: false,
+		Timestamps:    timestamps,
+		SoftDelete:    softDelete,
+	}
+
+	model.handleTimestamp()
+	model.handleSoftDelete()
+
+	return model
+}
+
+func AutoIncrementModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
+	model := &Model{
+		Table:         table,
+		Columns:       columns,
+		PrimaryKey:    primaryKey,
+		Uuid:          false,
+		AutoIncrement: true,
+		Timestamps:    timestamps,
+		SoftDelete:    softDelete,
+	}
+
+	model.handleTimestamp()
+	model.handleSoftDelete()
+
+	return model
 }
 
 type Model struct {
@@ -33,12 +88,17 @@ type Model struct {
 	AutoIncrement bool
 	Timestamps    bool
 	SoftDelete    bool
+	CreatedAt     *time.Time `db:"createdAt"`
+	UpdatedAt     *time.Time `db:"updatedAt"`
+	DeletedAt     *time.Time `db:"deletedAt"`
 }
 
 // MUST OVERRIDE
 
 func (m *Model) GeneratePK() {
-	panic("Please override GeneratePK() method in your model")
+	if m.IsUuid() {
+		panic("Please override GeneratePK() method in your model")
+	}
 }
 
 func (m *Model) Get(key string) interface{} {
@@ -50,10 +110,6 @@ func (m *Model) Payload() map[string]interface{} {
 }
 
 // LEAVE ALONE
-
-func (m *Model) SetModel(v *Model) {
-	m = v
-}
 
 func (m *Model) GetModel() *Model {
 	return m
@@ -114,11 +170,52 @@ func (m *Model) MapPayload(v interface{}) map[string]interface{} {
 	}
 
 	for i := 0; i < classType.NumField(); i++ {
-		if classType.Field(i).Name != "Model" {
+		if classType.Field(i).Name == "Model" {
+			model := classValue.Field(i).Interface().(*Model)
+			if model.IsTimestamps() {
+				results["createdAt"] = model.CreatedAt
+				results["updatedAt"] = model.UpdatedAt
+			}
+			if model.IsSoftDelete() {
+				results["deletedAt"] = model.DeletedAt
+			}
+ 		} else {
 			results[m.toLowerFirst(classType.Field(i).Name)] = classValue.Field(i).Interface()
 		}
 	}
 	return results
+}
+
+func (m *Model) Created() {
+	now := time.Now()
+	m.CreatedAt = &now
+}
+
+func (m *Model) Updated() {
+	now := time.Now()
+	m.UpdatedAt = &now
+}
+
+func (m *Model) Deleted() {
+	now := time.Now()
+	m.DeletedAt = &now
+}
+
+func (m *Model) Recovered() {
+	m.DeletedAt = nil
+}
+
+func (m *Model) handleTimestamp() {
+	if m.IsTimestamps() {
+		m.Columns = append(m.Columns, "createdAt")
+		m.Columns = append(m.Columns, "updatedAt")
+	}
+}
+
+func (m *Model) handleSoftDelete() {
+	if m.IsSoftDelete() {
+		m.Columns = append(m.Columns, "deletedAt")
+	}
 }
 
 func (m *Model) toLowerFirst(str string) string {
@@ -126,40 +223,4 @@ func (m *Model) toLowerFirst(str string) string {
 		return string(unicode.ToLower(v)) + str[i+1:]
 	}
 	return str
-}
-
-func UuidModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
-	return &Model{
-		Table:         table,
-		Columns:       columns,
-		PrimaryKey:    primaryKey,
-		Uuid:          true,
-		AutoIncrement: false,
-		Timestamps:    timestamps,
-		SoftDelete:    softDelete,
-	}
-}
-
-func PlainModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
-	return &Model{
-		Table:         table,
-		Columns:       columns,
-		PrimaryKey:    primaryKey,
-		Uuid:          false,
-		AutoIncrement: false,
-		Timestamps:    timestamps,
-		SoftDelete:    softDelete,
-	}
-}
-
-func AutoIncrementModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
-	return &Model{
-		Table:         table,
-		Columns:       columns,
-		PrimaryKey:    primaryKey,
-		Uuid:          false,
-		AutoIncrement: true,
-		Timestamps:    timestamps,
-		SoftDelete:    softDelete,
-	}
 }

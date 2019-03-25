@@ -8,12 +8,28 @@ func (q *Query) WhereOp(key string, operator Operator, value interface{}) *Query
 	return q.AppendCondition(CO_AND, key, operator, value)
 }
 
+func (q *Query) WhereNil(key string) *Query {
+	return q.AppendCondition(CO_AND, key, OP_IS_NULL, nil)
+}
+
+func (q *Query) WhereNotNil(key string) *Query {
+	return q.AppendCondition(CO_AND, key, OP_IS_NOT_NULL, nil)
+}
+
 func (q *Query) OrWhere(key string, value interface{}) *Query {
 	return q.AppendCondition(CO_OR, key, OP_EQUALS, value)
 }
 
 func (q *Query) OrWhereOp(key string, operator Operator, value interface{}) *Query {
 	return q.AppendCondition(CO_OR, key, operator, value)
+}
+
+func (q *Query) OrWhereNil(key string) *Query {
+	return q.AppendCondition(CO_OR, key, OP_IS_NULL, nil)
+}
+
+func (q *Query) OrWhereNotNil(key string) *Query {
+	return q.AppendCondition(CO_OR, key, OP_IS_NOT_NULL, nil)
 }
 
 func (q *Query) GroupWhere(conditionFunc func(query *Query) *Query) *Query {

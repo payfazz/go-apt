@@ -131,20 +131,20 @@ func (b *Builder) generateInsertValues(query string, column string, first bool) 
 
 func (b *Builder) generateUpdateColumns(query string, column string, first bool) (string, bool) {
 	if first {
-		query = fmt.Sprintf("%s %s = :%s", query, column, column)
+		query = fmt.Sprintf("%s \"%s\" = :%s", query, column, column)
 		first = false
 	} else {
-		query = fmt.Sprintf("%s, %s = :%s", query, column, column)
+		query = fmt.Sprintf("%s, \"%s\" = :%s", query, column, column)
 	}
 	return query, first
 }
 
 func (b *Builder) generateSelectColumns(query string, column string, first bool) (string, bool) {
 	if first {
-		query = fmt.Sprintf("%s %s", query, column)
+		query = fmt.Sprintf("%s \"%s\"", query, column)
 		first = false
 	} else {
-		query = fmt.Sprintf("%s, %s", query, column)
+		query = fmt.Sprintf("%s, \"%s\"", query, column)
 	}
 	return query, first
 }

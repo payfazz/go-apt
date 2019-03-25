@@ -28,8 +28,8 @@ func NewStudent() *Student {
 			"age",
 		},
 		"id",
-		false,
-		false,
+		true,
+		true,
 	)
 	return &Student{
 		Model: model,

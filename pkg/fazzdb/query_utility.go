@@ -25,7 +25,76 @@ func (q *Query) assignModel(result interface{}, m *Model) interface{} {
 	return complete.Interface()
 }
 
-func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string) (*sqlx.NamedStmt, map[string]interface{}, error) {
+func (q *Query) first(withTrash TrashStatus) (interface{}, error) {
+	defer q.clearParameter()
+
+	result, err := q.makeTypeOf(q.Model)
+	if nil != err {
+		return nil, err
+	}
+
+	q.setLimit(1)
+	stmt, args, err := q.prepareSelect(AG_NONE, "", withTrash)
+	if nil != err {
+		return nil, err
+	}
+
+	err = stmt.Get(result, args)
+	if nil != err {
+		return nil, err
+	}
+
+	return q.assignModel(result, q.Model.GetModel()), nil
+}
+
+func (q *Query) all(withTrash TrashStatus) (interface{}, error) {
+	defer q.clearParameter()
+
+	results, err := q.makeSliceOf(q.Model)
+	if nil != err {
+		return nil, err
+	}
+
+	stmt, args, err := q.prepareSelect(AG_NONE, "", withTrash)
+	if nil != err {
+		return nil, err
+	}
+
+	err = stmt.Select(results, args)
+	if nil != err {
+		return nil, err
+	}
+
+	return q.assignModelSlices(results, q.Model.GetModel()), nil
+}
+
+func (q *Query) aggregate(aggregate Aggregate, column string, withTrash TrashStatus) (*float64, error) {
+	defer q.clearParameter()
+
+	var result float64
+
+	stmt, args, err := q.prepareSelect(aggregate, column, NO_TRASH)
+	if nil != err {
+		return nil, err
+	}
+
+	err = stmt.Get(&result, args)
+	if nil != err {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withTrash TrashStatus) (*sqlx.NamedStmt, map[string]interface{}, error) {
+	if q.Model.IsSoftDelete() && withTrash == NO_TRASH {
+		q.WhereNil("deletedAt")
+	}
+
+	if len(q.Parameter.Orders) == 0 {
+		q.OrderBy(q.Model.GetPK(), DIR_ASC)
+	}
+
 	query := q.Builder.BuildSelect(q.Model, q.Parameter, aggregate, aggregateColumn)
 	query = q.bindIn(query)
 

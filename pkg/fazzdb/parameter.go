@@ -72,6 +72,11 @@ func (p *Parameter) appendCondition(
 		Connector: connector,
 		Prefix:    prefix,
 	})
+
+	if operator == OP_IS_NOT_NULL || operator == OP_IS_NULL {
+		return p
+	}
+
 	p.Values[prefix] = value
 	return p
 }

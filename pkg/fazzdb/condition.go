@@ -32,11 +32,11 @@ func (c *Condition) NamedString() string {
 	case OP_IS_NOT_NULL:
 		fallthrough
 	case OP_IS_NULL:
-		query = fmt.Sprintf("%s %s.%s %s", c.Connector, c.Table, c.Key, c.Operator)
+		query = fmt.Sprintf("%s \"%s\".\"%s\" %s", c.Connector, c.Table, c.Key, c.Operator)
 	case OP_IN:
-		query = fmt.Sprintf("%s %s.%s %s (:%s)", c.Connector, c.Table, c.Key, c.Operator, c.Prefix)
+		query = fmt.Sprintf("%s \"%s\".\"%s\" %s (:%s)", c.Connector, c.Table, c.Key, c.Operator, c.Prefix)
 	default:
-		query = fmt.Sprintf("%s %s.%s %s :%s", c.Connector, c.Table, c.Key, c.Operator, c.Prefix)
+		query = fmt.Sprintf("%s \"%s\".\"%s\" %s :%s", c.Connector, c.Table, c.Key, c.Operator, c.Prefix)
 	}
 	return query
 }
