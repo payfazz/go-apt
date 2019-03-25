@@ -28,6 +28,11 @@ func (q *Query) assignModel(result interface{}, m *Model) interface{} {
 func (q *Query) first(withTrash TrashStatus) (interface{}, error) {
 	defer q.clearParameter()
 
+	err := q.handleNilModel()
+	if nil != err {
+		return nil, err
+	}
+
 	result, err := q.makeTypeOf(q.Model)
 	if nil != err {
 		return nil, err
@@ -50,6 +55,11 @@ func (q *Query) first(withTrash TrashStatus) (interface{}, error) {
 func (q *Query) all(withTrash TrashStatus) (interface{}, error) {
 	defer q.clearParameter()
 
+	err := q.handleNilModel()
+	if nil != err {
+		return nil, err
+	}
+
 	results, err := q.makeSliceOf(q.Model)
 	if nil != err {
 		return nil, err
@@ -70,6 +80,11 @@ func (q *Query) all(withTrash TrashStatus) (interface{}, error) {
 
 func (q *Query) aggregate(aggregate Aggregate, column string, withTrash TrashStatus) (*float64, error) {
 	defer q.clearParameter()
+
+	err := q.handleNilModel()
+	if nil != err {
+		return nil, err
+	}
 
 	var result float64
 
@@ -159,6 +174,13 @@ func (q *Query) autoRollback() {
 	if q.AutoCommit {
 		_ = q.Tx.Rollback()
 	}
+}
+
+func (q *Query) handleNilModel() error {
+	if nil == q.Model {
+		return fmt.Errorf("please use a model before doing query")
+	}
+	return nil
 }
 
 func (q *Query) clearParameter() {

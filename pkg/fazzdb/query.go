@@ -158,6 +158,11 @@ func (q *Query) AllWithTrash() (interface{}, error) {
 func (q *Query) Insert() (*interface{}, error) {
 	var id interface{}
 
+	err := q.handleNilModel()
+	if nil != err {
+		return nil, err
+	}
+
 	q.Model.GeneratePK()
 
 	if q.Model.IsTimestamps() {
@@ -184,6 +189,11 @@ func (q *Query) Insert() (*interface{}, error) {
 
 func (q *Query) Update() (bool, error) {
 	defer q.clearParameter()
+
+	err := q.handleNilModel()
+	if nil != err {
+		return false, err
+	}
 
 	q.setPKCondition()
 
@@ -212,6 +222,11 @@ func (q *Query) Update() (bool, error) {
 
 func (q *Query) Delete() (bool, error) {
 	defer q.clearParameter()
+
+	err := q.handleNilModel()
+	if nil != err {
+		return false, err
+	}
 
 	q.setPKCondition()
 
@@ -251,20 +266,40 @@ func (q *Query) Avg(column string) (*float64, error) {
 	return q.Aggregate(AG_AVG, column)
 }
 
+func (q *Query) AvgWithTrash(column string) (*float64, error) {
+	return q.AggregateWithTrash(AG_AVG, column)
+}
+
 func (q *Query) Min(column string) (*float64, error) {
 	return q.Aggregate(AG_MIN, column)
+}
+
+func (q *Query) MinWithTrash(column string) (*float64, error) {
+	return q.AggregateWithTrash(AG_MIN, column)
 }
 
 func (q *Query) Max(column string) (*float64, error) {
 	return q.Aggregate(AG_MAX, column)
 }
 
+func (q *Query) MaxWithTrash(column string) (*float64, error) {
+	return q.AggregateWithTrash(AG_MAX, column)
+}
+
 func (q *Query) Sum(column string) (*float64, error) {
 	return q.Aggregate(AG_SUM, column)
 }
 
+func (q *Query) SumWithTrash(column string) (*float64, error) {
+	return q.AggregateWithTrash(AG_SUM, column)
+}
+
 func (q *Query) Count() (*float64, error) {
 	return q.Aggregate(AG_COUNT, "*")
+}
+
+func (q *Query) CountWithTrash() (*float64, error) {
+	return q.AggregateWithTrash(AG_COUNT, "*")
 }
 
 func (q *Query) Use(m ModelInterface) *Query {
