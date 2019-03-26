@@ -8,6 +8,7 @@ import (
 	"github.com/payfazz/go-apt/example/model"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"log"
+	"math/rand"
 )
 
 func main() {
@@ -24,9 +25,27 @@ func main() {
 	//Delete(query, student)
 	//Update(query, student)
 
+
 	SelectAll(query)
 
 	_ = tx.Commit()
+}
+
+func BulkInsert(query *fazzdb.Query) {
+	students := make([]*model.Student, 0)
+	for i := 0; i < 20; i++ {
+		student := model.NewStudent()
+		student.Name = fmt.Sprintf("Bulk%d", i)
+		student.Address = fmt.Sprintf("Address %d", i)
+		student.Age = rand.Intn(20) + 12
+
+		students = append(students, student)
+	}
+
+	_, err := query.Use(model.NewStudent()).BulkInsert(students)
+	if nil != err {
+		panic(err)
+	}
 }
 
 func RawFirst(query *fazzdb.Query) {

@@ -2,6 +2,8 @@ package fazzdb
 
 import (
 	"fmt"
+	"log"
+	"reflect"
 )
 
 type Builder struct {}
@@ -30,6 +32,33 @@ func (b *Builder) BuildUpdate(m ModelInterface, param *Parameter) string {
 
 	// END QUERY
 	query = fmt.Sprintf("%s;", query)
+	return query
+}
+
+func (b *Builder) BuildBulkInsert(m ModelInterface, data []interface{}) string {
+	query := fmt.Sprintf("INSERT INTO %s", m.GetTable())
+
+	query = fmt.Sprintf("%s (", query)
+	query = b.generateValues(query, m, b.isAutoIncrementPrimaryKey, b.generateSelectColumns)
+	query = fmt.Sprintf("%s ) VALUES", query)
+
+	firstData := true
+	for i, v := range data {
+		if firstData {
+			query = fmt.Sprintf("%s (", query)
+			firstData = false
+		} else {
+			query = fmt.Sprintf("%s, (", query)
+		}
+
+		mi := v.(ModelInterface)
+
+		log.Println(reflect.TypeOf(mi))
+		query = b.generateBulkValues(query, v.(ModelInterface), i)
+
+		query = fmt.Sprintf("%s )", query)
+	}
+
 	return query
 }
 
@@ -147,6 +176,17 @@ func (b *Builder) generateSelectColumns(query string, column string, first bool)
 		query = fmt.Sprintf("%s, \"%s\"", query, column)
 	}
 	return query, first
+}
+
+func (b *Builder) generateBulkValues(query string, model ModelInterface, index int) string {
+	first := true
+	for _, column := range model.GetColumns() {
+		if b.isAutoIncrementPrimaryKey(column, model) {
+			continue
+		}
+		query, first = b.generateInsertValues(query, fmt.Sprintf("%d%s", index, column), first)
+	}
+	return query
 }
 
 func (b *Builder) generateValues(

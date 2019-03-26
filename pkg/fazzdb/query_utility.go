@@ -164,6 +164,19 @@ func (q *Query) mergedPayload() map[string]interface{} {
 	return payload
 }
 
+func (q *Query) bulkPayload(data []interface{}) map[string]interface{} {
+	payloads := map[string]interface{}{}
+	for i, v := range data {
+		model := v.(ModelInterface)
+		model.GeneratePK()
+		payload := model.Payload()
+		for key, value := range payload {
+			payloads[fmt.Sprintf("%d%s", i, key)] = value
+		}
+	}
+	return payloads
+}
+
 func (q *Query) autoCommit() {
 	if q.AutoCommit {
 		_ = q.Tx.Commit()

@@ -1,6 +1,7 @@
 package fazzdb
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"reflect"
 )
@@ -185,6 +186,41 @@ func (q *Query) Insert() (*interface{}, error) {
 
 	q.autoCommit()
 	return &id, nil
+}
+
+func (q *Query) BulkInsert(data interface{}) (bool, error) {
+	err := q.handleNilModel()
+	if nil != err {
+		return false, err
+	}
+
+	d := reflect.ValueOf(data)
+	if d.Kind() != reflect.Slice {
+		return false, fmt.Errorf("payload must be a slice")
+	}
+
+	slice := make([]interface{}, d.Len())
+	for i := 0; i < d.Len(); i++ {
+		slice[i] = d.Index(i).Interface()
+	}
+
+	query := q.Builder.BuildBulkInsert(q.Model, slice)
+	payloads := q.bulkPayload(slice)
+
+	stmt, err := q.Tx.PrepareNamed(query)
+	if nil != err {
+		q.autoRollback()
+		return false, err
+	}
+
+	_, err = stmt.Exec(payloads)
+	if nil != err {
+		q.autoRollback()
+		return false, err
+	}
+
+	q.autoCommit()
+	return true, nil
 }
 
 func (q *Query) Update() (bool, error) {
