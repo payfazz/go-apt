@@ -3,6 +3,7 @@ package redis
 import (
 	"testing"
 	"time"
+	"github.com/stretchr/testify/require"
 )
 
 func getManager(t *testing.T) RedisInterface {
@@ -15,8 +16,8 @@ func getManager(t *testing.T) RedisInterface {
 
 func TestFailingConnect(t *testing.T) {
 	_, err := NewFazzRedis("localhost:6379", "")
-	if err != nil {
-		t.Fatalf("cannot connect to redis!")
+	if err == nil {
+		t.Fatalf("should not be connected to redis!")
 	}
 }
 
@@ -25,13 +26,8 @@ func TestSet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("set function doesn't work!")
 	}
-}
-
-func TestGet(t *testing.T) {
-	_, err := getManager(t).Get("test")
-	if err != nil {
-		t.Fatalf("set function doesn't work!")
-	}
+	result, err := getManager(t).Get("test")
+	require.Equal(t, "test", result, "require test")
 }
 
 func TestDelete(t *testing.T) {
@@ -46,6 +42,8 @@ func TestSetWithExpire(t *testing.T) {
 	if err != nil {
 		t.Fatalf("set function doesn't work!")
 	}
+	result, err := getManager(t).Get("test2")
+	require.Equal(t, "test2", result, "require test2")
 }
 
 func TestTruncate(t *testing.T) {
