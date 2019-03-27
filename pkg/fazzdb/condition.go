@@ -19,17 +19,17 @@ func (c *Condition) QueryString() string {
 	if len(c.Conditions) > 0 {
 		var query = fmt.Sprintf("%s (", c.Connector)
 		for _, cond := range c.Conditions {
-			query = fmt.Sprintf("%s %s", query, cond.NamedString())
+			query = fmt.Sprintf("%s %s", query, cond.namedString())
 		}
 		query = fmt.Sprintf("%s )", query)
 		return query
 	}
 
-	return c.NamedString()
+	return c.namedString()
 }
 
-// NamedString is a function to build condition query based on different operator
-func (c *Condition) NamedString() string {
+// namedString is a function to build condition query based on different operator
+func (c *Condition) namedString() string {
 	query := ""
 	switch c.Operator {
 	case OP_IS_NOT_NULL:
