@@ -45,6 +45,7 @@ func (b *Builder) BuildBulkInsert(m ModelInterface, data []interface{}) string {
 		query = fmt.Sprintf("%s )", query)
 	}
 
+	query = fmt.Sprintf("%s;", query)
 	return query
 }
 
@@ -195,7 +196,7 @@ func (b *Builder) generateConditions(query string, param *Parameter) string {
 
 		query = fmt.Sprintf("%s WHERE", query)
 		for _, cond := range param.Conditions {
-			query = fmt.Sprintf("%s %s", query, cond.QueryString())
+			query = fmt.Sprintf("%s%s", query, cond.QueryString())
 		}
 	}
 	return query
