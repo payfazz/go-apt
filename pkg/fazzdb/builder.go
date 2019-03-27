@@ -2,8 +2,6 @@ package fazzdb
 
 import (
 	"fmt"
-	"log"
-	"reflect"
 )
 
 type Builder struct {}
@@ -42,9 +40,6 @@ func (b *Builder) BuildBulkInsert(m ModelInterface, data []interface{}) string {
 			query = fmt.Sprintf("%s, (", query)
 		}
 
-		mi := v.(ModelInterface)
-
-		log.Println(reflect.TypeOf(mi))
 		query = b.generateBulkValues(query, v.(ModelInterface), i)
 
 		query = fmt.Sprintf("%s )", query)
