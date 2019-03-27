@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+// assignModelSlices is a function that will assign Model attribute based on current model used
+// to a slices of model of database results
 func (q *Query) assignModelSlices(results interface{}, m *Model) interface{} {
 	slice := reflect.ValueOf(results).Elem().Interface()
 	sVal := reflect.ValueOf(slice)
@@ -17,6 +19,8 @@ func (q *Query) assignModelSlices(results interface{}, m *Model) interface{} {
 	return sVal.Interface()
 }
 
+// assignModel is a function that will assign Model attribute based on current model used
+// to a slices of model of database results
 func (q *Query) assignModel(result interface{}, m *Model) interface{} {
 	value := reflect.ValueOf(result).Interface()
 	model := reflect.ValueOf(&m).Elem()
@@ -25,6 +29,7 @@ func (q *Query) assignModel(result interface{}, m *Model) interface{} {
 	return complete.Interface()
 }
 
+// first is a function that will get the one result from a query
 func (q *Query) first(withTrash TrashStatus) (interface{}, error) {
 	defer q.clearParameter()
 
@@ -52,6 +57,7 @@ func (q *Query) first(withTrash TrashStatus) (interface{}, error) {
 	return q.assignModel(result, q.Model.GetModel()), nil
 }
 
+// all is a function that will get multiple result from a query
 func (q *Query) all(withTrash TrashStatus) (interface{}, error) {
 	defer q.clearParameter()
 
@@ -78,6 +84,7 @@ func (q *Query) all(withTrash TrashStatus) (interface{}, error) {
 	return q.assignModelSlices(results, q.Model.GetModel()), nil
 }
 
+// aggregate is a function that will return aggregate value of a column
 func (q *Query) aggregate(aggregate Aggregate, column string, withTrash TrashStatus) (*float64, error) {
 	defer q.clearParameter()
 
@@ -101,6 +108,7 @@ func (q *Query) aggregate(aggregate Aggregate, column string, withTrash TrashSta
 	return &result, nil
 }
 
+// prepareSelect is a function that will return query statement as NamedStmt and parsed payload as a map[string]interface
 func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withTrash TrashStatus) (*sqlx.NamedStmt, map[string]interface{}, error) {
 	if q.Model.IsSoftDelete() && withTrash == NO_TRASH {
 		q.WhereNil("deletedAt")
@@ -121,6 +129,7 @@ func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withT
 	return stmt, q.Parameter.Values, err
 }
 
+// bindIn is a function that will bind value with named arguments inside in condition
 func (q *Query) bindIn(query string) string {
 	for i, value := range q.Parameter.Values {
 		if reflect.TypeOf(value).Kind() == reflect.Slice {
@@ -142,6 +151,8 @@ func (q *Query) bindIn(query string) string {
 	return query
 }
 
+// setPKCondition is a function that will append a condition that will check if primary key equals
+// current model primary key value, used in Update and Delete method
 func (q *Query) setPKCondition() {
 	pkConditionExist := false
 	for _, condition := range q.Conditions {
@@ -156,6 +167,7 @@ func (q *Query) setPKCondition() {
 	}
 }
 
+// mergedPayload is a function that will merge model payload with condition values saved in Parameter.Values
 func (q *Query) mergedPayload() map[string]interface{} {
 	payload := q.Model.Payload()
 	for i, v := range q.Parameter.Values {
@@ -164,6 +176,8 @@ func (q *Query) mergedPayload() map[string]interface{} {
 	return payload
 }
 
+// bulkPayload is a function that will merge all payload for bulkinsert into sequential slice of
+// map[string]interface{}
 func (q *Query) bulkPayload(data []interface{}) map[string]interface{} {
 	payloads := map[string]interface{}{}
 	for i, v := range data {
@@ -177,18 +191,24 @@ func (q *Query) bulkPayload(data []interface{}) map[string]interface{} {
 	return payloads
 }
 
+// autoCommit is a function that will automatically commit a query if the Query instance is set using
+// sqlx.DB not sqlx.Tx
 func (q *Query) autoCommit() {
 	if q.AutoCommit {
 		_ = q.Tx.Commit()
 	}
 }
 
+// autoRollback is a function that will automatically rollback a query if the Query instance is set using
+// sqlx.DB not sqlx.Tx
 func (q *Query) autoRollback() {
 	if q.AutoCommit {
 		_ = q.Tx.Rollback()
 	}
 }
 
+// handleNilModel is a function that will return error if Model attribute is nil, please use Use(v interface{})
+// method to set the Model attribute
 func (q *Query) handleNilModel() error {
 	if nil == q.Model {
 		return fmt.Errorf("please use a model before doing query")
@@ -196,10 +216,12 @@ func (q *Query) handleNilModel() error {
 	return nil
 }
 
+// clearParameter is a function that will clear all condition to prepare query for the next use
 func (q *Query) clearParameter() {
 	q.Parameter = NewParameter(q.Config)
 }
 
+// makeTypeOf is a function to create a new instance of sample Type to make First method immutable
 func (q *Query) makeTypeOf(sample interface{}) (interface{}, error) {
 	if reflect.TypeOf(sample).Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("sample must be a pointer to reference model")
@@ -208,6 +230,7 @@ func (q *Query) makeTypeOf(sample interface{}) (interface{}, error) {
 	return reflect.New(element).Interface(), nil
 }
 
+// makeSliceOf is a function to create a new instance of sample Type to make All method immutable
 func (q *Query) makeSliceOf(sample interface{}) (interface{}, error) {
 	if reflect.TypeOf(sample).Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("sample must be a pointer to reference model")

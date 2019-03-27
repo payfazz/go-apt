@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// Condition is a struct that will handle condition when building query
 type Condition struct {
 	Table      string
 	Key        string
@@ -13,6 +14,7 @@ type Condition struct {
 	Conditions []Condition
 }
 
+// QueryString is a function to build query based on given attributes
 func (c *Condition) QueryString() string {
 	if len(c.Conditions) > 0 {
 		var query = fmt.Sprintf("%s (", c.Connector)
@@ -26,6 +28,7 @@ func (c *Condition) QueryString() string {
 	return c.NamedString()
 }
 
+// NamedString is a function to build condition query based on different operator
 func (c *Condition) NamedString() string {
 	query := ""
 	switch c.Operator {

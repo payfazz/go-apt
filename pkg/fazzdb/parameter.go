@@ -5,6 +5,17 @@ import (
 	"time"
 )
 
+// NewParameter is a constructor that will return Parameter instance
+func NewParameter(config Config) *Parameter {
+	return &Parameter{
+		Values: make(map[string]interface{}, 0),
+		Offset: config.Offset,
+		Limit:  config.Limit,
+		Lock:   config.Lock,
+	}
+}
+
+// Parameter is a struct that is used to contain all configuration of your query
 type Parameter struct {
 	Conditions []Condition
 	Havings    []Condition
@@ -16,14 +27,17 @@ type Parameter struct {
 	Offset     int
 }
 
+// appendGroupConditions is a function that is used to append multiple conditions as one new Conditions
 func (p *Parameter) appendGroupConditions(param *Parameter, connector Connector) *Parameter {
 	return p.appendConditionFromParameter(param, connector)
 }
 
+// appendGroupHavings is a function that is used to append multiple havings as one new Havings
 func (p *Parameter) appendGroupHavings(param *Parameter, connector Connector) *Parameter {
 	return p.appendConditionFromParameter(param, connector)
 }
 
+// appendConditionFromParameter is a function that append both Conditions and Havings if available
 func (p *Parameter) appendConditionFromParameter(param *Parameter, connector Connector) *Parameter {
 	// Append Condition
 	conditionParent := Condition{
@@ -57,6 +71,7 @@ func (p *Parameter) appendConditionFromParameter(param *Parameter, connector Con
 	return p
 }
 
+// appendCondition is a function to append single condition to Conditions attribute
 func (p *Parameter) appendCondition(
 	table string,
 	connector Connector,
@@ -81,6 +96,7 @@ func (p *Parameter) appendCondition(
 	return p
 }
 
+// appendHaving is a function to append single having to Havings attribute
 func (p *Parameter) appendHaving(
 	table string,
 	connector Connector,
@@ -100,6 +116,7 @@ func (p *Parameter) appendHaving(
 	return p
 }
 
+// appendOrderBy is a function to append order by column to Orders attribute
 func (p *Parameter) appendOrderBy(table string, key string, direction OrderDirection) *Parameter {
 	p.Orders = append(p.Orders, Order{
 		Table:     table,
@@ -109,36 +126,32 @@ func (p *Parameter) appendOrderBy(table string, key string, direction OrderDirec
 	return p
 }
 
+// appendGroupBy is a function to append group by column to Groups attribute
 func (p *Parameter) appendGroupBy(column string) *Parameter {
 	p.Groups = append(p.Groups, column)
 	return p
 }
 
+// setLock is a function to add lock type to Lock attribute
 func (p *Parameter) setLock(lock Lock) *Parameter {
 	p.Lock = lock
 	return p
 }
 
+// setLimit is a function to set Limit attribute
 func (p *Parameter) setLimit(limit int) *Parameter {
 	p.Limit = limit
 	return p
 }
 
+// setOffset is a function to set Offset attribute
 func (p *Parameter) setOffset(offset int) *Parameter {
 	p.Offset = offset
 	return p
 }
 
+// getPrefix is a function to generate prefix for condition arguments using nanoseconds
 func (p *Parameter) getPrefix() string {
 	prefix := (time.Now().UnixNano() / int64(time.Microsecond)) % int64(100000000)
 	return strconv.Itoa(int(prefix))
-}
-
-func NewParameter(config Config) *Parameter {
-	return &Parameter{
-		Values: make(map[string]interface{}, 0),
-		Offset: config.Offset,
-		Limit:  config.Limit,
-		Lock:   config.Lock,
-	}
 }

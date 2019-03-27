@@ -1,10 +1,16 @@
 package fazzdb
 
+// Connector is a type that is used to connect the result of different condition
 type Connector string
+// Lock is a type that is used to set lock type used in query
 type Lock string
+// Operator is a type that is used to set operator relation in a condition
 type Operator string
+// OrderDirection is a type that is used to set order by direction for query
 type OrderDirection string
+// Aggregate is a type that is used to set aggregate used for query
 type Aggregate string
+// TrashStatus is a type that is used to set WITH_TRASH or NO_TRASH status
 type TrashStatus bool
 
 const (
