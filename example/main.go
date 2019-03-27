@@ -16,15 +16,15 @@ func main() {
 
 	db, _ := sqlx.Connect("postgres", conn)
 	tx, _ := db.Beginx()
-	query := fazzdb.QueryTx(tx, config.Db)
+	//query := fazzdb.QueryTx(tx, config.Db)
+	query := fazzdb.QueryDb(db, config.Db)
 
-	//Insert(query)
+	Insert(query)
 	//RawFirst(query)
 	//RawAll(query)
-	//student := SelectOne(query)
+	student := SelectOne(query)
 	//Delete(query, student)
-	//Update(query, student)
-
+	Update(query, student)
 
 	SelectAll(query)
 
@@ -217,15 +217,15 @@ func SelectMany(query *fazzdb.Query) {
 	}
 }
 
-func Aggregate(query *fazzdb.Query, aggregate fazzdb.Aggregate, column string) {
+func Sum(query *fazzdb.Query, column string) {
 	n := model.NewStudent()
 	result, err := query.Use(n).
-		Aggregate(aggregate, column)
+		Sum(column)
 
 	if nil != err {
 		_ = query.Tx.Rollback()
 		panic(err)
 	}
 
-	fmt.Println(aggregate, ": ", *result)
+	fmt.Println("SUM: ", *result)
 }

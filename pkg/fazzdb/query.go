@@ -10,16 +10,15 @@ import (
 // QueryDb creates a new pointer to the Query instance using a sqlx.DB instance and config struct,
 // this constructor will automatically create a new transaction for query used in this Query instance
 // this Query instance will automatically commit and rollback on the query it runs
-func QueryDb(db *sqlx.DB, config Config) (*Query, error) {
-	tx, err := db.Beginx()
-	if nil != err {
-		return nil, err
+func QueryDb(db *sqlx.DB, config Config) *Query {
+	return &Query{
+		Config:     config,
+		Parameter:  NewParameter(config),
+		Model:      nil,
+		Builder:    &Builder{},
+		Db:         db,
+		AutoCommit: true,
 	}
-
-	q := QueryTx(tx, config)
-	q.AutoCommit = true
-
-	return q, nil
 }
 
 // QueryTx creates a new pointer to the Query instance using a sqlx.Tx instance and config struct,
@@ -41,62 +40,93 @@ type Query struct {
 	Config     Config
 	Model      ModelInterface
 	Builder    *Builder
+	Db         *sqlx.DB
 	Tx         *sqlx.Tx
 	AutoCommit bool
 }
 
 // RawExec is a function that will run exec to a raw query with provided payload
 func (q *Query) RawExec(query string, payload ...interface{}) (bool, error) {
-	_, err := q.Tx.Exec(query, payload)
+	err := q.autoBegin()
+	if nil != err {
+		return false, err
+	}
+
+	_, err = q.Tx.Exec(query, payload)
 	if nil != err {
 		q.autoRollback()
 		return false, err
 	}
+
+	q.autoCommit()
 	return true, err
 }
 
 // RawFirst is a function that will run raw query that return only one result with provided payload
 func (q *Query) RawFirst(sample interface{}, query string, payload ...interface{}) (interface{}, error) {
+	err := q.autoBegin()
+	if nil != err {
+		return nil, err
+	}
+
 	result, err := q.makeTypeOf(sample)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	stmt, err := q.Tx.Preparex(query)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	err = stmt.Get(result, payload...)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
+	q.autoCommit()
 	return reflect.ValueOf(result).Elem().Interface(), nil
 }
 
 // RawAll is a function that will run raw query that return multiple result with provided payload
 func (q *Query) RawAll(sample interface{}, query string, payload ...interface{}) (interface{}, error) {
+	err := q.autoBegin()
+	if nil != err {
+		return nil, err
+	}
+
 	results, err := q.makeSliceOf(sample)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	stmt, err := q.Tx.Preparex(query)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	err = stmt.Select(results, payload...)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
+	q.autoCommit()
 	return reflect.ValueOf(results).Elem().Interface(), nil
 }
 
 // RawNamedExec is a function that will run exec to a raw named query with provided payload
 func (q *Query) RawNamedExec(query string, payload map[string]interface{}) (bool, error) {
+	err := q.autoBegin()
+	if nil != err {
+		return false, err
+	}
+
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
 		q.autoRollback()
@@ -115,41 +145,59 @@ func (q *Query) RawNamedExec(query string, payload map[string]interface{}) (bool
 
 // RawNamedFirst is a function that will run raw named query that return only one result with provided payload
 func (q *Query) RawNamedFirst(sample interface{}, query string, payload map[string]interface{}) (interface{}, error) {
+	err := q.autoBegin()
+	if nil != err {
+		return nil, err
+	}
+
 	result, err := q.makeTypeOf(sample)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	err = stmt.Get(result, payload)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
+	q.autoCommit()
 	return reflect.ValueOf(result).Elem().Interface(), nil
 }
 
 // RawNamedAll is a function that will run raw named query that return multiple result with provided payload
 func (q *Query) RawNamedAll(sample interface{}, query string, payload map[string]interface{}) (interface{}, error) {
+	err := q.autoBegin()
+	if nil != err {
+		return nil, err
+	}
+
 	results, err := q.makeSliceOf(sample)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	err = stmt.Select(results, payload)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
+	q.autoCommit()
 	return reflect.ValueOf(results).Elem().Interface(), nil
 }
 
@@ -182,6 +230,11 @@ func (q *Query) Insert() (*interface{}, error) {
 		return nil, err
 	}
 
+	err = q.autoBegin()
+	if nil != err {
+		return nil, err
+	}
+
 	q.Model.GeneratePK()
 
 	if q.Model.IsTimestamps() {
@@ -209,6 +262,11 @@ func (q *Query) Insert() (*interface{}, error) {
 // BulkInsert is a function that will insert multiple data in one query, receive slice of model
 func (q *Query) BulkInsert(data interface{}) (bool, error) {
 	err := q.handleNilModel()
+	if nil != err {
+		return false, err
+	}
+
+	err = q.autoBegin()
 	if nil != err {
 		return false, err
 	}
@@ -251,6 +309,11 @@ func (q *Query) Update() (bool, error) {
 		return false, err
 	}
 
+	err = q.autoBegin()
+	if nil != err {
+		return false, err
+	}
+
 	q.setPKCondition()
 
 	if q.Model.IsTimestamps() {
@@ -286,6 +349,11 @@ func (q *Query) Delete() (bool, error) {
 		return false, err
 	}
 
+	err = q.autoBegin()
+	if nil != err {
+		return false, err
+	}
+
 	q.setPKCondition()
 
 	if q.Model.IsSoftDelete() {
@@ -312,62 +380,54 @@ func (q *Query) Delete() (bool, error) {
 	return true, nil
 }
 
-func (q *Query) Aggregate(aggregate Aggregate, column string) (*float64, error) {
-	return q.aggregate(aggregate, column, NO_TRASH)
-}
-
-func (q *Query) AggregateWithTrash(aggregate Aggregate, column string) (*float64, error) {
-	return q.aggregate(aggregate, column, WITH_TRASH)
-}
-
 // Avg is a function that will return average of a column
 func (q *Query) Avg(column string) (*float64, error) {
-	return q.Aggregate(AG_AVG, column)
+	return q.aggregate(AG_AVG, column, NO_TRASH)
 }
 
 // AvgWithTrash is a function that will return average of a column with soft deleted row
 func (q *Query) AvgWithTrash(column string) (*float64, error) {
-	return q.AggregateWithTrash(AG_AVG, column)
+	return q.aggregate(AG_AVG, column, WITH_TRASH)
 }
 
 // Min is a function that will return minimum of a column
 func (q *Query) Min(column string) (*float64, error) {
-	return q.Aggregate(AG_MIN, column)
+	return q.aggregate(AG_MIN, column, NO_TRASH)
 }
 
 // MinWithTrash is a function that will return minimum of a column with soft deleted row
 func (q *Query) MinWithTrash(column string) (*float64, error) {
-	return q.AggregateWithTrash(AG_MIN, column)
+	return q.aggregate(AG_MIN, column, WITH_TRASH)
 }
 
 // Max is a function that will return maximum of a column
 func (q *Query) Max(column string) (*float64, error) {
-	return q.Aggregate(AG_MAX, column)
+	return q.aggregate(AG_MAX, column, NO_TRASH)
 }
 
 // MaxWithTrash is a function that will return maximum of a column with soft deleted row
 func (q *Query) MaxWithTrash(column string) (*float64, error) {
-	return q.AggregateWithTrash(AG_MAX, column)
+	return q.aggregate(AG_MAX, column, WITH_TRASH)
 }
 
 // Sum is a function that will return sum of a column
 func (q *Query) Sum(column string) (*float64, error) {
-	return q.Aggregate(AG_SUM, column)
+	return q.aggregate(AG_SUM, column, NO_TRASH)
 }
 
 // SumWithTrash is a function that will return sum of a column with soft deleted row
 func (q *Query) SumWithTrash(column string) (*float64, error) {
-	return q.AggregateWithTrash(AG_SUM, column)
+	return q.aggregate(AG_SUM, column, WITH_TRASH)
 }
 
 // Count is a function that will return count of a column
 func (q *Query) Count() (*float64, error) {
-	return q.Aggregate(AG_COUNT, "*")
+	return q.aggregate(AG_COUNT, "*", NO_TRASH)
 }
 
 // MinWithTrash is a function that will return count of a column with soft deleted row
 func (q *Query) CountWithTrash() (*float64, error) {
-	return q.AggregateWithTrash(AG_COUNT, "*")
+	return q.aggregate(AG_COUNT, "*", WITH_TRASH)
 }
 
 // Use is a function that will set Model instance that will be used for query
@@ -509,22 +569,31 @@ func (q *Query) first(withTrash TrashStatus) (interface{}, error) {
 		return nil, err
 	}
 
+	err = q.autoBegin()
+	if nil != err {
+		return nil, err
+	}
+
 	result, err := q.makeTypeOf(q.Model)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	q.setLimit(1)
 	stmt, args, err := q.prepareSelect(AG_NONE, "", withTrash)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	err = stmt.Get(result, args)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
+	q.autoCommit()
 	return q.assignModel(result, q.Model.GetModel()), nil
 }
 
@@ -537,21 +606,30 @@ func (q *Query) all(withTrash TrashStatus) (interface{}, error) {
 		return nil, err
 	}
 
+	err = q.autoBegin()
+	if nil != err {
+		return nil, err
+	}
+
 	results, err := q.makeSliceOf(q.Model)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	stmt, args, err := q.prepareSelect(AG_NONE, "", withTrash)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	err = stmt.Select(results, args)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
+	q.autoCommit()
 	return q.assignModelSlices(results, q.Model.GetModel()), nil
 }
 
@@ -559,23 +637,31 @@ func (q *Query) all(withTrash TrashStatus) (interface{}, error) {
 func (q *Query) aggregate(aggregate Aggregate, column string, withTrash TrashStatus) (*float64, error) {
 	defer q.clearParameter()
 
+	var result float64
+
 	err := q.handleNilModel()
 	if nil != err {
 		return nil, err
 	}
 
-	var result float64
+	err = q.autoBegin()
+	if nil != err {
+		return nil, err
+	}
 
 	stmt, args, err := q.prepareSelect(aggregate, column, NO_TRASH)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
 	err = stmt.Get(&result, args)
 	if nil != err {
+		q.autoRollback()
 		return nil, err
 	}
 
+	q.autoCommit()
 	return &result, nil
 }
 
@@ -660,6 +746,17 @@ func (q *Query) bulkPayload(data []interface{}) map[string]interface{} {
 		}
 	}
 	return payloads
+}
+
+// autoBegin is a function that will automatically begin a transaction for a query if the Query instance
+// is set using sqlx.DB not sqlx.Tx
+func (q *Query) autoBegin() error {
+	var err error
+	if q.AutoCommit && nil != q.Db {
+		q.Tx, err = q.Db.Beginx()
+		return err
+	}
+	return nil
 }
 
 // autoCommit is a function that will automatically commit a query if the Query instance is set using
