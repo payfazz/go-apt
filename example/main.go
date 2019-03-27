@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/payfazz/go-apt/example/config"
+	"github.com/payfazz/go-apt/config"
 	"github.com/payfazz/go-apt/example/model"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"log"
