@@ -1,13 +1,15 @@
 package model
 
-import "github.com/payfazz/go-apt/pkg/fazzdb"
+import (
+	"github.com/payfazz/go-apt/pkg/fazzdb"
+)
 
 type Student struct {
-	*fazzdb.Model
-	Id      int    `db:"id"`
-	Name    string `db:"name"`
-	Address string `db:"address"`
-	Age     int    `db:"age"`
+	fazzdb.Model
+	Id        int        `db:"id"`
+	Name      string     `db:"name"`
+	Address   string     `db:"address"`
+	Age       int        `db:"age"`
 }
 
 func (s *Student) Get(key string) interface{} {
@@ -32,6 +34,6 @@ func NewStudent() *Student {
 		true,
 	)
 	return &Student{
-		Model: model,
+		Model: *model,
 	}
 }

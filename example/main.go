@@ -19,14 +19,15 @@ func main() {
 	//query := fazzdb.QueryTx(tx, config.Db)
 	query := fazzdb.QueryDb(db, config.Db)
 
-	Insert(query)
+	//Insert(query)
 	//RawFirst(query)
 	//RawAll(query)
-	student := SelectOne(query)
+	//student := SelectOne(query)
 	//Delete(query, student)
-	Update(query, student)
+	//Update(query, student)
 
 	SelectAll(query)
+	//SelectOne(query)
 
 	_ = tx.Commit()
 }
@@ -143,7 +144,7 @@ func SelectOne(query *fazzdb.Query) *model.Student {
 	}
 
 	student := result.(model.Student)
-	fmt.Printf("%d - %s - %s - %d\n", student.Id, student.Name, student.Address, student.Age)
+	fmt.Printf("%d - %s - %s - %d - %s\n", student.Id, student.Name, student.Address, student.Age, student.CreatedAt)
 
 	return &student
 }
@@ -191,7 +192,8 @@ func SelectAll(query *fazzdb.Query) {
 
 	students := results.([]model.Student)
 	for _, s := range students {
-		fmt.Printf("%d - %s - %s - %d\n", s.Id, s.Name, s.Address, s.Age)
+		fmt.Printf("%d - %s - %s - %d - %s\n", s.Id, s.Name, s.Address, s.Age, s.CreatedAt)
+		//fmt.Println(reflect.TypeOf(s.CreatedAt))
 	}
 }
 
@@ -213,7 +215,7 @@ func SelectMany(query *fazzdb.Query) {
 
 	students := results.([]model.Student)
 	for _, s := range students {
-		fmt.Printf("%d - %s - %s - %d\n", s.Id, s.Name, s.Address, s.Age)
+		fmt.Printf("%d - %s - %s - %d - %s - %s - %s\n", s.Id, s.Name, s.Address, s.Age, s.CreatedAt, s.UpdatedAt, s.DeletedAt)
 	}
 }
 

@@ -14,6 +14,12 @@ type ModelInterface interface {
 	GetModel() *Model
 	// GetTable is a function that will return the table name of the Model instance
 	GetTable() string
+	// GetCreatedAt is a function that will return createdAt value
+	GetCreatedAt() *time.Time
+	// GetUpdatedAt is a function that will return updatedAt value
+	GetUpdatedAt() *time.Time
+	// GetDeletedAt is a function that will return deletedAt value
+	GetDeletedAt() *time.Time
 	// GetColumns is a function that will return the slice of columns of the Model instance
 	GetColumns() []string
 	// GetPK is a function that will return the primary key field name of the Model instance
@@ -151,6 +157,21 @@ func (m *Model) GetTable() string {
 	return m.Table
 }
 
+// GetCreatedAt is a function that will return createdAt value
+func (m *Model) GetCreatedAt() *time.Time {
+	return m.CreatedAt
+}
+
+// GetUpdatedAt is a function that will return updatedAt value
+func (m *Model) GetUpdatedAt() *time.Time {
+	return m.UpdatedAt
+}
+
+// GetDeletedAt is a function that will return deletedAt value
+func (m *Model) GetDeletedAt() *time.Time {
+	return m.DeletedAt
+}
+
 // GetColumns is a function that will return the slice of columns of the Model instance
 func (m *Model) GetColumns() []string {
 	return m.Columns
@@ -214,7 +235,7 @@ func (m *Model) MapPayload(v interface{}) map[string]interface{} {
 
 	for i := 0; i < classType.NumField(); i++ {
 		if classType.Field(i).Name == "Model" {
-			model := classValue.Field(i).Interface().(*Model)
+			model := classValue.Field(i).Interface().(Model)
 			if model.IsTimestamps() {
 				results[CREATED_AT] = model.CreatedAt
 				results[UPDATED_AT] = model.UpdatedAt

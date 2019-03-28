@@ -540,7 +540,7 @@ func (q *Query) AppendCondition(connector Connector, key string, operator Operat
 
 // assignModelSlices is a function that will assign Model attribute based on current model used
 // to a slices of model of database results
-func (q *Query) assignModelSlices(results interface{}, m *Model) interface{} {
+func (q *Query) assignModelSlices(results interface{}, m Model) interface{} {
 	slice := reflect.ValueOf(results).Elem().Interface()
 	sVal := reflect.ValueOf(slice)
 	for i := 0; i < sVal.Len(); i++ {
@@ -552,12 +552,29 @@ func (q *Query) assignModelSlices(results interface{}, m *Model) interface{} {
 
 // assignModel is a function that will assign Model attribute based on current model used
 // to a slices of model of database results
-func (q *Query) assignModel(result interface{}, m *Model) interface{} {
+func (q *Query) assignModel(result interface{}, m Model) interface{} {
 	value := reflect.ValueOf(result).Interface()
-	model := reflect.ValueOf(&m).Elem()
+
+	timeModel := q.modelWithTime(value.(ModelInterface), m)
+	model := reflect.ValueOf(timeModel)
+
 	complete := reflect.ValueOf(value).Elem()
 	complete.FieldByName("Model").Set(model)
+
 	return complete.Interface()
+}
+
+// modelWithTime is a function that will return a model with assigned createdAt, updatedAt, and deletedAt
+func (q *Query) modelWithTime(mi ModelInterface, m Model) Model {
+	if m.IsTimestamps() {
+		m.CreatedAt = mi.GetCreatedAt()
+		m.UpdatedAt = mi.GetUpdatedAt()
+	}
+	if m.IsSoftDelete() {
+		m.DeletedAt = mi.GetDeletedAt()
+	}
+
+	return m
 }
 
 // first is a function that will get the one result from a query
@@ -594,7 +611,7 @@ func (q *Query) first(withTrash TrashStatus) (interface{}, error) {
 	}
 
 	q.autoCommit()
-	return q.assignModel(result, q.Model.GetModel()), nil
+	return q.assignModel(result, *q.Model.GetModel()), nil
 }
 
 // all is a function that will get multiple result from a query
@@ -630,7 +647,7 @@ func (q *Query) all(withTrash TrashStatus) (interface{}, error) {
 	}
 
 	q.autoCommit()
-	return q.assignModelSlices(results, q.Model.GetModel()), nil
+	return q.assignModelSlices(results, *q.Model.GetModel()), nil
 }
 
 // aggregate is a function that will return aggregate value of a column
@@ -806,3 +823,4 @@ func (q *Query) makeSliceOf(sample interface{}) (interface{}, error) {
 	element := reflect.TypeOf(sample).Elem()
 	return reflect.New(reflect.SliceOf(element)).Interface(), nil
 }
+
