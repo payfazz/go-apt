@@ -57,3 +57,9 @@ const (
 	WITH_TRASH TrashStatus = true
 	NO_TRASH   TrashStatus = false
 )
+
+const (
+	CREATED_AT = "createdAt"
+	UPDATED_AT = "updatedAt"
+	DELETED_AT = "deletedAt"
+)

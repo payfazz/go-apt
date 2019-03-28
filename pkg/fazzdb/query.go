@@ -668,7 +668,7 @@ func (q *Query) aggregate(aggregate Aggregate, column string, withTrash TrashSta
 // prepareSelect is a function that will return query statement as NamedStmt and parsed payload as a map[string]interface
 func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withTrash TrashStatus) (*sqlx.NamedStmt, map[string]interface{}, error) {
 	if q.Model.IsSoftDelete() && withTrash == NO_TRASH {
-		q.WhereNil("deletedAt")
+		q.WhereNil(DELETED_AT)
 	}
 
 	if len(q.Parameter.Orders) == 0 {

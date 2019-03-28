@@ -216,11 +216,11 @@ func (m *Model) MapPayload(v interface{}) map[string]interface{} {
 		if classType.Field(i).Name == "Model" {
 			model := classValue.Field(i).Interface().(*Model)
 			if model.IsTimestamps() {
-				results["createdAt"] = model.CreatedAt
-				results["updatedAt"] = model.UpdatedAt
+				results[CREATED_AT] = model.CreatedAt
+				results[UPDATED_AT] = model.UpdatedAt
 			}
 			if model.IsSoftDelete() {
-				results["deletedAt"] = model.DeletedAt
+				results[DELETED_AT] = model.DeletedAt
 			}
  		} else {
 			results[m.toLowerFirst(classType.Field(i).Name)] = classValue.Field(i).Interface()
@@ -256,8 +256,8 @@ func (m *Model) recovered() {
 // Columns attribute in Model instance
 func (m *Model) handleTimestamp() {
 	if m.IsTimestamps() {
-		m.Columns = append(m.Columns, "createdAt")
-		m.Columns = append(m.Columns, "updatedAt")
+		m.Columns = append(m.Columns, CREATED_AT)
+		m.Columns = append(m.Columns, UPDATED_AT)
 	}
 }
 
@@ -265,7 +265,7 @@ func (m *Model) handleTimestamp() {
 // Columns attribute in Model instance
 func (m *Model) handleSoftDelete() {
 	if m.IsSoftDelete() {
-		m.Columns = append(m.Columns, "deletedAt")
+		m.Columns = append(m.Columns, DELETED_AT)
 	}
 }
 

@@ -17,7 +17,7 @@ func (b *Builder) BuildDelete(m ModelInterface, param *Parameter) string {
 // BuildUpdate is a function that will return delete query from given model and parameter
 func (b *Builder) BuildUpdate(m ModelInterface, param *Parameter) string {
 	query := fmt.Sprintf("UPDATE %s SET", m.GetTable())
-	query = b.generateValues(query, m, b.isPrimaryKey, b.generateUpdateColumns)
+	query = b.generateValues(query, m, b.isPrimaryKeyOrCreatedAt, b.generateUpdateColumns)
 	query = b.generateConditions(query, param)
 	query = fmt.Sprintf("%s;", query)
 	return query
@@ -123,8 +123,8 @@ func (b *Builder) isAutoIncrementPrimaryKey(column string, m ModelInterface) boo
 }
 
 // isPrimaryKey is a function that will skip id column when building query
-func (b *Builder) isPrimaryKey(column string, m ModelInterface) bool {
-	return column == m.GetPK()
+func (b *Builder) isPrimaryKeyOrCreatedAt(column string, m ModelInterface) bool {
+	return column == m.GetPK() || column == CREATED_AT
 }
 
 // generateInsertValues is a function that will generate insert arguments for query
