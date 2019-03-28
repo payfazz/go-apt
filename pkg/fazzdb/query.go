@@ -52,7 +52,7 @@ func (q *Query) RawExec(query string, payload ...interface{}) (bool, error) {
 		return false, err
 	}
 
-	_, err = q.Tx.Exec(query, payload)
+	_, err = q.Tx.Exec(query, payload...)
 	if nil != err {
 		q.autoRollback()
 		return false, err
