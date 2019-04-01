@@ -15,7 +15,7 @@ func QueryDb(db *sqlx.DB, config Config) *Query {
 		Config:     config,
 		Parameter:  NewParameter(config),
 		Model:      nil,
-		Builder:    &Builder{},
+		Builder:    NewBuilder(),
 		Db:         db,
 		AutoCommit: true,
 	}
@@ -28,7 +28,7 @@ func QueryTx(tx *sqlx.Tx, config Config) *Query {
 		Config:     config,
 		Parameter:  NewParameter(config),
 		Model:      nil,
-		Builder:    &Builder{},
+		Builder:    NewBuilder(),
 		Tx:         tx,
 		AutoCommit: false,
 	}
@@ -666,7 +666,7 @@ func (q *Query) aggregate(aggregate Aggregate, column string, withTrash TrashSta
 		return nil, err
 	}
 
-	stmt, args, err := q.prepareSelect(aggregate, column, NO_TRASH)
+	stmt, args, err := q.prepareSelect(aggregate, column, withTrash)
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -688,7 +688,7 @@ func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withT
 		q.WhereNil(DELETED_AT)
 	}
 
-	if len(q.Parameter.Orders) == 0 {
+	if len(q.Parameter.Orders) == 0 && AG_NONE == aggregate {
 		q.OrderBy(q.Model.GetPK(), DIR_ASC)
 	}
 

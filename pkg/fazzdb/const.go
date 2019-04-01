@@ -30,13 +30,13 @@ const (
 const (
 	CO_AND   Connector = "AND"
 	CO_OR    Connector = "OR"
-	CO_EMPTY Connector = ""
+	CO_NONE Connector = ""
 )
 
 const (
 	LO_FOR_SHARE  Lock = "FOR SHARE"
 	LO_FOR_UPDATE Lock = "FOR UPDATE"
-	LO_EMPTY      Lock = ""
+	LO_NONE      Lock = ""
 )
 
 const (

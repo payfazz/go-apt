@@ -45,7 +45,7 @@ func (p *Parameter) appendConditionFromParameter(param *Parameter, connector Con
 	}
 	for i, condition := range param.Conditions {
 		if i == 0 {
-			condition.Connector = CO_EMPTY
+			condition.Connector = CO_NONE
 		}
 		conditionParent.Conditions = append(conditionParent.Conditions, condition)
 	}
@@ -57,7 +57,7 @@ func (p *Parameter) appendConditionFromParameter(param *Parameter, connector Con
 	}
 	for i, having := range param.Havings {
 		if i == 0 {
-			having.Connector = CO_EMPTY
+			having.Connector = CO_NONE
 		}
 		havingParent.Conditions = append(havingParent.Conditions, having)
 	}

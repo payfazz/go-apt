@@ -2,7 +2,20 @@ package fazzdb
 
 import (
 	"fmt"
+	"sync"
 )
+
+var once sync.Once
+var singleton *Builder
+
+// NewBuilder is a constructor to retrieve instance of builder
+func NewBuilder() *Builder {
+	once.Do(func() {
+		singleton = &Builder{}
+	})
+
+	return singleton
+}
 
 type Builder struct {}
 
@@ -192,7 +205,7 @@ func (b *Builder) generateValues(
 // generateConditions is a function that will generate condition based on given parameter
 func (b *Builder) generateConditions(query string, param *Parameter) string {
 	if len(param.Conditions) > 0 {
-		param.Conditions[0].Connector = CO_EMPTY
+		param.Conditions[0].Connector = CO_NONE
 
 		query = fmt.Sprintf("%s WHERE", query)
 		for _, cond := range param.Conditions {
