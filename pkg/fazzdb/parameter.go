@@ -20,8 +20,9 @@ type Parameter struct {
 	Conditions []Condition
 	Havings    []Condition
 	Values     map[string]interface{}
+	Columns    []Column
 	Orders     []Order
-	Groups     []string
+	Groups     []Column
 	Lock       Lock
 	Limit      int
 	Offset     int
@@ -40,28 +41,32 @@ func (p *Parameter) appendGroupHavings(param *Parameter, connector Connector) *P
 // appendConditionFromParameter is a function that append both Conditions and Havings if available
 func (p *Parameter) appendConditionFromParameter(param *Parameter, connector Connector) *Parameter {
 	// Append Condition
-	conditionParent := Condition{
-		Connector: connector,
-	}
-	for i, condition := range param.Conditions {
-		if i == 0 {
-			condition.Connector = CO_NONE
+	if len(param.Conditions) > 0 {
+		conditionParent := Condition{
+			Connector: connector,
 		}
-		conditionParent.Conditions = append(conditionParent.Conditions, condition)
+		for i, condition := range param.Conditions {
+			if i == 0 {
+				condition.Connector = CO_NONE
+			}
+			conditionParent.Conditions = append(conditionParent.Conditions, condition)
+		}
+		p.Conditions = append(p.Conditions, conditionParent)
 	}
-	p.Conditions = append(p.Conditions, conditionParent)
 
 	// Append Having
-	havingParent := Condition{
-		Connector: connector,
-	}
-	for i, having := range param.Havings {
-		if i == 0 {
-			having.Connector = CO_NONE
+	if len(param.Havings) > 0 {
+		havingParent := Condition{
+			Connector: connector,
 		}
-		havingParent.Conditions = append(havingParent.Conditions, having)
+		for i, having := range param.Havings {
+			if i == 0 {
+				having.Connector = CO_NONE
+			}
+			havingParent.Conditions = append(havingParent.Conditions, having)
+		}
+		p.Havings = append(p.Havings, havingParent)
 	}
-	p.Havings = append(p.Havings, havingParent)
 
 	// Append Values
 	for i, value := range param.Values {
@@ -73,16 +78,14 @@ func (p *Parameter) appendConditionFromParameter(param *Parameter, connector Con
 
 // appendCondition is a function to append single condition to Conditions attribute
 func (p *Parameter) appendCondition(
-	table string,
 	connector Connector,
-	key string,
+	field Column,
 	operator Operator,
 	value interface{},
 ) *Parameter {
 	prefix := p.getPrefix()
 	p.Conditions = append(p.Conditions, Condition{
-		Table:     table,
-		Key:       key,
+		Field:     field,
 		Operator:  operator,
 		Connector: connector,
 		Prefix:    prefix,
@@ -98,16 +101,14 @@ func (p *Parameter) appendCondition(
 
 // appendHaving is a function to append single having to Havings attribute
 func (p *Parameter) appendHaving(
-	table string,
 	connector Connector,
-	key string,
+	field Column,
 	operator Operator,
 	value interface{},
 ) *Parameter {
 	prefix := p.getPrefix()
 	p.Havings = append(p.Havings, Condition{
-		Table:     table,
-		Key:       key,
+		Field:     field,
 		Operator:  operator,
 		Connector: connector,
 		Prefix:    prefix,
@@ -117,18 +118,23 @@ func (p *Parameter) appendHaving(
 }
 
 // appendOrderBy is a function to append order by column to Orders attribute
-func (p *Parameter) appendOrderBy(table string, key string, direction OrderDirection) *Parameter {
+func (p *Parameter) appendOrderBy(table string, field Column, direction OrderDirection) *Parameter {
 	p.Orders = append(p.Orders, Order{
-		Table:     table,
-		Key:       key,
+		Field:     field,
 		Direction: direction,
 	})
 	return p
 }
 
 // appendGroupBy is a function to append group by column to Groups attribute
-func (p *Parameter) appendGroupBy(column string) *Parameter {
+func (p *Parameter) appendGroupBy(column Column) *Parameter {
 	p.Groups = append(p.Groups, column)
+	return p
+}
+
+// setColumns is a function to assign Columns attribute with given parameter
+func (p *Parameter) setColumns(columns []Column) *Parameter {
+	p.Columns = columns
 	return p
 }
 

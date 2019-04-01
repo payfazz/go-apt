@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strings"
 	"time"
-	"unicode"
 )
 
 // ModelInterface is an interface that will be used to get model information and used in various task by Query instance
@@ -21,7 +20,7 @@ type ModelInterface interface {
 	// GetDeletedAt is a function that will return deletedAt value
 	GetDeletedAt() *time.Time
 	// GetColumns is a function that will return the slice of columns of the Model instance
-	GetColumns() []string
+	GetColumns() []Column
 	// GetPK is a function that will return the primary key field name of the Model instance
 	GetPK() string
 	// Get is a function that MUST be overridden by all model, if it's not overridden it will panic.
@@ -56,18 +55,18 @@ type ModelInterface interface {
 }
 
 // UuidModel is a constructor that is used to initialize a new model with uuid as primary key
-func UuidModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
+func UuidModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) *Model {
 	return newModel(table, columns, primaryKey, timestamps, softDelete, true, false)
 }
 
 // PlainModel is a constructor that is used to initialize a new model with primary key that is neither
 // uuid or autoincrement
-func PlainModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
+func PlainModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) *Model {
 	return newModel(table, columns, primaryKey, timestamps, softDelete, false, false)
 }
 
 // AutoIncrementModel is a constructor that is used to initialize a new model with autoincrement primary key
-func AutoIncrementModel(table string, columns []string, primaryKey string, timestamps bool, softDelete bool) *Model {
+func AutoIncrementModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) *Model {
 	return newModel(table, columns, primaryKey, timestamps, softDelete, false, true)
 }
 
@@ -75,7 +74,7 @@ func AutoIncrementModel(table string, columns []string, primaryKey string, times
 // uuid / plain / autoincrement model
 func newModel(
 	table string,
-	columns []string,
+	columns []Column,
 	primaryKey string,
 	timestamps bool,
 	softDelete bool,
@@ -102,7 +101,7 @@ func newModel(
 // SoftDelete field that will be available if it's needed and ignored when not needed
 type Model struct {
 	Table         string
-	Columns       []string
+	Columns       []Column
 	PrimaryKey    string
 	Uuid          bool
 	AutoIncrement bool
@@ -173,7 +172,7 @@ func (m *Model) GetDeletedAt() *time.Time {
 }
 
 // GetColumns is a function that will return the slice of columns of the Model instance
-func (m *Model) GetColumns() []string {
+func (m *Model) GetColumns() []Column {
 	return m.Columns
 }
 
@@ -244,7 +243,7 @@ func (m *Model) MapPayload(v interface{}) map[string]interface{} {
 				results[DELETED_AT] = model.DeletedAt
 			}
  		} else {
-			results[m.toLowerFirst(classType.Field(i).Name)] = classValue.Field(i).Interface()
+			results[toLowerFirst(classType.Field(i).Name)] = classValue.Field(i).Interface()
 		}
 	}
 	return results
@@ -277,8 +276,8 @@ func (m *Model) recovered() {
 // Columns attribute in Model instance
 func (m *Model) handleTimestamp() {
 	if m.IsTimestamps() {
-		m.Columns = append(m.Columns, CREATED_AT)
-		m.Columns = append(m.Columns, UPDATED_AT)
+		m.Columns = append(m.Columns, Col(CREATED_AT))
+		m.Columns = append(m.Columns, Col(UPDATED_AT))
 	}
 }
 
@@ -286,14 +285,6 @@ func (m *Model) handleTimestamp() {
 // Columns attribute in Model instance
 func (m *Model) handleSoftDelete() {
 	if m.IsSoftDelete() {
-		m.Columns = append(m.Columns, DELETED_AT)
+		m.Columns = append(m.Columns, Col(DELETED_AT))
 	}
-}
-
-// toLowerFirst is a function that will change the first character of a string into a lowercase letter
-func (m *Model) toLowerFirst(str string) string {
-	for i, v := range str {
-		return string(unicode.ToLower(v)) + str[i+1:]
-	}
-	return str
 }

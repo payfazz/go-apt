@@ -6,8 +6,7 @@ import (
 
 // Condition is a struct that will handle condition when building query
 type Condition struct {
-	Table      string
-	Key        string
+	Field      Column
 	Prefix     string
 	Operator   Operator
 	Connector  Connector
@@ -15,31 +14,32 @@ type Condition struct {
 }
 
 // QueryString is a function to build query based on given attributes
-func (c *Condition) QueryString() string {
+func (c *Condition) QueryString(table string) string {
 	if len(c.Conditions) > 0 {
 		var query = fmt.Sprintf("%s (", c.Connector)
 		for _, cond := range c.Conditions {
-			query = fmt.Sprintf("%s %s", query, cond.namedString())
+			query = fmt.Sprintf("%s %s", query, cond.namedString(table))
 		}
 		query = fmt.Sprintf("%s )", query)
 		return query
 	}
 
-	return c.namedString()
+	return c.namedString(table)
 }
 
 // namedString is a function to build condition query based on different operator
-func (c *Condition) namedString() string {
+func (c *Condition) namedString(table string) string {
 	query := ""
+	key := c.Field.ToString(table)
 	switch c.Operator {
 	case OP_IS_NOT_NULL:
 		fallthrough
 	case OP_IS_NULL:
-		query = fmt.Sprintf("%s \"%s\".\"%s\" %s", c.Connector, c.Table, c.Key, c.Operator)
+		query = fmt.Sprintf("%s %s %s", c.Connector, key, c.Operator)
 	case OP_IN:
-		query = fmt.Sprintf("%s \"%s\".\"%s\" %s (:%s)", c.Connector, c.Table, c.Key, c.Operator, c.Prefix)
+		query = fmt.Sprintf("%s %s %s (:%s)", c.Connector, key, c.Operator, c.Prefix)
 	default:
-		query = fmt.Sprintf("%s \"%s\".\"%s\" %s :%s", c.Connector, c.Table, c.Key, c.Operator, c.Prefix)
+		query = fmt.Sprintf("%s %s %s :%s", c.Connector, key, c.Operator, c.Prefix)
 	}
 	return query
 }

@@ -23,9 +23,9 @@ func (s *Uid) Payload() map[string]interface{} {
 func NewUid() *Uid {
 	model := fazzdb.UuidModel(
 		"uids",
-		[]string{
-			"id",
-			"data",
+		[]fazzdb.Column{
+			fazzdb.Col("id"),
+			fazzdb.Col("data"),
 		},
 		"id",
 		false,

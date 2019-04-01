@@ -23,11 +23,11 @@ func (s *Student) Payload() map[string]interface{} {
 func NewStudent() *Student {
 	model := fazzdb.AutoIncrementModel(
 		"students",
-		[]string{
-			"id",
-			"name",
-			"address",
-			"age",
+		[]fazzdb.Column{
+			fazzdb.Col("id"),
+			fazzdb.Col("name"),
+			fazzdb.Col("address"),
+			fazzdb.Col("age"),
 		},
 		"id",
 		true,

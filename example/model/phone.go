@@ -19,9 +19,9 @@ func (s *Phone) Payload() map[string]interface{} {
 func NewPhone() *Phone {
 	model := fazzdb.AutoIncrementModel(
 		"phones",
-		[]string{
-			"id",
-			"num",
+		[]fazzdb.Column{
+			fazzdb.Col("id"),
+			fazzdb.Col("num"),
 		},
 		"id",
 		false,

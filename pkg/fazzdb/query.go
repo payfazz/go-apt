@@ -436,6 +436,12 @@ func (q *Query) Use(m ModelInterface) *Query {
 	return q
 }
 
+// Columns is a function that will assign Columns in query parameter using given values
+func (q *Query) Columns(columns ...Column) *Query {
+	q.Parameter.setColumns(columns)
+	return q
+}
+
 // Where is a function that will add new condition that will check if column equals value given, connector
 // that is used between condition is AND connector
 func (q *Query) Where(key string, value interface{}) *Query {
@@ -502,14 +508,62 @@ func (q *Query) OrGroupWhere(conditionFunc func(query *Query) *Query) *Query {
 	return q
 }
 
+// Having is a function that will add new condition that will check if aggregate equals value given, connector
+// that is used between condition is AND connector
+func (q *Query) Having(key Column, value interface{}) *Query {
+	return q.AppendHaving(CO_AND, key, OP_EQUALS, value)
+}
+
+// HavingOp is a function that will add new condition that will check if aggregate fulfill operator with value given,
+// connector that is used between condition is AND connector
+func (q *Query) HavingOp(key Column, operator Operator, value interface{}) *Query {
+	return q.AppendHaving(CO_AND, key, operator, value)
+}
+
+// OrHaving is a function that will add new condition that will check if aggregate equals value given, connector
+// that is used between condition is OR connector
+func (q *Query) OrHaving(key Column, value interface{}) *Query {
+	return q.AppendHaving(CO_OR, key, OP_EQUALS, value)
+}
+
+// OrHavingOp is a function that will add new condition that will check if aggregate fulfill operator with value given,
+// connector that is used between condition is OR connector
+func (q *Query) OrHavingOp(key Column, operator Operator, value interface{}) *Query {
+	return q.AppendHaving(CO_OR, key, operator, value)
+}
+
+// GroupWhere is a function that will receive a function that return a group of condition to be grouped
+// together, connector that is used between condition is AND connector
+func (q *Query) GroupHaving(conditionFunc func(query *Query) *Query) *Query {
+	query := QueryTx(q.Tx, q.Config).Use(q.Model)
+	param := conditionFunc(query).Parameter
+	q.appendGroupHavings(param, CO_AND)
+	return q
+}
+
+// OrGroupWhere is a function that will receive a function that return a group of condition to be grouped
+// together, connector that is used between condition is OR connector
+func (q *Query) OrGroupHaving(conditionFunc func(query *Query) *Query) *Query {
+	query := QueryTx(q.Tx, q.Config).Use(q.Model)
+	param := conditionFunc(query).Parameter
+	q.appendGroupHavings(param, CO_OR)
+	return q
+}
+
 // GroupBy is a function that will add new group by column
 func (q *Query) GroupBy(column string) *Query {
-	q.appendGroupBy(column)
+	q.appendGroupBy(Col(column))
 	return q
 }
 
 // OrderBy is a function that will add new order by column with direction
 func (q *Query) OrderBy(key string, direction OrderDirection) *Query {
+	q.appendOrderBy(q.Model.GetTable(), Col(key), direction)
+	return q
+}
+
+// OrderByAggregate is a function that will add new order by aggregate column with direction
+func (q *Query) OrderByAggregate(key Column, direction OrderDirection) *Query {
 	q.appendOrderBy(q.Model.GetTable(), key, direction)
 	return q
 }
@@ -534,47 +588,14 @@ func (q *Query) WithLock(lock Lock) *Query {
 
 // AppendCondition is a wrapper function for appendCondition
 func (q *Query) AppendCondition(connector Connector, key string, operator Operator, value interface{}) *Query {
-	q.appendCondition(q.Model.GetTable(), connector, key, operator, value)
+	q.appendCondition(connector, Col(key), operator, value)
 	return q
 }
 
-// assignModelSlices is a function that will assign Model attribute based on current model used
-// to a slices of model of database results
-func (q *Query) assignModelSlices(results interface{}, m Model) interface{} {
-	slice := reflect.ValueOf(results).Elem().Interface()
-	sVal := reflect.ValueOf(slice)
-	for i := 0; i < sVal.Len(); i++ {
-		assigned := q.assignModel(sVal.Index(i).Addr().Interface(), m)
-		sVal.Index(i).Set(reflect.ValueOf(assigned))
-	}
-	return sVal.Interface()
-}
-
-// assignModel is a function that will assign Model attribute based on current model used
-// to a slices of model of database results
-func (q *Query) assignModel(result interface{}, m Model) interface{} {
-	value := reflect.ValueOf(result).Interface()
-
-	timeModel := q.modelWithTime(value.(ModelInterface), m)
-	model := reflect.ValueOf(timeModel)
-
-	complete := reflect.ValueOf(value).Elem()
-	complete.FieldByName("Model").Set(model)
-
-	return complete.Interface()
-}
-
-// modelWithTime is a function that will return a model with assigned createdAt, updatedAt, and deletedAt
-func (q *Query) modelWithTime(mi ModelInterface, m Model) Model {
-	if m.IsTimestamps() {
-		m.CreatedAt = mi.GetCreatedAt()
-		m.UpdatedAt = mi.GetUpdatedAt()
-	}
-	if m.IsSoftDelete() {
-		m.DeletedAt = mi.GetDeletedAt()
-	}
-
-	return m
+// AppendHaving is a wrapper function for appendHaving
+func (q *Query) AppendHaving(connector Connector, key Column, operator Operator, value interface{}) *Query {
+	q.appendHaving(connector, key, operator, value)
+	return q
 }
 
 // first is a function that will get the one result from a query
@@ -688,7 +709,7 @@ func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withT
 		q.WhereNil(DELETED_AT)
 	}
 
-	if len(q.Parameter.Orders) == 0 && AG_NONE == aggregate {
+	if len(q.Parameter.Orders) == 0 && len(q.Parameter.Groups) == 0 && AG_NONE == aggregate {
 		q.OrderBy(q.Model.GetPK(), DIR_ASC)
 	}
 
@@ -730,7 +751,7 @@ func (q *Query) bindIn(query string) string {
 func (q *Query) setPKCondition() {
 	pkConditionExist := false
 	for _, condition := range q.Conditions {
-		if condition.Key == q.Model.GetPK() {
+		if condition.Field.Key == q.Model.GetPK() {
 			pkConditionExist = true
 			break
 		}
@@ -804,6 +825,45 @@ func (q *Query) handleNilModel() error {
 // clearParameter is a function that will clear all condition to prepare query for the next use
 func (q *Query) clearParameter() {
 	q.Parameter = NewParameter(q.Config)
+}
+
+// assignModelSlices is a function that will assign Model attribute based on current model used
+// to a slices of model of database results
+func (q *Query) assignModelSlices(results interface{}, m Model) interface{} {
+	slice := reflect.ValueOf(results).Elem().Interface()
+	sVal := reflect.ValueOf(slice)
+	for i := 0; i < sVal.Len(); i++ {
+		assigned := q.assignModel(sVal.Index(i).Addr().Interface(), m)
+		sVal.Index(i).Set(reflect.ValueOf(assigned))
+	}
+	return sVal.Interface()
+}
+
+// assignModel is a function that will assign Model attribute based on current model used
+// to a slices of model of database results
+func (q *Query) assignModel(result interface{}, m Model) interface{} {
+	value := reflect.ValueOf(result).Interface()
+
+	timeModel := q.modelWithTime(value.(ModelInterface), m)
+	model := reflect.ValueOf(timeModel)
+
+	complete := reflect.ValueOf(value).Elem()
+	complete.FieldByName("Model").Set(model)
+
+	return complete.Interface()
+}
+
+// modelWithTime is a function that will return a model with assigned createdAt, updatedAt, and deletedAt
+func (q *Query) modelWithTime(mi ModelInterface, m Model) Model {
+	if m.IsTimestamps() {
+		m.CreatedAt = mi.GetCreatedAt()
+		m.UpdatedAt = mi.GetUpdatedAt()
+	}
+	if m.IsSoftDelete() {
+		m.DeletedAt = mi.GetDeletedAt()
+	}
+
+	return m
 }
 
 // makeTypeOf is a function to create a new instance of sample Type to make First method immutable
