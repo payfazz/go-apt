@@ -2,6 +2,7 @@ package fazzdb
 
 import "fmt"
 
+// Col is a constructor for creating plain column
 func Col(column string) Column {
 	return Column{
 		Key:       column,
@@ -9,6 +10,7 @@ func Col(column string) Column {
 	}
 }
 
+// Avg is a constructor for creating avg column
 func Avg(column string) Column {
 	return Column{
 		Key:       column,
@@ -16,6 +18,7 @@ func Avg(column string) Column {
 	}
 }
 
+// Count is a constructor for creating count column
 func Count(column string) Column {
 	return Column{
 		Key:       column,
@@ -23,6 +26,7 @@ func Count(column string) Column {
 	}
 }
 
+// Sum is a constructor for creating sum column
 func Sum(column string) Column {
 	return Column{
 		Key:       column,
@@ -30,6 +34,7 @@ func Sum(column string) Column {
 	}
 }
 
+// Min is a constructor for creating min column
 func Min(column string) Column {
 	return Column{
 		Key:       column,
@@ -37,6 +42,7 @@ func Min(column string) Column {
 	}
 }
 
+// Max is a constructor for creating max column
 func Max(column string) Column {
 	return Column{
 		Key:       column,
@@ -44,11 +50,13 @@ func Max(column string) Column {
 	}
 }
 
+// Column is a struct that is used to contain key and aggregate attribute for each column
 type Column struct {
 	Key       string
 	Aggregate Aggregate
 }
 
+// ToString is a function that wrap toString function
 func (c *Column) ToString(table string) string {
 	return toString(table, *c)
 }
@@ -59,10 +67,12 @@ type Order struct {
 	Direction OrderDirection
 }
 
+// ToString is a function that wrap toString function
 func (o *Order) ToString(table string) string {
 	return toString(table, o.Field)
 }
 
+// toString is a function that will handle building column query by given parameter
 func toString(table string, c Column) string {
 	result := fmt.Sprintf(`"%s"."%s"`, table, c.Key)
 	if "" == table {
