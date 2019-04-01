@@ -4,8 +4,8 @@ Simple ORM for golang
 
 Task:
 - [ ] Documentation and others
-  - [ ] Godoc
-  - [ ] Unit Test
+  - [x] Godoc
+  - [x] Unit Test
   - [ ] Jenkins Build Status
   - [ ] Test Coverage
 - [x] Prepared Statement & Named Query
@@ -20,8 +20,8 @@ Task:
   - [x] Order By
   - [x] Limit
   - [x] Raw Query
-  - [ ] Group By [NOT TESTED]
-  - [ ] Having [NOT TESTED]
+  - [x] Group By
+  - [x] Having
   - [ ] Join
 - [x] Exec Query
   - [x] Bulk Insert
