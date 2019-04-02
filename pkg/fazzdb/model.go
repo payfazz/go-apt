@@ -1,6 +1,7 @@
 package fazzdb
 
 import (
+	"github.com/payfazz/go-apt/pkg/fazzcommon"
 	"github.com/satori/go.uuid"
 	"reflect"
 	"strings"
@@ -243,7 +244,7 @@ func (m *Model) MapPayload(v interface{}) map[string]interface{} {
 				results[DELETED_AT] = model.DeletedAt
 			}
  		} else {
-			results[toLowerFirst(classType.Field(i).Name)] = classValue.Field(i).Interface()
+			results[fazzcommon.ToLowerFirst(classType.Field(i).Name)] = classValue.Field(i).Interface()
 		}
 	}
 	return results
