@@ -1,6 +1,7 @@
 package fazzdb
 
 import (
+	"context"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"reflect"
@@ -47,12 +48,22 @@ type Query struct {
 
 // RawExec is a function that will run exec to a raw query with provided payload
 func (q *Query) RawExec(query string, payload ...interface{}) (bool, error) {
+	return q.RawExecCtx(nil, query, payload...)
+}
+
+// RawExecCtx is a function that will run exec to a raw query with provided payload using Context
+func (q *Query) RawExecCtx(ctx context.Context, query string, payload ...interface{}) (bool, error) {
 	err := q.autoBegin()
 	if nil != err {
 		return false, err
 	}
 
-	_, err = q.Tx.Exec(query, payload...)
+	if nil == ctx {
+		_, err = q.Tx.Exec(query, payload...)
+	} else {
+		_, err = q.Tx.ExecContext(ctx, query, payload...)
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return false, err
@@ -64,6 +75,11 @@ func (q *Query) RawExec(query string, payload ...interface{}) (bool, error) {
 
 // RawFirst is a function that will run raw query that return only one result with provided payload
 func (q *Query) RawFirst(sample interface{}, query string, payload ...interface{}) (interface{}, error) {
+	return q.RawFirstCtx(nil, sample, query, payload)
+}
+
+// RawFirst is a function that will run raw query that return only one result with provided payload
+func (q *Query) RawFirstCtx(ctx context.Context, sample interface{}, query string, payload ...interface{}) (interface{}, error) {
 	err := q.autoBegin()
 	if nil != err {
 		return nil, err
@@ -81,7 +97,12 @@ func (q *Query) RawFirst(sample interface{}, query string, payload ...interface{
 		return nil, err
 	}
 
-	err = stmt.Get(result, payload...)
+	if nil == ctx {
+		err = stmt.Get(result, payload...)
+	} else {
+		err = stmt.GetContext(ctx, result, payload...)
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -93,6 +114,11 @@ func (q *Query) RawFirst(sample interface{}, query string, payload ...interface{
 
 // RawAll is a function that will run raw query that return multiple result with provided payload
 func (q *Query) RawAll(sample interface{}, query string, payload ...interface{}) (interface{}, error) {
+	return q.RawAllCtx(nil, sample, query, payload...)
+}
+
+// RawAllCtx is a function that will run raw query that return multiple result with provided payload using Context
+func (q *Query) RawAllCtx(ctx context.Context, sample interface{}, query string, payload ...interface{}) (interface{}, error) {
 	err := q.autoBegin()
 	if nil != err {
 		return nil, err
@@ -110,7 +136,12 @@ func (q *Query) RawAll(sample interface{}, query string, payload ...interface{})
 		return nil, err
 	}
 
-	err = stmt.Select(results, payload...)
+	if nil == ctx {
+		err = stmt.Select(results, payload...)
+	} else {
+		err = stmt.SelectContext(ctx, results, payload...)
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -122,6 +153,11 @@ func (q *Query) RawAll(sample interface{}, query string, payload ...interface{})
 
 // RawNamedExec is a function that will run exec to a raw named query with provided payload
 func (q *Query) RawNamedExec(query string, payload map[string]interface{}) (bool, error) {
+	return q.RawNamedExecCtx(nil, query, payload)
+}
+
+// RawNamedExecCtx is a function that will run exec to a raw named query with provided payload using Context
+func (q *Query) RawNamedExecCtx(ctx context.Context, query string, payload map[string]interface{}) (bool, error) {
 	err := q.autoBegin()
 	if nil != err {
 		return false, err
@@ -133,7 +169,12 @@ func (q *Query) RawNamedExec(query string, payload map[string]interface{}) (bool
 		return false, err
 	}
 
-	_, err = stmt.Exec(payload)
+	if nil == ctx {
+		_, err = stmt.Exec(payload)
+	} else {
+		_, err = stmt.ExecContext(ctx, payload)
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return false, err
@@ -145,6 +186,17 @@ func (q *Query) RawNamedExec(query string, payload map[string]interface{}) (bool
 
 // RawNamedFirst is a function that will run raw named query that return only one result with provided payload
 func (q *Query) RawNamedFirst(sample interface{}, query string, payload map[string]interface{}) (interface{}, error) {
+	return q.RawNamedFirstCtx(nil, sample, query, payload)
+}
+
+// RawNamedFirstCtx is a function that will run raw named query that return only one result with provided payload
+// using Context
+func (q *Query) RawNamedFirstCtx(
+	ctx context.Context,
+	sample interface{},
+	query string,
+	payload map[string]interface{},
+) (interface{}, error) {
 	err := q.autoBegin()
 	if nil != err {
 		return nil, err
@@ -162,7 +214,12 @@ func (q *Query) RawNamedFirst(sample interface{}, query string, payload map[stri
 		return nil, err
 	}
 
-	err = stmt.Get(result, payload)
+	if nil == ctx {
+		err = stmt.Get(result, payload)
+	} else {
+		err = stmt.GetContext(ctx, result, payload)
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -174,6 +231,17 @@ func (q *Query) RawNamedFirst(sample interface{}, query string, payload map[stri
 
 // RawNamedAll is a function that will run raw named query that return multiple result with provided payload
 func (q *Query) RawNamedAll(sample interface{}, query string, payload map[string]interface{}) (interface{}, error) {
+	return q.RawNamedAllCtx(nil, sample, query, payload)
+}
+
+// RawNamedAllCtx is a function that will run raw named query that return multiple result with provided payload
+// using Context
+func (q *Query) RawNamedAllCtx(
+	ctx context.Context,
+	sample interface{},
+	query string,
+	payload map[string]interface{},
+) (interface{}, error) {
 	err := q.autoBegin()
 	if nil != err {
 		return nil, err
@@ -191,7 +259,12 @@ func (q *Query) RawNamedAll(sample interface{}, query string, payload map[string
 		return nil, err
 	}
 
-	err = stmt.Select(results, payload)
+	if nil == ctx {
+		err = stmt.Select(results, payload)
+	} else {
+		err = stmt.SelectContext(ctx, results, payload)
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -203,26 +276,51 @@ func (q *Query) RawNamedAll(sample interface{}, query string, payload map[string
 
 // First is a function that will return query with only one result
 func (q *Query) First() (interface{}, error) {
-	return q.first(NO_TRASH)
+	return q.FirstCtx(nil)
+}
+
+// FirstCtx is a function that will return query with only one result using Context
+func (q *Query) FirstCtx(ctx context.Context) (interface{}, error) {
+	return q.first(ctx, NO_TRASH)
 }
 
 // FirstWithTrash is a function that will return query with only one result including soft deleted row
 func (q *Query) FirstWithTrash() (interface{}, error) {
-	return q.first(WITH_TRASH)
+	return q.FirstWithTrashCtx(nil)
+}
+
+// FirstWithTrashCtx is a function that will return query with only one result including soft deleted row using Context
+func (q *Query) FirstWithTrashCtx(ctx context.Context) (interface{}, error) {
+	return q.first(ctx, WITH_TRASH)
 }
 
 // All is a function that will return query with multiple result
 func (q *Query) All() (interface{}, error) {
-	return q.all(NO_TRASH)
+	return q.AllCtx(nil)
+}
+
+// AllCtx is a function that will return query with multiple result using Context
+func (q *Query) AllCtx(ctx context.Context) (interface{}, error) {
+	return q.all(ctx, NO_TRASH)
 }
 
 // AllWithTrash is a function that will return query with multiple result including soft deleted row
 func (q *Query) AllWithTrash() (interface{}, error) {
-	return q.all(WITH_TRASH)
+	return q.AllWithTrashCtx(nil)
+}
+
+// AllWithTrashCtx is a function that will return query with multiple result including soft deleted row using Context
+func (q *Query) AllWithTrashCtx(ctx context.Context) (interface{}, error) {
+	return q.all(ctx, WITH_TRASH)
 }
 
 // Insert is a function that will insert data based on model attribute
 func (q *Query) Insert() (*interface{}, error) {
+	return q.InsertCtx(nil)
+}
+
+// InsertCtx is a function that will insert data based on model attribute using Context
+func (q *Query) InsertCtx(ctx context.Context) (*interface{}, error) {
 	var id interface{}
 
 	err := q.handleNilModel()
@@ -249,7 +347,12 @@ func (q *Query) Insert() (*interface{}, error) {
 		return nil, err
 	}
 
-	err = stmt.Get(&id, q.Model.Payload())
+	if nil == ctx {
+		err = stmt.Get(&id, q.mergedPayload())
+	} else {
+		err = stmt.GetContext(ctx, &id, q.mergedPayload())
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -261,6 +364,11 @@ func (q *Query) Insert() (*interface{}, error) {
 
 // BulkInsert is a function that will insert multiple data in one query, receive slice of model
 func (q *Query) BulkInsert(data interface{}) (bool, error) {
+	return q.BulkInsertCtx(nil, data)
+}
+
+// BulkInsertCtx is a function that will insert multiple data in one query, receive slice of model using Context
+func (q *Query) BulkInsertCtx(ctx context.Context, data interface{}) (bool, error) {
 	err := q.handleNilModel()
 	if nil != err {
 		return false, err
@@ -290,7 +398,12 @@ func (q *Query) BulkInsert(data interface{}) (bool, error) {
 		return false, err
 	}
 
-	_, err = stmt.Exec(payloads)
+	if nil == ctx {
+		_, err = stmt.Exec(payloads)
+	} else {
+		_, err = stmt.ExecContext(ctx, payloads)
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return false, err
@@ -302,6 +415,11 @@ func (q *Query) BulkInsert(data interface{}) (bool, error) {
 
 // Update is a function that will update data based on model attribute with primary key attribute
 func (q *Query) Update() (bool, error) {
+	return q.UpdateCtx(nil)
+}
+
+// UpdateCtx is a function that will update data based on model attribute with primary key attribute using Context
+func (q *Query) UpdateCtx(ctx context.Context) (bool, error) {
 	defer q.clearParameter()
 
 	err := q.handleNilModel()
@@ -329,7 +447,12 @@ func (q *Query) Update() (bool, error) {
 		return false, err
 	}
 
-	_, err = stmt.Exec(q.mergedPayload())
+	if nil == ctx {
+		_, err = stmt.Exec(q.mergedPayload())
+	} else {
+		_, err = stmt.ExecContext(ctx, q.mergedPayload())
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return false, err
@@ -342,6 +465,12 @@ func (q *Query) Update() (bool, error) {
 // Delete is a function that will delete data based on model attribute with primary key attribute
 // will automatically soft delete if soft delete attribute is active
 func (q *Query) Delete() (bool, error) {
+	return q.DeleteCtx(nil)
+}
+
+// DeleteCtx is a function that will delete data based on model attribute with primary key attribute
+// will automatically soft delete if soft delete attribute is active using Context
+func (q *Query) DeleteCtx(ctx context.Context) (bool, error) {
 	defer q.clearParameter()
 
 	err := q.handleNilModel()
@@ -370,7 +499,12 @@ func (q *Query) Delete() (bool, error) {
 		return false, err
 	}
 
-	_, err = stmt.Exec(q.mergedPayload())
+	if nil == ctx {
+		_, err = stmt.Exec(q.mergedPayload())
+	} else {
+		_, err = stmt.ExecContext(ctx, q.mergedPayload())
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return false, err
@@ -382,52 +516,102 @@ func (q *Query) Delete() (bool, error) {
 
 // Avg is a function that will return average of a column
 func (q *Query) Avg(column string) (*float64, error) {
-	return q.aggregate(AG_AVG, column, NO_TRASH)
+	return q.AvgCtx(nil, column)
+}
+
+// AvgCtx is a function that will return average of a column using Context
+func (q *Query) AvgCtx(ctx context.Context, column string) (*float64, error) {
+	return q.aggregate(ctx, AG_AVG, column, NO_TRASH)
 }
 
 // AvgWithTrash is a function that will return average of a column with soft deleted row
 func (q *Query) AvgWithTrash(column string) (*float64, error) {
-	return q.aggregate(AG_AVG, column, WITH_TRASH)
+	return q.AvgWithTrashCtx(nil, column)
+}
+
+// AvgWithTrashCtx is a function that will return average of a column with soft deleted row using Context
+func (q *Query) AvgWithTrashCtx(ctx context.Context, column string) (*float64, error) {
+	return q.aggregate(ctx, AG_AVG, column, WITH_TRASH)
 }
 
 // Min is a function that will return minimum of a column
 func (q *Query) Min(column string) (*float64, error) {
-	return q.aggregate(AG_MIN, column, NO_TRASH)
+	return q.MinCtx(nil, column)
+}
+
+// MinCtx is a function that will return minimum of a column using Context
+func (q *Query) MinCtx(ctx context.Context, column string) (*float64, error) {
+	return q.aggregate(ctx, AG_MIN, column, NO_TRASH)
 }
 
 // MinWithTrash is a function that will return minimum of a column with soft deleted row
 func (q *Query) MinWithTrash(column string) (*float64, error) {
-	return q.aggregate(AG_MIN, column, WITH_TRASH)
+	return q.MinWithTrashCtx(nil, column)
+}
+
+// MinWithTrashCtx is a function that will return minimum of a column with soft deleted row using Context
+func (q *Query) MinWithTrashCtx(ctx context.Context, column string) (*float64, error) {
+	return q.aggregate(ctx, AG_MIN, column, WITH_TRASH)
 }
 
 // Max is a function that will return maximum of a column
 func (q *Query) Max(column string) (*float64, error) {
-	return q.aggregate(AG_MAX, column, NO_TRASH)
+	return q.MaxCtx(nil, column)
+}
+
+// Max is a function that will return maximum of a column using Context
+func (q *Query) MaxCtx(ctx context.Context, column string) (*float64, error) {
+	return q.aggregate(ctx, AG_MAX, column, NO_TRASH)
 }
 
 // MaxWithTrash is a function that will return maximum of a column with soft deleted row
 func (q *Query) MaxWithTrash(column string) (*float64, error) {
-	return q.aggregate(AG_MAX, column, WITH_TRASH)
+	return q.MaxWithTrashCtx(nil, column)
+}
+
+// MaxWithTrashCtx is a function that will return maximum of a column with soft deleted row using Context
+func (q *Query) MaxWithTrashCtx(ctx context.Context, column string) (*float64, error) {
+	return q.aggregate(ctx, AG_MAX, column, WITH_TRASH)
 }
 
 // Sum is a function that will return sum of a column
 func (q *Query) Sum(column string) (*float64, error) {
-	return q.aggregate(AG_SUM, column, NO_TRASH)
+	return q.SumCtx(nil, column)
+}
+
+// SumCtx is a function that will return sum of a column using Context
+func (q *Query) SumCtx(ctx context.Context, column string) (*float64, error) {
+	return q.aggregate(ctx, AG_SUM, column, NO_TRASH)
 }
 
 // SumWithTrash is a function that will return sum of a column with soft deleted row
 func (q *Query) SumWithTrash(column string) (*float64, error) {
-	return q.aggregate(AG_SUM, column, WITH_TRASH)
+	return q.SumWithTrashCtx(nil, column)
+}
+
+// SumWithTrashCtx is a function that will return sum of a column with soft deleted row using Context
+func (q *Query) SumWithTrashCtx(ctx context.Context, column string) (*float64, error) {
+	return q.aggregate(ctx, AG_SUM, column, WITH_TRASH)
 }
 
 // Count is a function that will return count of a column
 func (q *Query) Count() (*float64, error) {
-	return q.aggregate(AG_COUNT, "*", NO_TRASH)
+	return q.CountCtx(nil)
 }
 
-// MinWithTrash is a function that will return count of a column with soft deleted row
+// CountCtx is a function that will return count of a column using Context
+func (q *Query) CountCtx(ctx context.Context) (*float64, error) {
+	return q.aggregate(ctx, AG_COUNT, "*", NO_TRASH)
+}
+
+// CountWithTrash is a function that will return count of a column with soft deleted row
 func (q *Query) CountWithTrash() (*float64, error) {
-	return q.aggregate(AG_COUNT, "*", WITH_TRASH)
+	return q.CountWithTrashCtx(nil)
+}
+
+// CountWithTrashCtx is a function that will return count of a column with soft deleted row using Context
+func (q *Query) CountWithTrashCtx(ctx context.Context) (*float64, error) {
+	return q.aggregate(ctx, AG_COUNT, "*", WITH_TRASH)
 }
 
 // Use is a function that will set Model instance that will be used for query
@@ -599,7 +783,7 @@ func (q *Query) AppendHaving(connector Connector, key Column, operator Operator,
 }
 
 // first is a function that will get the one result from a query
-func (q *Query) first(withTrash TrashStatus) (interface{}, error) {
+func (q *Query) first(ctx context.Context, withTrash TrashStatus) (interface{}, error) {
 	defer q.clearParameter()
 
 	err := q.handleNilModel()
@@ -625,7 +809,12 @@ func (q *Query) first(withTrash TrashStatus) (interface{}, error) {
 		return nil, err
 	}
 
-	err = stmt.Get(result, args)
+	if nil == ctx {
+		err = stmt.Get(result, args)
+	} else {
+		err = stmt.GetContext(ctx, result, args)
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -636,7 +825,7 @@ func (q *Query) first(withTrash TrashStatus) (interface{}, error) {
 }
 
 // all is a function that will get multiple result from a query
-func (q *Query) all(withTrash TrashStatus) (interface{}, error) {
+func (q *Query) all(ctx context.Context, withTrash TrashStatus) (interface{}, error) {
 	defer q.clearParameter()
 
 	err := q.handleNilModel()
@@ -661,7 +850,12 @@ func (q *Query) all(withTrash TrashStatus) (interface{}, error) {
 		return nil, err
 	}
 
-	err = stmt.Select(results, args)
+	if nil == ctx {
+		err = stmt.Select(results, args)
+	} else {
+		err = stmt.SelectContext(ctx, results, args)
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -672,7 +866,7 @@ func (q *Query) all(withTrash TrashStatus) (interface{}, error) {
 }
 
 // aggregate is a function that will return aggregate value of a column
-func (q *Query) aggregate(aggregate Aggregate, column string, withTrash TrashStatus) (*float64, error) {
+func (q *Query) aggregate(ctx context.Context, aggregate Aggregate, column string, withTrash TrashStatus) (*float64, error) {
 	defer q.clearParameter()
 
 	var result float64
@@ -693,7 +887,12 @@ func (q *Query) aggregate(aggregate Aggregate, column string, withTrash TrashSta
 		return nil, err
 	}
 
-	err = stmt.Get(&result, args)
+	if nil == ctx {
+		err = stmt.Get(&result, args)
+	} else {
+		err = stmt.GetContext(ctx, &result, args)
+	}
+
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -883,4 +1082,3 @@ func (q *Query) makeSliceOf(sample interface{}) (interface{}, error) {
 	element := reflect.TypeOf(sample).Elem()
 	return reflect.New(reflect.SliceOf(element)).Interface(), nil
 }
-
