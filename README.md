@@ -1,6 +1,6 @@
 # go-apt
 
-Simple ORM for golang
+Simple ORM for golang using PostgreSQL
 
 Task:
 - [ ] Documentation and others
@@ -35,5 +35,6 @@ Task:
   - [x] Timestamp (createdAt, updatedAt)
   - [x] Soft Delete (deletedAt)
   - [ ] Recover Soft Delete [NOT TESTED]
+- [x] Handle Context
 - [ ] Migration
 - [ ] Config
