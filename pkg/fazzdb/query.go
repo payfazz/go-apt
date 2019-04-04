@@ -316,11 +316,16 @@ func (q *Query) AllWithTrashCtx(ctx context.Context) (interface{}, error) {
 
 // Insert is a function that will insert data based on model attribute
 func (q *Query) Insert() (*interface{}, error) {
-	return q.InsertCtx(nil)
+	return q.InsertOnConflict(false)
+}
+
+// InsertOnConflict is a function that will insert data based on model attribute
+func (q *Query) InsertOnConflict(doNothing bool) (*interface{}, error) {
+	return q.InsertCtx(nil, doNothing)
 }
 
 // InsertCtx is a function that will insert data based on model attribute using Context
-func (q *Query) InsertCtx(ctx context.Context) (*interface{}, error) {
+func (q *Query) InsertCtx(ctx context.Context, doNothing bool) (*interface{}, error) {
 	var id interface{}
 
 	err := q.handleNilModel()
@@ -339,7 +344,7 @@ func (q *Query) InsertCtx(ctx context.Context) (*interface{}, error) {
 		q.Model.created()
 	}
 
-	query := q.Builder.BuildInsert(q.Model)
+	query := q.Builder.BuildInsert(q.Model, doNothing)
 
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {

@@ -2,16 +2,30 @@ package fazzdb
 
 // Connector is a type that is used to connect the result of different condition
 type Connector string
+
 // Lock is a type that is used to set lock type used in query
 type Lock string
+
 // Operator is a type that is used to set operator relation in a condition
 type Operator string
+
 // OrderDirection is a type that is used to set order by direction for query
 type OrderDirection string
+
 // Aggregate is a type that is used to set aggregate used for query
 type Aggregate string
+
 // TrashStatus is a type that is used to set WITH_TRASH or NO_TRASH status
 type TrashStatus bool
+
+// DataType is a type that is used to set MigrationColumn type
+type DataType string
+
+// ReferenceAction is a type that is used to set MigrationReferences action
+type ReferenceAction string
+
+// TableCommand is a type that is used to set MigrationTable command
+type MigrationCommand string
 
 const (
 	OP_EQUALS           Operator = "="
@@ -28,15 +42,15 @@ const (
 )
 
 const (
-	CO_AND   Connector = "AND"
-	CO_OR    Connector = "OR"
+	CO_AND  Connector = "AND"
+	CO_OR   Connector = "OR"
 	CO_NONE Connector = ""
 )
 
 const (
 	LO_FOR_SHARE  Lock = "FOR SHARE"
 	LO_FOR_UPDATE Lock = "FOR UPDATE"
-	LO_NONE      Lock = ""
+	LO_NONE       Lock = ""
 )
 
 const (
@@ -63,3 +77,45 @@ const (
 	UPDATED_AT = "updatedAt"
 	DELETED_AT = "deletedAt"
 )
+
+const (
+	DT_UUID        DataType = "UUID"
+	DT_STRING      DataType = "VARCHAR"
+	DT_INT         DataType = "INTEGER"
+	DT_SERIAL      DataType = "SERIAL"
+	DT_BIGINT      DataType = "BIGINT"
+	DT_BOOL        DataType = "BOOLEAN"
+	DT_TEXT        DataType = "TEXT"
+	DT_DOUBLE      DataType = "DOUBLE"
+	DT_NUMERIC     DataType = "NUMERIC"
+	DT_DECIMAL     DataType = "DECIMAL"
+	DT_TIMESTAMP   DataType = "TIMESTAMP"
+	DT_TIMESTAMPTZ DataType = "TIMESTAMPTZ"
+	DT_NONE        DataType = "NONE"
+)
+
+const (
+	RA_NO_ACTION ReferenceAction = "NO ACTION"
+	RA_CASCADE   ReferenceAction = "CASCADE"
+	RA_RESTRICT  ReferenceAction = "RESTRICT"
+)
+
+const (
+	MC_CREATE MigrationCommand = "CREATE"
+	MC_ADD    MigrationCommand = "ADD"
+	MC_ALTER  MigrationCommand = "ALTER"
+	MC_DROP   MigrationCommand = "DROP"
+	MC_RENAME MigrationCommand = "RENAME"
+)
+
+const (
+	META_APP_ID = "APP_ID"
+	META_VERSION = "VERSION"
+	META_TABLE = "fazz_metas"
+)
+
+var DEFAULT_QUERY_CONFIG = Config{
+	Limit:  0,
+	Offset: 0,
+	Lock:   LO_NONE,
+}

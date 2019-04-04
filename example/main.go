@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/payfazz/go-apt/config"
+	"github.com/payfazz/go-apt/example/migration"
 	"github.com/payfazz/go-apt/example/model"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"log"
@@ -12,10 +12,10 @@ import (
 )
 
 func main() {
-	conn := "host=localhost port=5432 user=postgres password=cashfazz dbname=qb sslmode=disable"
+	conn := "host=localhost port=5432 user=postgres password=cashfazz dbname=fazzdb_test sslmode=disable"
 
 	db, _ := sqlx.Connect("postgres", conn)
-	tx, _ := db.Beginx()
+	/*tx, _ := db.Beginx()
 	//query := fazzdb.QueryTx(tx, config.Db)
 	query := fazzdb.QueryDb(db, config.Db)
 
@@ -29,7 +29,12 @@ func main() {
 	SelectAll(query)
 	//SelectOne(query)
 
-	_ = tx.Commit()
+	_ = tx.Commit()*/
+
+	fazzdb.Migrate(db, "cashfazz-staging",
+		migration.Version1,
+		migration.Version2,
+	)
 }
 
 func BulkInsert(query *fazzdb.Query) {
