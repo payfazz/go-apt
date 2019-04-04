@@ -2,9 +2,9 @@ package formatter
 
 import (
 	"fmt"
+	"github.com/leekchan/accounting"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/satori/go.uuid"
-	"github.com/leekchan/accounting"
 	"regexp"
 	"strconv"
 	"strings"

@@ -13,12 +13,75 @@ func NewBuilder() *Builder {
 	once.Do(func() {
 		singleton = &Builder{}
 	})
-
 	return singleton
 }
 
 // Builder is a struct that will handle transforming parameters into query string
 type Builder struct {}
+
+// BuildCreateTable is a function that will return create query from given table
+func (b *Builder) BuildCreateTable(table *MigrationTable) string {
+	query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS "%s" (`, table.name)
+
+	for i, column := range table.columns {
+		first := i == 0
+		query = fmt.Sprintf(`%s %s`, query, b.generateColumnQuery(column, first))
+	}
+
+	for i, reference := range table.references {
+		first := i == 0 && len(table.columns) == 0
+		query = fmt.Sprintf(`%s %s`, query, b.generateReferenceQuery(reference, first))
+	}
+
+	if len(table.primaryKeys) > 0 {
+		query = fmt.Sprintf(`%s, PRIMARY KEY (`, query)
+		for i, primaryKey := range table.primaryKeys {
+			if i != 0 {
+				query = fmt.Sprintf(`%s, `, query)
+			}
+			query = fmt.Sprintf(`%s "%s"`, query, primaryKey)
+		}
+		query = fmt.Sprintf(`%s)`, query)
+	}
+
+	query = fmt.Sprintf(`%s);`, query)
+	return query
+}
+
+// BuildAlterTable is a function that will return alter query from given table
+func (b *Builder) BuildAlterTable(table *MigrationTable) string {
+	query := fmt.Sprintf(`ALTER TABLE "%s"`, table.name)
+	for i, column := range table.columns {
+		first := i == 0
+		query = fmt.Sprintf(`%s %s`, query, b.generateColumnQuery(column, first))
+	}
+
+	query = fmt.Sprintf(`%s;`, query)
+	return query
+}
+
+// BuildDropTable is a function that will return drop query from given table
+func (b *Builder) BuildDropTable(table *MigrationTable) string {
+	return fmt.Sprintf(`DROP TABLE IF EXISTS "%s";`, table.name)
+}
+
+// BuildCreateEnum is a function that will return create query from given enum
+func (b *Builder) BuildCreateEnum(enum *MigrationEnum) string {
+	query := fmt.Sprintf(`CREATE TYPE "%s" AS ENUM (`, enum.name)
+	for i, v := range enum.values {
+		if i != 0 {
+			query = fmt.Sprintf(`%s, `, query)
+		}
+		query = fmt.Sprintf(`%s '%s'`, query, v)
+	}
+	query = fmt.Sprintf(`%s );`, query)
+	return query
+}
+
+// BuildDropEnum is a function that will return drop query from given enum
+func (b *Builder) BuildDropEnum(enum *MigrationEnum) string {
+	return fmt.Sprintf(`DROP TYPE IF EXISTS "%s";`, enum.name)
+}
 
 // BuildDelete is a function that will return delete query from given model and parameter
 func (b *Builder) BuildDelete(model ModelInterface, param *Parameter) string {
@@ -64,7 +127,7 @@ func (b *Builder) BuildBulkInsert(model ModelInterface, data []interface{}) stri
 }
 
 // BuildInsert is a function that will return insert query from given model
-func (b *Builder) BuildInsert(model ModelInterface) string {
+func (b *Builder) BuildInsert(model ModelInterface, doNothing bool) string {
 	query := fmt.Sprintf(`INSERT INTO %s`, model.GetTable())
 
 	query = fmt.Sprintf(`%s (`, query)
@@ -72,8 +135,13 @@ func (b *Builder) BuildInsert(model ModelInterface) string {
 
 	query = fmt.Sprintf(`%s ) VALUES (`, query)
 	query = b.generateValues(query, model, nil, b.isAutoIncrementPrimaryKey, b.generateInsertValues)
+	query = fmt.Sprintf(`%s)`, query)
 
-	query = fmt.Sprintf(`%s ) RETURNING %s;`, query, model.GetPK())
+	if doNothing {
+		query = fmt.Sprintf(`%s ON CONFLICT DO NOTHING`, query)
+	}
+
+	query = fmt.Sprintf(`%s RETURNING %s;`, query, model.GetPK())
 	return query
 }
 
@@ -96,11 +164,10 @@ func (b *Builder) BuildSelect(model ModelInterface, param *Parameter, aggregate 
 		query = fmt.Sprintf(`%s GROUP BY`, query)
 		for i, group := range param.Groups {
 			key := group.ToString(model.GetTable())
-			if i == 0 {
-				query = fmt.Sprintf(`%s %s`, query, key)
-			} else {
-				query = fmt.Sprintf(`%s, %s`, query, key)
+			if i != 0 {
+				query = fmt.Sprintf(`%s, `, query)
 			}
+			query = fmt.Sprintf(`%s %s`, query, key)
 		}
 	}
 
@@ -110,11 +177,10 @@ func (b *Builder) BuildSelect(model ModelInterface, param *Parameter, aggregate 
 		query = fmt.Sprintf(`%s ORDER BY`, query)
 		for i, order := range param.Orders {
 			key := order.Field.ToString(model.GetTable())
-			if i == 0 {
-				query = fmt.Sprintf(`%s %s %s`, query, key, order.Direction)
-			} else {
-				query = fmt.Sprintf(`%s, %s %s`, query, key, order.Direction)
+			if i != 0 {
+				query = fmt.Sprintf(`%s, `, query)
 			}
+			query = fmt.Sprintf(`%s %s %s`, query, key, order.Direction)
 		}
 	}
 
@@ -148,45 +214,49 @@ func (b *Builder) isPrimaryKeyOrCreatedAt(column string, model ModelInterface) b
 // generateInsertValues is a function that will generate insert arguments for query
 func (b *Builder) generateInsertValues(query string, table string, column Column, first bool) (string, bool) {
 	if first {
-		query = fmt.Sprintf(`%s :%s`, query, column.Key)
 		first = false
 	} else {
-		query = fmt.Sprintf(`%s, :%s`, query, column.Key)
+		query = fmt.Sprintf(`%s, `, query)
 	}
+
+	query = fmt.Sprintf(`%s :%s`, query, column.Key)
 	return query, first
 }
 
 // generateUpdateColumns is a function that will generate update column with arguments for query
 func (b *Builder) generateUpdateColumns(query string, table string, column Column, first bool) (string, bool) {
 	if first {
-		query = fmt.Sprintf(`%s "%s" = :%s`, query, column.Key, column.Key)
 		first = false
 	} else {
-		query = fmt.Sprintf(`%s, "%s" = :%s`, query, column.Key, column.Key)
+		query = fmt.Sprintf(`%s, `, query)
 	}
+
+	query = fmt.Sprintf(`%s "%s" = :%s`, query, column.Key, column.Key)
 	return query, first
 }
 
 // generateSelectColumns is a function that will generate insert columns
 func (b *Builder) generateInsertColumns(query string, table string, column Column, first bool) (string, bool) {
 	if first {
-		query = fmt.Sprintf(`%s "%s"`, query, column.Key)
 		first = false
 	} else {
-		query = fmt.Sprintf(`%s, "%s"`, query, column.Key)
+		query = fmt.Sprintf(`%s, `, query)
 	}
+
+	query = fmt.Sprintf(`%s "%s"`, query, column.Key)
 	return query, first
 }
 
 // generateSelectColumns is a function that will generate select columns
 func (b *Builder) generateSelectColumns(query string, table string, column Column, first bool) (string, bool) {
-	col := column.ToString(table)
 	if first {
-		query = fmt.Sprintf(`%s %s`, query, col)
 		first = false
 	} else {
-		query = fmt.Sprintf(`%s, %s`, query, col)
+		query = fmt.Sprintf(`%s, `, query)
 	}
+
+	col := column.ToString(table)
+	query = fmt.Sprintf(`%s %s`, query, col)
 	return query, first
 }
 
@@ -254,4 +324,71 @@ func (b *Builder) generateHavingConditions(query string, table string, param *Pa
 		}
 	}
 	return query
+}
+
+// generateColumnQuery is a function that will generate column detail query based on given column data
+func (b *Builder) generateColumnQuery(column *MigrationColumn, first bool) string {
+	isAlter := false
+	typePrefix := ``
+	query := b.firstOrComma(first)
+
+	if column.command == MC_RENAME {
+		return fmt.Sprintf(`%s RENAME COLUMN "%s" TO "%s"`, query, column.previousName, column.name)
+	}
+
+	if column.command == MC_DROP {
+		return fmt.Sprintf(`%s DROP COLUMN "%s"`, query, column.name)
+	}
+
+	if column.command == MC_ADD {
+		query = fmt.Sprintf(`%s ADD COLUMN`, query)
+	}
+
+	if column.command == MC_ALTER {
+		isAlter = true
+		typePrefix = `TYPE`
+		query = fmt.Sprintf(`%s ALTER COLUMN`, query)
+	}
+
+	query = fmt.Sprintf(`%s "%s" %s %s`, query, column.name, typePrefix, column.dataType)
+
+	if len(column.typeArgs) > 0 {
+		query = fmt.Sprintf(`%s(`, query)
+		for i, arg := range column.typeArgs {
+			if i != 0 {
+				query = fmt.Sprintf(`%s,`, query)
+			}
+			query = fmt.Sprintf(`%s%d`, query, arg)
+		}
+		query = fmt.Sprintf(`%s)`, query)
+	}
+
+	if column.unique {
+		query = fmt.Sprintf(`%s UNIQUE`, query)
+	}
+	if column.command == MC_CREATE && (!column.nullable || column.primaryKey) {
+		query = fmt.Sprintf(`%s NOT NULL`, query)
+	}
+	if "" != column.defaultValue {
+		query = fmt.Sprintf(`%s DEFAULT %s`, query, column.defaultValue)
+	}
+	if isAlter {
+		query = fmt.Sprintf(`%s USING "%s"::%s`, query, column.name, column.dataType)
+	}
+
+	return query
+}
+
+// generateReferenceQuery is a function that will generate foreign key query from given reference
+func (b *Builder) generateReferenceQuery(reference *MigrationReference, first bool) string {
+	query := b.firstOrComma(first)
+	return fmt.Sprintf(`%s FOREIGN KEY ("%s") REFERENCES "%s" ("%s")`, query, reference.key, reference.otherTable, reference.otherKey)
+}
+
+// firstOrComma is a function that will determine if comma is needed before the query from given first variable
+func (b *Builder) firstOrComma(first bool) string {
+	if first {
+		return ``
+	}
+	return `, `
 }

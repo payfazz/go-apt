@@ -106,7 +106,7 @@ func TestModel_GetModel(t *testing.T) {
 
 	require.Equal(
 		t,
-		AutoIncrementModel(
+		*AutoIncrementModel(
 			"auto_increment_tests",
 			[]Column{
 				Col("id"),
@@ -122,7 +122,7 @@ func TestModel_GetModel(t *testing.T) {
 
 	require.Equal(
 		t,
-		UuidModel(
+		*UuidModel(
 			"uuid_tests",
 			[]Column{
 				Col("id"),
@@ -138,7 +138,7 @@ func TestModel_GetModel(t *testing.T) {
 
 	require.Equal(
 		t,
-		PlainModel(
+		*PlainModel(
 			"plain_tests",
 			[]Column{
 				Col("id"),
@@ -154,7 +154,7 @@ func TestModel_GetModel(t *testing.T) {
 
 	require.Equal(
 		t,
-		AutoIncrementModel(
+		*AutoIncrementModel(
 			"timestamp_tests",
 			[]Column{
 				Col("id"),
@@ -168,7 +168,7 @@ func TestModel_GetModel(t *testing.T) {
 
 	require.Equal(
 		t,
-		AutoIncrementModel(
+		*AutoIncrementModel(
 			"soft_delete_tests",
 			[]Column{
 				Col("id"),
@@ -182,7 +182,7 @@ func TestModel_GetModel(t *testing.T) {
 
 	require.Equal(
 		t,
-		AutoIncrementModel(
+		*AutoIncrementModel(
 			"complete_tests",
 			[]Column{
 				Col("id"),

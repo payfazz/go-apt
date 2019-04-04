@@ -7,32 +7,32 @@ import (
 
 func TestBuilder_BuildInsert(t *testing.T) {
 	t.Run("BuildInsert AutoIncrementModel", func(t *testing.T) {
-		aiQuery := builder.BuildInsert(ai)
+		aiQuery := builder.BuildInsert(ai, false)
 		require.Equal(t, `INSERT INTO auto_increment_tests ( "name", "number" ) VALUES ( :name, :number ) RETURNING id;`, aiQuery)
 	})
 
 	t.Run("BuildInsert UuidModel", func(t *testing.T) {
-		uQuery := builder.BuildInsert(u)
+		uQuery := builder.BuildInsert(u, false)
 		require.Equal(t, `INSERT INTO uuid_tests ( "id", "name", "number" ) VALUES ( :id, :name, :number ) RETURNING id;`, uQuery)
 	})
 
 	t.Run("BuildInsert PlainModel", func(t *testing.T) {
-		pQuery := builder.BuildInsert(p)
+		pQuery := builder.BuildInsert(p, false)
 		require.Equal(t, `INSERT INTO plain_tests ( "id", "name", "number" ) VALUES ( :id, :name, :number ) RETURNING id;`, pQuery)
 	})
 
 	t.Run("BuildInsert TimestampModel", func(t *testing.T) {
-		tsQuery := builder.BuildInsert(ts)
+		tsQuery := builder.BuildInsert(ts, false)
 		require.Equal(t, `INSERT INTO timestamp_tests ( "createdAt", "updatedAt" ) VALUES ( :createdAt, :updatedAt ) RETURNING id;`, tsQuery)
 	})
 
 	t.Run("BuildInsert SoftDeleteModel", func(t *testing.T) {
-		sdQuery := builder.BuildInsert(sd)
+		sdQuery := builder.BuildInsert(sd, false)
 		require.Equal(t, `INSERT INTO soft_delete_tests ( "deletedAt" ) VALUES ( :deletedAt ) RETURNING id;`, sdQuery)
 	})
 
 	t.Run("BuildInsert CompleteModel", func(t *testing.T) {
-		cQuery := builder.BuildInsert(c)
+		cQuery := builder.BuildInsert(c, false)
 		require.Equal(t, `INSERT INTO complete_tests ( "name", "number", "createdAt", "updatedAt", "deletedAt" ) VALUES ( :name, :number, :createdAt, :updatedAt, :deletedAt ) RETURNING id;`, cQuery)
 	})
 }
