@@ -95,7 +95,7 @@ func CleanString(param *string) string {
 }
 
 // MoneyFormat is a function that used to format the money.
-func MoneyFormat(param string) string {
-	ac := accounting.Accounting{Symbol: "", Precision: 2}
+func MoneyFormat(param float64) string {
+	ac := accounting.Accounting{Precision: 2}
 	return ac.FormatMoney(param)
 }
