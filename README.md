@@ -5,7 +5,7 @@ Simple ORM for golang using PostgreSQL
 Task:
 - [ ] Documentation and others
   - [x] Godoc
-  - [x] Unit Test
+  - [ ] Unit Test
   - [ ] Jenkins Build Status
   - [ ] Test Coverage
 - [x] Prepared Statement & Named Query
@@ -37,4 +37,20 @@ Task:
   - [ ] Recover Soft Delete [NOT TESTED]
 - [x] Handle Context
 - [ ] Migration
+  - [x] Create Table
+    - [x] Create Column
+    - [x] Primary Key
+    - [x] Nullable
+    - [x] Unique
+    - [x] Foreign Key
+  - [ ] Alter Table
+    - [x] Add Column
+    - [x] Alter Column
+    - [x] Drop Column
+    - [x] Rename Column
+    - [ ] Foreign Key
+  - [x] Drop Table
+  - [x] Create Enum
+  - [ ] Alter Enum
+  - [x] Drop Enum
 - [ ] Config
