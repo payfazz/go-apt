@@ -1,6 +1,10 @@
 package formatter
 
-import "testing"
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
 
 func TestToLowerFirst(t *testing.T) {
 	ToLowerFirst("testing")
@@ -42,7 +46,6 @@ func TestGenerateStringUUID(t *testing.T) {
 	GenerateStringUUID()
 }
 
-
 func TestUnSanitizePhone(t *testing.T) {
 	UnSanitizePhone("+62812345689")
 }
@@ -62,4 +65,14 @@ func TestEmptyCleanString(t *testing.T) {
 
 func TestMoneyFormat(t *testing.T) {
 	MoneyFormat(100000)
+}
+
+func TestResponseWithData(t *testing.T) {
+	w := httptest.NewRecorder()
+	ResponseWithData(w, http.StatusOK, "ok")
+}
+
+func TestJSONDecode(t *testing.T) {
+	h := httptest.NewRequest("GET", "https://test.com", nil)
+	JSONDecode(h, "")
 }
