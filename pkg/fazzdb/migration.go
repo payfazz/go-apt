@@ -10,7 +10,7 @@ import (
 // FazzMetaModel is a constructor of FazzMeta model
 func FazzMetaModel() *FazzMeta {
 	return &FazzMeta{
-		Model: *PlainModel(
+		Model: PlainModel(
 			"fazz_metas",
 			[]Column{
 				Col("key"),
@@ -23,7 +23,7 @@ func FazzMetaModel() *FazzMeta {
 	}
 }
 
-// FazzMeta is a struct that will contain key and value from fazzdb meta table
+// FazzMeta is a struct that will contain key and value from fazzdb_sample meta table
 type FazzMeta struct {
 	Model
 	Key   string `db:"key"`
@@ -64,7 +64,7 @@ type Migration struct {
 	Versions []MigrationVersion
 }
 
-// RunMeta is a function that will create and seed fazzdb meta table
+// RunMeta is a function that will create and seed fazzdb_sample meta table
 func (m *Migration) RunMeta(query *Query, appId string) {
 	metaMigration := MigrationVersion{
 		Tables: []*MigrationTable{
@@ -136,7 +136,7 @@ func (m *Migration) metaVersion(query *Query) int {
 		panic(err)
 	}
 
-	version := row.(FazzMeta)
+	version := row.(*FazzMeta)
 	return formatter.StringToInteger(version.Value)
 }
 
@@ -417,7 +417,7 @@ func AddTimestampTz(name string, timezone int) *MigrationColumn {
 }
 
 // AddEnum is a function to add MigrationColumn of DataType Enum
-func AddEnum(name string, enum MigrationEnum) *MigrationColumn {
+func AddEnum(name string, enum *MigrationEnum) *MigrationColumn {
 	return addColumn(name, enum.GetDataType())
 }
 

@@ -41,7 +41,7 @@ type CpTest struct {
 }
 
 var ai = &AITest{
-	Model: *AutoIncrementModel(
+	Model: AutoIncrementModel(
 		"auto_increment_tests",
 		[]Column{
 			Col("id"),
@@ -57,7 +57,7 @@ var ai = &AITest{
 	Number: 20,
 }
 var u = &UTest{
-	Model: *UuidModel(
+	Model: UuidModel(
 		"uuid_tests",
 		[]Column{
 			Col("id"),
@@ -73,7 +73,7 @@ var u = &UTest{
 	Number: 15,
 }
 var p = &PTest{
-	Model: *PlainModel(
+	Model: PlainModel(
 		"plain_tests",
 		[]Column{
 			Col("id"),
@@ -89,7 +89,7 @@ var p = &PTest{
 	Number: 23,
 }
 var ts = &TsTest{
-	Model: *AutoIncrementModel(
+	Model: AutoIncrementModel(
 		"timestamp_tests",
 		[]Column{
 			Col("id"),
@@ -101,7 +101,7 @@ var ts = &TsTest{
 	Id: 2,
 }
 var sd = &SdTest{
-	Model: *AutoIncrementModel(
+	Model: AutoIncrementModel(
 		"soft_delete_tests",
 		[]Column{
 			Col("id"),
@@ -128,7 +128,7 @@ func (um *UTest) GeneratePK() {
 
 func NewCpTest() *CpTest {
 	return &CpTest{
-		Model: *AutoIncrementModel(
+		Model: AutoIncrementModel(
 			"complete_tests",
 			[]Column{
 				Col("id"),

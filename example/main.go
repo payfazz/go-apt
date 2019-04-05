@@ -1,43 +1,37 @@
 package main
 
 import (
-	"fmt"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/payfazz/go-apt/example/migration"
-	"github.com/payfazz/go-apt/example/model"
+	"github.com/payfazz/go-apt/config"
+	"github.com/payfazz/go-apt/example/fazzdb_sample"
+	"github.com/payfazz/go-apt/example/fazzdb_sample/migration"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
-	"log"
-	"math/rand"
 )
 
 func main() {
-	conn := "host=localhost port=5432 user=postgres password=cashfazz dbname=fazzdb_test sslmode=disable"
-
-	db, _ := sqlx.Connect("postgres", conn)
-	/*tx, _ := db.Beginx()
-	//query := fazzdb.QueryTx(tx, config.Db)
-	query := fazzdb.QueryDb(db, config.Db)
-
-	//Insert(query)
-	//RawFirst(query)
-	//RawAll(query)
-	//student := SelectOne(query)
-	//Delete(query, student)
-	//Update(query, student)
-
-	SelectAll(query)
-	//SelectOne(query)
-
-	_ = tx.Commit()*/
-
-	fazzdb.Migrate(db, "cashfazz-staging",
+	fazzdb.Migrate(config.GetDB(), "cashfazz-example",
 		migration.Version1,
 		migration.Version2,
 	)
+
+	query := fazzdb.QueryDb(config.GetDB(), config.Parameter)
+	//fazzdb_sample.InsertAuthor(query)
+	//fazzdb_sample.InsertBook(query)
+	//
+	//fazzdb_sample.UpdateAuthor(query)
+	//fazzdb_sample.UpdateBook(query)
+	//
+	//fazzdb_sample.BulkInsertAuthors(query)
+	//fazzdb_sample.BulkInsertBooks(query)
+
+	fazzdb_sample.FirstAuthor(query)
+	fazzdb_sample.FirstBook(query)
+
+	fazzdb_sample.AllAuthors(query)
+	fazzdb_sample.AllBooks(query)
 }
 
-func BulkInsert(query *fazzdb.Query) {
+/*func BulkInsert(query *fazzdb.Query) {
 	students := make([]*model.Student, 0)
 	for i := 0; i < 20; i++ {
 		student := model.NewStudent()
@@ -235,4 +229,4 @@ func Sum(query *fazzdb.Query, column string) {
 	}
 
 	fmt.Println("SUM: ", *result)
-}
+}*/

@@ -11,7 +11,7 @@ import (
 // ModelInterface is an interface that will be used to get model information and used in various task by Query instance
 type ModelInterface interface {
 	// GetModel is a function that will return pointer to Model instance
-	GetModel() *Model
+	GetModel() Model
 	// GetTable is a function that will return the table name of the Model instance
 	GetTable() string
 	// GetCreatedAt is a function that will return createdAt value
@@ -56,18 +56,18 @@ type ModelInterface interface {
 }
 
 // UuidModel is a constructor that is used to initialize a new model with uuid as primary key
-func UuidModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) *Model {
+func UuidModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) Model {
 	return newModel(table, columns, primaryKey, timestamps, softDelete, true, false)
 }
 
 // PlainModel is a constructor that is used to initialize a new model with primary key that is neither
 // uuid or autoincrement
-func PlainModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) *Model {
+func PlainModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) Model {
 	return newModel(table, columns, primaryKey, timestamps, softDelete, false, false)
 }
 
 // AutoIncrementModel is a constructor that is used to initialize a new model with autoincrement primary key
-func AutoIncrementModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) *Model {
+func AutoIncrementModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) Model {
 	return newModel(table, columns, primaryKey, timestamps, softDelete, false, true)
 }
 
@@ -81,8 +81,8 @@ func newModel(
 	softDelete bool,
 	isUuid bool,
 	isAutoIncrement bool,
-) *Model {
-	model := &Model{
+) Model {
+	model := Model{
 		Table:         table,
 		Columns:       columns,
 		PrimaryKey:    primaryKey,
@@ -148,8 +148,8 @@ func (m *Model) Payload() map[string]interface{} {
 }
 
 // GetModel is a function that will return pointer to Model instance
-func (m *Model) GetModel() *Model {
-	return m
+func (m *Model) GetModel() Model {
+	return *m
 }
 
 // GetTable is a function that will return the table name of the Model instance
@@ -252,20 +252,26 @@ func (m *Model) MapPayload(v interface{}) map[string]interface{} {
 
 // created is a function that will set createdAt field with current time, used when inserting model with timestamp
 func (m *Model) created() {
-	now := time.Now()
-	m.CreatedAt = &now
+	if m.IsTimestamps() {
+		now := time.Now()
+		m.CreatedAt = &now
+	}
 }
 
 // updated is a function that will set updatedAt field with current time, used when updating model with timestamp
 func (m *Model) updated() {
-	now := time.Now()
-	m.UpdatedAt = &now
+	if m.IsTimestamps() {
+		now := time.Now()
+		m.UpdatedAt = &now
+	}
 }
 
 // deleted is a function that will set deletedAt field with current time, used when soft deleting model
 func (m *Model) deleted() {
-	now := time.Now()
-	m.DeletedAt = &now
+	if m.IsSoftDelete() {
+		now := time.Now()
+		m.DeletedAt = &now
+	}
 }
 
 // recovered is a function that will set deletedAt field with nil, used when recovering soft deleted model

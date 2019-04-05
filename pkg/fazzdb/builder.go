@@ -135,7 +135,7 @@ func (b *Builder) BuildInsert(model ModelInterface, doNothing bool) string {
 
 	query = fmt.Sprintf(`%s ) VALUES (`, query)
 	query = b.generateValues(query, model, nil, b.isAutoIncrementPrimaryKey, b.generateInsertValues)
-	query = fmt.Sprintf(`%s)`, query)
+	query = fmt.Sprintf(`%s )`, query)
 
 	if doNothing {
 		query = fmt.Sprintf(`%s ON CONFLICT DO NOTHING`, query)
@@ -216,7 +216,7 @@ func (b *Builder) generateInsertValues(query string, table string, column Column
 	if first {
 		first = false
 	} else {
-		query = fmt.Sprintf(`%s, `, query)
+		query = fmt.Sprintf(`%s,`, query)
 	}
 
 	query = fmt.Sprintf(`%s :%s`, query, column.Key)
@@ -228,7 +228,7 @@ func (b *Builder) generateUpdateColumns(query string, table string, column Colum
 	if first {
 		first = false
 	} else {
-		query = fmt.Sprintf(`%s, `, query)
+		query = fmt.Sprintf(`%s,`, query)
 	}
 
 	query = fmt.Sprintf(`%s "%s" = :%s`, query, column.Key, column.Key)
@@ -240,7 +240,7 @@ func (b *Builder) generateInsertColumns(query string, table string, column Colum
 	if first {
 		first = false
 	} else {
-		query = fmt.Sprintf(`%s, `, query)
+		query = fmt.Sprintf(`%s,`, query)
 	}
 
 	query = fmt.Sprintf(`%s "%s"`, query, column.Key)
@@ -252,7 +252,7 @@ func (b *Builder) generateSelectColumns(query string, table string, column Colum
 	if first {
 		first = false
 	} else {
-		query = fmt.Sprintf(`%s, `, query)
+		query = fmt.Sprintf(`%s,`, query)
 	}
 
 	col := column.ToString(table)
@@ -390,5 +390,5 @@ func (b *Builder) firstOrComma(first bool) string {
 	if first {
 		return ``
 	}
-	return `, `
+	return `,`
 }

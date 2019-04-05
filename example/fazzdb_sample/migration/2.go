@@ -1,0 +1,21 @@
+package migration
+
+import "github.com/payfazz/go-apt/pkg/fazzdb"
+
+var bookStatusEnum = fazzdb.NewEnum(
+	"book_status",
+	"BORROWED",
+	"AVAILABLE",
+)
+
+var Version2 = fazzdb.MigrationVersion{
+	Enums: []*fazzdb.MigrationEnum{
+		bookStatusEnum,
+	},
+	Tables: []*fazzdb.MigrationTable{
+		fazzdb.AlterTable("books", func(table *fazzdb.MigrationTable) {
+			table.Field(fazzdb.AddEnum("status", bookStatusEnum))
+			table.Field(fazzdb.AddInteger("year"))
+		}),
+	},
+}

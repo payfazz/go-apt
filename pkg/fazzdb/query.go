@@ -109,7 +109,7 @@ func (q *Query) RawFirstCtx(ctx context.Context, sample interface{}, query strin
 	}
 
 	q.autoCommit()
-	return reflect.ValueOf(result).Elem().Interface(), nil
+	return reflect.ValueOf(result).Interface(), nil
 }
 
 // RawAll is a function that will run raw query that return multiple result with provided payload
@@ -226,7 +226,7 @@ func (q *Query) RawNamedFirstCtx(
 	}
 
 	q.autoCommit()
-	return reflect.ValueOf(result).Elem().Interface(), nil
+	return reflect.ValueOf(result).Interface(), nil
 }
 
 // RawNamedAll is a function that will run raw named query that return multiple result with provided payload
@@ -339,10 +339,7 @@ func (q *Query) InsertCtx(ctx context.Context, doNothing bool) (*interface{}, er
 	}
 
 	q.Model.GeneratePK()
-
-	if q.Model.IsTimestamps() {
-		q.Model.created()
-	}
+	q.Model.created()
 
 	query := q.Builder.BuildInsert(q.Model, doNothing)
 
@@ -392,6 +389,8 @@ func (q *Query) BulkInsertCtx(ctx context.Context, data interface{}) (bool, erro
 	slice := make([]interface{}, d.Len())
 	for i := 0; i < d.Len(); i++ {
 		slice[i] = d.Index(i).Interface()
+		slice[i].(ModelInterface).GeneratePK()
+		slice[i].(ModelInterface).created()
 	}
 
 	query := q.Builder.BuildBulkInsert(q.Model, slice)
@@ -438,10 +437,7 @@ func (q *Query) UpdateCtx(ctx context.Context) (bool, error) {
 	}
 
 	q.setPKCondition()
-
-	if q.Model.IsTimestamps() {
-		q.Model.updated()
-	}
+	q.Model.updated()
 
 	query := q.Builder.BuildUpdate(q.Model, q.Parameter)
 	query = q.bindIn(query)
@@ -643,6 +639,12 @@ func (q *Query) WhereOp(key string, operator Operator, value interface{}) *Query
 	return q.AppendCondition(CO_AND, key, operator, value)
 }
 
+// WhereIn is a function that will add new condition that will check if column fulfill operator between given values,
+// connector that is used between condition is AND connector
+func (q *Query) WhereIn(key string, values ...interface{}) *Query {
+	return q.AppendCondition(CO_AND, key, OP_IN, values)
+}
+
 // WhereNil is a function that will add new condition that will check if column nil, connector that is used
 // between condition is AND connector
 func (q *Query) WhereNil(key string) *Query {
@@ -665,6 +667,12 @@ func (q *Query) OrWhere(key string, value interface{}) *Query {
 // connector that is used between condition is OR connector
 func (q *Query) OrWhereOp(key string, operator Operator, value interface{}) *Query {
 	return q.AppendCondition(CO_OR, key, operator, value)
+}
+
+// OrWhereIn is a function that will add new condition that will check if column fulfill operator between given values,
+// connector that is used between condition is OR connector
+func (q *Query) OrWhereIn(key string, values ...interface{}) *Query {
+	return q.AppendCondition(CO_OR, key, OP_IN, values)
 }
 
 // OrWhereNil is a function that will add new condition that will check if column nil, connector that is used
@@ -826,7 +834,7 @@ func (q *Query) first(ctx context.Context, withTrash TrashStatus) (interface{}, 
 	}
 
 	q.autoCommit()
-	return q.assignModel(result, *q.Model.GetModel()), nil
+	return q.assignModel(result, q.Model.GetModel()), nil
 }
 
 // all is a function that will get multiple result from a query
@@ -867,7 +875,7 @@ func (q *Query) all(ctx context.Context, withTrash TrashStatus) (interface{}, er
 	}
 
 	q.autoCommit()
-	return q.assignModelSlices(results, *q.Model.GetModel()), nil
+	return q.assignModelSlices(results, q.Model.GetModel()), nil
 }
 
 // aggregate is a function that will return aggregate value of a column
@@ -914,7 +922,11 @@ func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withT
 	}
 
 	if len(q.Parameter.Orders) == 0 && len(q.Parameter.Groups) == 0 && AG_NONE == aggregate {
-		q.OrderBy(q.Model.GetPK(), DIR_ASC)
+		if q.Model.IsTimestamps() {
+			q.OrderBy(CREATED_AT, DIR_ASC)
+		} else {
+			q.OrderBy(q.Model.GetPK(), DIR_ASC)
+		}
 	}
 
 	query := q.Builder.BuildSelect(q.Model, q.Parameter, aggregate, aggregateColumn)
@@ -1037,7 +1049,7 @@ func (q *Query) assignModelSlices(results interface{}, m Model) interface{} {
 	slice := reflect.ValueOf(results).Elem().Interface()
 	sVal := reflect.ValueOf(slice)
 	for i := 0; i < sVal.Len(); i++ {
-		assigned := q.assignModel(sVal.Index(i).Addr().Interface(), m)
+		assigned := q.assignModel(sVal.Index(i).Interface(), m)
 		sVal.Index(i).Set(reflect.ValueOf(assigned))
 	}
 	return sVal.Interface()
@@ -1051,8 +1063,8 @@ func (q *Query) assignModel(result interface{}, m Model) interface{} {
 	timeModel := q.modelWithTime(value.(ModelInterface), m)
 	model := reflect.ValueOf(timeModel)
 
-	complete := reflect.ValueOf(value).Elem()
-	complete.FieldByName("Model").Set(model)
+	complete := reflect.ValueOf(value)
+	complete.Elem().FieldByName("Model").Set(model)
 
 	return complete.Interface()
 }
@@ -1084,6 +1096,6 @@ func (q *Query) makeSliceOf(sample interface{}) (interface{}, error) {
 	if reflect.TypeOf(sample).Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("sample must be a pointer to reference model")
 	}
-	element := reflect.TypeOf(sample).Elem()
+	element := reflect.TypeOf(sample)
 	return reflect.New(reflect.SliceOf(element)).Interface(), nil
 }

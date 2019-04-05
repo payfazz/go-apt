@@ -103,7 +103,7 @@ func TestQuery_Exec(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result := row.(CpTest)
+		result := row.(*CpTest)
 
 		require.Equal(t, 1, result.Id)
 		require.Equal(t, "c_name_test", result.Name)
@@ -119,11 +119,11 @@ func TestQuery_Exec(t *testing.T) {
 			First()
 		require.NoError(t, err)
 
-		result := row.(CpTest)
+		result := row.(*CpTest)
 		result.Name = "c_update_name_test"
 		result.Number = 25
 
-		_, err = query.Use(&result).Update()
+		_, err = query.Use(result).Update()
 		require.NoError(t, err)
 
 		row, err = query.Use(c).
@@ -132,7 +132,7 @@ func TestQuery_Exec(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result = row.(CpTest)
+		result = row.(*CpTest)
 
 		require.Equal(t, 1, result.Id)
 		require.Equal(t, "c_update_name_test", result.Name)
@@ -145,9 +145,9 @@ func TestQuery_Exec(t *testing.T) {
 	t.Run("Delete", func(t *testing.T) {
 		row, err := query.Use(c).Where("id", 1).First()
 		require.NoError(t, err)
-		result := row.(CpTest)
+		result := row.(*CpTest)
 
-		success, err := query.Use(&result).Delete()
+		success, err := query.Use(result).Delete()
 		require.NoError(t, err)
 		require.Equal(t, success, true)
 
@@ -180,7 +180,7 @@ func TestQuery_Select(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result := row.(CpTest)
+		result := row.(*CpTest)
 		require.Equal(t, 1, result.Id)
 		require.Equal(t, "test_name_1", result.Name)
 		require.Equal(t, 23, result.Number)
@@ -193,7 +193,7 @@ func TestQuery_Select(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result = row.(CpTest)
+		result = row.(*CpTest)
 		require.Equal(t, 12, result.Id)
 		require.Equal(t, "test_name_12", result.Name)
 		require.Equal(t, 18, result.Number)
@@ -210,7 +210,7 @@ func TestQuery_Select(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result := row.([]CpTest)
+		result := row.([]*CpTest)
 
 		require.Equal(t, 10, len(result))
 		require.Equal(t, 11, result[9].Id)
@@ -225,7 +225,7 @@ func TestQuery_Select(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result = row.([]CpTest)
+		result = row.([]*CpTest)
 
 		require.Equal(t, 12, len(result))
 		require.Equal(t, 10, result[9].Id)
@@ -243,7 +243,7 @@ func TestQuery_Select(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result := row.([]CpTest)
+		result := row.([]*CpTest)
 
 		require.Equal(t, 4, len(result))
 		require.Equal(t, 11, result[3].Id)
@@ -263,7 +263,7 @@ func TestQuery_Select(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result := row.([]CpTest)
+		result := row.([]*CpTest)
 
 		require.Equal(t, 1, len(result))
 		require.Equal(t, 1, result[0].Id)
@@ -289,7 +289,7 @@ func TestQuery_Select(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result := row.([]CpTest)
+		result := row.([]*CpTest)
 
 		require.Equal(t, 10, len(result))
 		require.Equal(t, 5, result[0].Id)
@@ -307,7 +307,7 @@ func TestQuery_Select(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result := row.([]CpTest)
+		result := row.([]*CpTest)
 
 		require.Equal(t, 5, len(result))
 		require.Equal(t, 1, result[0].Id)
@@ -323,7 +323,7 @@ func TestQuery_Select(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result = row.([]CpTest)
+		result = row.([]*CpTest)
 
 		require.Equal(t, 5, len(result))
 		require.Equal(t, 6, result[0].Id)
@@ -427,7 +427,7 @@ func TestQuery_Raw(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		results := row.([]RawTest)
+		results := row.([]*RawTest)
 		require.Equal(t, 11, len(results))
 		require.Equal(t, "test_name_12", results[10].Name)
 		require.Equal(t, 18, results[10].Number)
@@ -436,7 +436,7 @@ func TestQuery_Raw(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result := row.(RawTest)
+		result := row.(*RawTest)
 		require.Equal(t, "test_name_2", result.Name)
 		require.Equal(t, 5, result.Number)
 
@@ -453,7 +453,7 @@ func TestQuery_Raw(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		result = row.(RawTest)
+		result = row.(*RawTest)
 		require.Equal(t, "insert_exec_test", result.Name)
 		require.Equal(t, 1, result.Number)
 	})
@@ -467,7 +467,7 @@ func TestQuery_Raw(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, row)
 
-		results := row.([]RawTest)
+		results := row.([]*RawTest)
 		require.Equal(t, 2, len(results))
 		require.Equal(t, "insert_exec_test", results[0].Name)
 		require.Equal(t, 1, results[0].Number)
@@ -500,7 +500,7 @@ func TestQuery_GroupBy(t *testing.T) {
 	}
 
 	sample := &GroupTest{
-		Model: *AutoIncrementModel(
+		Model: AutoIncrementModel(
 			"complete_tests",
 			[]Column{
 				Col("id"),
@@ -526,7 +526,7 @@ func TestQuery_GroupBy(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, row)
 
-	result := row.([]GroupTest)
+	result := row.([]*GroupTest)
 
 	require.Equal(t, 4, len(result))
 	require.Equal(t, "test_name_1", result[0].Name)
@@ -542,7 +542,7 @@ func TestQuery_GroupBy(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, row)
 
-	result = row.([]GroupTest)
+	result = row.([]*GroupTest)
 
 	require.Equal(t, 2, len(result))
 	require.Equal(t, "test_name_4", result[0].Name)
@@ -557,7 +557,7 @@ func TestQuery_GroupBy(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, row)
 
-	result = row.([]GroupTest)
+	result = row.([]*GroupTest)
 
 	require.Equal(t, 1, len(result))
 	require.Equal(t, "test_name_1", result[0].Name)
@@ -576,7 +576,7 @@ func TestQuery_GroupBy(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, row)
 
-	result = row.([]GroupTest)
+	result = row.([]*GroupTest)
 
 	require.Equal(t, 3, len(result))
 	require.Equal(t, "test_name_2", result[0].Name)
