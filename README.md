@@ -1,8 +1,14 @@
 # go-apt
 
-Simple ORM for golang using PostgreSQL
+Collection of frameworks that will used as helper
 
-Task:
+Features:
+- fazzcloud (HTTP client)
+- fazzcommon (Helper method)
+- fazzdb (Simple ORM for Postgres)
+- fazzkv (Key-Value using Redis)
+
+### Fazzdb
 - [ ] Documentation and others
   - [x] Godoc
   - [ ] Unit Test
