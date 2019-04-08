@@ -13,7 +13,7 @@ import (
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	fazzdb.Migrate(config.GetDB(), "cashfazz-example",
+	fazzdb.Migrate(config.GetDB(), "cashfazz-example", true,
 		migration.Version1,
 		migration.Version2,
 	)

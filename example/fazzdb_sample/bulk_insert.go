@@ -51,7 +51,7 @@ func BulkInsertBooks(query *fazzdb.Query) {
 		panic(err)
 	}
 
-	authorCount := int(*count) - 1
+	authorCount := int(*count) - 2
 
 	for i := 0; i < 10; i++ {
 		newBook := model.BookModel()
@@ -59,7 +59,7 @@ func BulkInsertBooks(query *fazzdb.Query) {
 		newBook.Year = rand.Intn(100) + 1920
 		newBook.Stock = rand.Intn(30) + 10
 		newBook.Status = BOOK_BORROWED
-		newBook.AuthorId = rand.Intn(authorCount)
+		newBook.AuthorId = rand.Intn(authorCount) + 1
 
 		books = append(books, newBook)
 	}

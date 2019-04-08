@@ -41,13 +41,15 @@ func (fm *FazzMeta) Payload() map[string]interface{} {
 }
 
 // Migrate is a constructor of Migration struct that will run creation and seed of meta table and other migration
-func Migrate(db *sqlx.DB, appId string, versions ...MigrationVersion) {
+func Migrate(db *sqlx.DB, appId string, forceMigrate bool, versions ...MigrationVersion) {
 	m := &Migration{
 		Versions: versions,
 	}
 
 	tx, _ := db.Beginx()
 	query := QueryTx(tx, DEFAULT_QUERY_CONFIG)
+
+	m.forceMigrate(query, forceMigrate)
 
 	m.RunMeta(query, appId)
 	if m.isRightApp(query, appId) {
@@ -108,6 +110,19 @@ func (m *Migration) Run(query *Query) {
 		_ = query.Tx.Commit()
 	} else {
 		log.Println("Same meta and app version, doing nothing!")
+	}
+}
+
+func (m *Migration) forceMigrate(query *Query, forced bool) {
+	if forced {
+		_, err := query.RawExec(`DROP SCHEMA public CASCADE;` +
+			`CREATE SCHEMA public;` +
+			`GRANT ALL ON SCHEMA public TO postgres;` +
+			`GRANT ALL ON SCHEMA public TO public;`)
+		if nil != err {
+			_ = query.Tx.Rollback()
+			panic(err)
+		}
 	}
 }
 
