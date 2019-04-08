@@ -44,6 +44,17 @@ func (b *Builder) BuildCreateTable(table *MigrationTable) string {
 		query = fmt.Sprintf(`%s)`, query)
 	}
 
+	if len(table.uniques) > 0 {
+		query = fmt.Sprintf(`%s, UNIQUE (`, query)
+		for i, unique := range table.uniques {
+			if i != 0 {
+				query = fmt.Sprintf(`%s, `, query)
+			}
+			query = fmt.Sprintf(`%s "%s"`, query, unique)
+		}
+		query = fmt.Sprintf(`%s)`, query)
+	}
+
 	query = fmt.Sprintf(`%s);`, query)
 	return query
 }
@@ -363,9 +374,6 @@ func (b *Builder) generateColumnQuery(column *MigrationColumn, first bool) strin
 		query = fmt.Sprintf(`%s)`, query)
 	}
 
-	if column.unique {
-		query = fmt.Sprintf(`%s UNIQUE`, query)
-	}
 	if column.command == MC_CREATE && (!column.nullable || column.primaryKey) {
 		query = fmt.Sprintf(`%s NOT NULL`, query)
 	}

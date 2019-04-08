@@ -99,7 +99,7 @@ func (m *Migration) Run(query *Query) {
 	} else if appVersion > metaVersion {
 		for index, v := range m.Versions {
 			if index >= metaVersion {
-				log.Printf("Running migration version %d", metaVersion + 1)
+				log.Printf("Running migration version %d", metaVersion+1)
 				v.Run(query, true)
 
 				metaVersion++
@@ -240,6 +240,7 @@ func newTable(name string, command MigrationCommand, detail func(table *Migratio
 	}
 	detail(table)
 	table.parsePrimaryKey()
+	table.parseUnique()
 	table.validate()
 	return table
 }
@@ -251,6 +252,7 @@ type MigrationTable struct {
 	columns     []*MigrationColumn
 	references  []*MigrationReference
 	primaryKeys []string
+	uniques     []string
 }
 
 // Field is a function that will append new MigrationColumn to columns
@@ -290,6 +292,15 @@ func (mt *MigrationTable) parsePrimaryKey() {
 	for _, column := range mt.columns {
 		if column.primaryKey {
 			mt.primaryKeys = append(mt.primaryKeys, column.name)
+		}
+	}
+}
+
+// parseUnique is a function that will append all unique column into uniques
+func (mt *MigrationTable) parseUnique() {
+	for _, column := range mt.columns {
+		if column.unique {
+			mt.uniques = append(mt.uniques, column.name)
 		}
 	}
 }
