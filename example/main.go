@@ -1,60 +1,56 @@
 package main
 
 import (
-	"fmt"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/payfazz/go-apt/example/migration"
-	"github.com/payfazz/go-apt/example/model"
+	"github.com/payfazz/go-apt/config"
+	"github.com/payfazz/go-apt/example/fazzdb_sample"
+	"github.com/payfazz/go-apt/example/fazzdb_sample/migration"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
-	"log"
 	"math/rand"
+	"time"
 )
 
 func main() {
-	conn := "host=localhost port=5432 user=postgres password=cashfazz dbname=fazzdb_test sslmode=disable"
+	rand.Seed(time.Now().UTC().UnixNano())
 
-	db, _ := sqlx.Connect("postgres", conn)
-	/*tx, _ := db.Beginx()
-	//query := fazzdb.QueryTx(tx, config.Db)
-	query := fazzdb.QueryDb(db, config.Db)
-
-	//Insert(query)
-	//RawFirst(query)
-	//RawAll(query)
-	//student := SelectOne(query)
-	//Delete(query, student)
-	//Update(query, student)
-
-	SelectAll(query)
-	//SelectOne(query)
-
-	_ = tx.Commit()*/
-
-	fazzdb.Migrate(db, "cashfazz-staging",
+	fazzdb.Migrate(config.GetDB(), "cashfazz-example",
 		migration.Version1,
 		migration.Version2,
 	)
+
+	query := fazzdb.QueryDb(config.GetDB(), config.Parameter)
+	//fazzdb_sample.InsertAuthor(query)
+	//fazzdb_sample.InsertBook(query)
+	//
+	//fazzdb_sample.UpdateAuthor(query)
+	//fazzdb_sample.UpdateBook(query)
+	//
+	//fazzdb_sample.BulkInsertAuthors(query)
+	//fazzdb_sample.BulkInsertBooks(query)
+
+	fazzdb_sample.FirstAuthor(query)
+	fazzdb_sample.FirstBook(query)
+
+	//fazzdb_sample.DeleteBook(query)
+	//fazzdb_sample.DeleteAuthor(query)
+
+	fazzdb_sample.AllAuthors(query)
+	fazzdb_sample.AllBooks(query)
+
+	fazzdb_sample.RawFirst(query)
+	fazzdb_sample.RawAll(query)
+
+	fazzdb_sample.RawNamedFirst(query)
+	fazzdb_sample.RawNamedAll(query)
+
+	fazzdb_sample.Sum(query)
+	fazzdb_sample.Count(query)
+	fazzdb_sample.Max(query)
+	fazzdb_sample.Min(query)
+	fazzdb_sample.Avg(query)
 }
 
-func BulkInsert(query *fazzdb.Query) {
-	students := make([]*model.Student, 0)
-	for i := 0; i < 20; i++ {
-		student := model.NewStudent()
-		student.Name = fmt.Sprintf("Bulk%d", i)
-		student.Address = fmt.Sprintf("Address %d", i)
-		student.Age = rand.Intn(20) + 12
-
-		students = append(students, student)
-	}
-
-	_, err := query.Use(model.NewStudent()).BulkInsert(students)
-	if nil != err {
-		panic(err)
-	}
-}
-
-func RawFirst(query *fazzdb.Query) {
+/*func RawFirst(query *fazzdb.Query) {
 	qry := "SELECT name, age FROM students WHERE age > $1 AND age < $2 LIMIT 1;"
 	payload := []interface{}{
 		20,
@@ -137,93 +133,6 @@ func RawNamedAll(query *fazzdb.Query) {
 	}
 }
 
-func SelectOne(query *fazzdb.Query) *model.Student {
-	// Select One
-	n := model.NewStudent()
-	result, err := query.Use(n).
-		First()
-
-	if nil != err {
-		_ = query.Tx.Rollback()
-		panic(err)
-	}
-
-	student := result.(model.Student)
-	fmt.Printf("%d - %s - %s - %d - %s\n", student.Id, student.Name, student.Address, student.Age, student.CreatedAt)
-
-	return &student
-}
-
-func Insert(query *fazzdb.Query) {
-	student := model.NewStudent()
-	student.Name = "sby"
-	student.Address = "Solo"
-	student.Age = 20
-
-	id, err := query.Use(student).Insert()
-	if nil != err {
-		panic(err)
-	}
-	log.Println("Inserted id:", *id)
-}
-
-func Update(query *fazzdb.Query, student *model.Student) {
-	student.Name = "Hi123"
-	_, err := query.Use(student).Update()
-	if nil != err {
-		_ = query.Tx.Rollback()
-		panic(err)
-	}
-}
-
-func Delete(query *fazzdb.Query, student *model.Student) {
-	_, err := query.Use(student).
-		Delete()
-	if nil != err {
-		_ = query.Tx.Rollback()
-		panic(err)
-	}
-}
-
-func SelectAll(query *fazzdb.Query) {
-	n := model.NewStudent()
-	results, err := query.Use(n).
-		All()
-
-	if nil != err {
-		_ = query.Tx.Rollback()
-		panic(err)
-	}
-
-	students := results.([]model.Student)
-	for _, s := range students {
-		fmt.Printf("%d - %s - %s - %d - %s\n", s.Id, s.Name, s.Address, s.Age, s.CreatedAt)
-		//fmt.Println(reflect.TypeOf(s.CreatedAt))
-	}
-}
-
-func SelectMany(query *fazzdb.Query) {
-	n := model.NewStudent()
-	results, err := query.Use(n).
-		GroupWhere(func(query *fazzdb.Query) *fazzdb.Query {
-			return query.WhereOp("name", fazzdb.OP_LIKE, "%i%").
-				WhereOp("age", fazzdb.OP_IN, []interface{}{22, 23, 24, 25})
-		}).
-		WhereOp("address", fazzdb.OP_LIKE, "%i%").
-		OrderBy("age", fazzdb.DIR_DESC).
-		All()
-
-	if nil != err {
-		_ = query.Tx.Rollback()
-		panic(err)
-	}
-
-	students := results.([]model.Student)
-	for _, s := range students {
-		fmt.Printf("%d - %s - %s - %d - %s - %s - %s\n", s.Id, s.Name, s.Address, s.Age, s.CreatedAt, s.UpdatedAt, s.DeletedAt)
-	}
-}
-
 func Sum(query *fazzdb.Query, column string) {
 	n := model.NewStudent()
 	result, err := query.Use(n).
@@ -235,4 +144,4 @@ func Sum(query *fazzdb.Query, column string) {
 	}
 
 	fmt.Println("SUM: ", *result)
-}
+}*/
