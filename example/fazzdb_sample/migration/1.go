@@ -9,6 +9,7 @@ var Version1 = fazzdb.MigrationVersion{
 			table.Field(fazzdb.CreateString("name"))
 			table.Field(fazzdb.CreateString("country"))
 			table.Timestamps()
+			table.SoftDelete()
 		}),
 		fazzdb.CreateTable("books", func(table *fazzdb.MigrationTable) {
 			table.Field(fazzdb.CreateString("id").Primary())
@@ -16,7 +17,6 @@ var Version1 = fazzdb.MigrationVersion{
 			table.Field(fazzdb.CreateInteger("stock"))
 			table.Field(fazzdb.CreateInteger("authorId"))
 			table.Timestamps()
-			table.SoftDelete()
 
 			table.Reference(
 				fazzdb.Foreign("authorId").

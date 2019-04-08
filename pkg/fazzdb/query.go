@@ -75,7 +75,7 @@ func (q *Query) RawExecCtx(ctx context.Context, query string, payload ...interfa
 
 // RawFirst is a function that will run raw query that return only one result with provided payload
 func (q *Query) RawFirst(sample interface{}, query string, payload ...interface{}) (interface{}, error) {
-	return q.RawFirstCtx(nil, sample, query, payload)
+	return q.RawFirstCtx(nil, sample, query, payload...)
 }
 
 // RawFirst is a function that will run raw query that return only one result with provided payload

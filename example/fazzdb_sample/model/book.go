@@ -38,7 +38,7 @@ func BookModel() *Book {
 			},
 			"id",
 			true,
-			true,
+			false,
 		),
 	}
 }

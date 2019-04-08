@@ -28,7 +28,7 @@ func AuthorModel() *Author {
 			},
 			"id",
 			true,
-			false,
+			true,
 		),
 	}
 }
