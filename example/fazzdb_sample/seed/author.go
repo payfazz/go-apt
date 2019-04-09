@@ -1,7 +1,6 @@
 package seed
 
 import (
-	"github.com/payfazz/go-apt/example/fazzdb_sample/model"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
@@ -11,10 +10,6 @@ type AuthorSeed struct {
 
 func (b *AuthorSeed) Type() fazzdb.SeedType {
 	return fazzdb.SEED_RAW
-}
-
-func (a *AuthorSeed) Model() fazzdb.ModelInterface {
-	return model.AuthorModel()
 }
 
 func (a *AuthorSeed) RawQuery() string {
