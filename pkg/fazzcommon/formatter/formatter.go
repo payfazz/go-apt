@@ -21,6 +21,11 @@ func ToLowerFirst(str string) string {
 	return str
 }
 
+// SliceJoins is a function to join slice into string with chosen delimiter
+func SliceJoins(v interface{}, delimiter string) string {
+	return strings.Trim(strings.Replace(fmt.Sprint(v), " ", delimiter, -1), "[]")
+}
+
 // LeftPad2Len used to fill string with some formats.
 // example: LeftPad2Len(9, "0", 4)
 // result: 0009
