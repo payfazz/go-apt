@@ -2,6 +2,11 @@ package model
 
 import "github.com/payfazz/go-apt/pkg/fazzdb"
 
+const (
+	BOOK_BORROWED  = "BORROWED"
+	BOOK_AVAILABLE = "AVAILABLE"
+)
+
 type Book struct {
 	fazzdb.Model
 	Id       string `db:"id"`

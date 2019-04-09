@@ -58,7 +58,7 @@ func BulkInsertBooks(query *fazzdb.Query) {
 		newBook.Title = fmt.Sprintf("%s Books", authorNames[rand.Intn(len(authorNames))])
 		newBook.Year = rand.Intn(100) + 1920
 		newBook.Stock = rand.Intn(30) + 10
-		newBook.Status = BOOK_BORROWED
+		newBook.Status = model.BOOK_BORROWED
 		newBook.AuthorId = rand.Intn(authorCount) + 1
 
 		books = append(books, newBook)

@@ -657,6 +657,7 @@ func (me *MigrationEnum) GetDataType() DataType {
 type MigrationVersion struct {
 	Tables []*MigrationTable
 	Enums  []*MigrationEnum
+	Seeds  []SeederInterface
 }
 
 // Run is a function that will run all tables and enums command in a MigrationVersion
@@ -694,4 +695,6 @@ func (mv *MigrationVersion) Run(query *Query, autoDrop bool) {
 		_ = query.Tx.Rollback()
 		panic(err)
 	}
+
+	Seed(query, mv.Seeds...)
 }

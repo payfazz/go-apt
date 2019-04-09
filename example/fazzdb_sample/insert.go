@@ -17,7 +17,7 @@ func InsertBook(query *fazzdb.Query) {
 	book.Title = "Artemis Fowl"
 	book.Year = 2010
 	book.Stock = 20
-	book.Status = BOOK_AVAILABLE
+	book.Status = model.BOOK_AVAILABLE
 	book.AuthorId = author.Id
 
 	_, err = query.Use(book).Insert()
