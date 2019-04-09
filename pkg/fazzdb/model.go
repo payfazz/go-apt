@@ -29,7 +29,7 @@ type ModelInterface interface {
 	// GeneratePK is a function that MUST be overridden by UuidModel, if it's not overridden it will panic.
 	GeneratePK()
 	// GenerateId is a function that will generate uuid for primary key if the model created using UuidModel constructor
-	GenerateId(v interface{})
+	GenerateId(v ModelInterface)
 	// ColumnCount is a function that will return the length of columns of the Model instance
 	ColumnCount() int
 	// IsTimestamps is a function that will return true if the Model instance using createdAt and updatedAt field
@@ -43,7 +43,7 @@ type ModelInterface interface {
 	// Payload is a function that MUST be overridden by all model, if it's not overridden it will panic.
 	Payload() map[string]interface{}
 	// MapPayload is a function that will map all column value as a map[string]interface{} with lowered first character as key
-	MapPayload(v interface{}) map[string]interface{}
+	MapPayload(v ModelInterface) map[string]interface{}
 
 	// created is a function that will set createdAt field with current time, used when inserting model with timestamp
 	created()
@@ -184,8 +184,8 @@ func (m *Model) GetPK() string {
 
 // GenerateId is a function that will generate uuid for primary key if the model created
 // using UuidModel constructor
-func (m *Model) GenerateId(v interface{}) {
-	if !m.Uuid {
+func (m *Model) GenerateId(v ModelInterface) {
+	if !m.Uuid || "" != v.Get(v.GetPK()) {
 		return
 	}
 
@@ -221,7 +221,7 @@ func (m *Model) IsAutoIncrement() bool {
 }
 
 // MapPayload is a function that will map all column value as a map[string]interface{} with lowered first character as key
-func (m *Model) MapPayload(v interface{}) map[string]interface{} {
+func (m *Model) MapPayload(v ModelInterface) map[string]interface{} {
 	var results = make(map[string]interface{})
 	classType := reflect.TypeOf(v)
 	classValue := reflect.ValueOf(v)

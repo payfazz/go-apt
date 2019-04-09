@@ -19,19 +19,19 @@ type Seeder struct {
 }
 
 func (s *Seeder) Type() SeedType {
-	panic("please override Type method")
+	panic("Please override Type() method")
 }
 
 func (s *Seeder) Model() ModelInterface {
-	panic("please override Model method")
+	panic("Please override Model() method")
 }
 
 func (s *Seeder) BulkModels() []ModelInterface {
-	panic("please override BulkModels method")
+	panic("Please override BulkModels() method")
 }
 
 func (s *Seeder) RawQuery() string {
-	panic("please override RawQuery method")
+	panic("Please override RawQuery() method")
 }
 
 func Seed(query *Query, seeders ...SeederInterface) {
