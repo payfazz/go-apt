@@ -239,8 +239,6 @@ func newTable(name string, command MigrationCommand, detail func(table *Migratio
 		name:    name,
 	}
 	detail(table)
-	table.parsePrimaryKey()
-	table.parseUnique()
 	table.validate()
 	return table
 }
@@ -287,22 +285,14 @@ func (mt *MigrationTable) SoftDeleteTz(timezone int) {
 	mt.Field(CreateTimestampTz("deletedAt", timezone).Nullable())
 }
 
-// parsePrimaryKey is a function that will append all primary key column into primaryKeys
-func (mt *MigrationTable) parsePrimaryKey() {
-	for _, column := range mt.columns {
-		if column.primaryKey {
-			mt.primaryKeys = append(mt.primaryKeys, column.name)
-		}
-	}
+// PrimaryKeys is a function that will append column into primaryKeys
+func (mt *MigrationTable) PrimaryKeys(columns ...string) {
+	mt.primaryKeys = append(mt.primaryKeys, columns...)
 }
 
-// parseUnique is a function that will append all unique column into uniques
-func (mt *MigrationTable) parseUnique() {
-	for _, column := range mt.columns {
-		if column.unique {
-			mt.uniques = append(mt.uniques, column.name)
-		}
-	}
+// Uniques is a function that will append column into uniques
+func (mt *MigrationTable) Uniques(columns ...string) {
+	mt.uniques = append(mt.uniques, columns...)
 }
 
 // validate is a function that will validate if some columns action is allowed

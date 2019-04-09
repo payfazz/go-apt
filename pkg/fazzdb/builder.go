@@ -377,6 +377,12 @@ func (b *Builder) generateColumnQuery(column *MigrationColumn, first bool) strin
 	if column.command == MC_CREATE && (!column.nullable || column.primaryKey) {
 		query = fmt.Sprintf(`%s NOT NULL`, query)
 	}
+	if column.unique && !column.primaryKey {
+		query = fmt.Sprintf(`%s UNIQUE`, query)
+	}
+	if column.primaryKey {
+		query = fmt.Sprintf(`%s PRIMARY KEY`, query)
+	}
 	if "" != column.defaultValue {
 		query = fmt.Sprintf(`%s DEFAULT %s`, query, column.defaultValue)
 	}
