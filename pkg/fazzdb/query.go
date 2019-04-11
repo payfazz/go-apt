@@ -315,17 +315,17 @@ func (q *Query) AllWithTrashCtx(ctx context.Context) (interface{}, error) {
 }
 
 // Insert is a function that will insert data based on model attribute
-func (q *Query) Insert() (*interface{}, error) {
+func (q *Query) Insert() (interface{}, error) {
 	return q.InsertOnConflict(false)
 }
 
 // InsertOnConflict is a function that will insert data based on model attribute
-func (q *Query) InsertOnConflict(doNothing bool) (*interface{}, error) {
+func (q *Query) InsertOnConflict(doNothing bool) (interface{}, error) {
 	return q.InsertCtx(nil, doNothing)
 }
 
 // InsertCtx is a function that will insert data based on model attribute using Context
-func (q *Query) InsertCtx(ctx context.Context, doNothing bool) (*interface{}, error) {
+func (q *Query) InsertCtx(ctx context.Context, doNothing bool) (interface{}, error) {
 	var id interface{}
 
 	err := q.handleNilModel()
@@ -361,7 +361,7 @@ func (q *Query) InsertCtx(ctx context.Context, doNothing bool) (*interface{}, er
 	}
 
 	q.autoCommit()
-	return &id, nil
+	return id, nil
 }
 
 // BulkInsert is a function that will insert multiple data in one query, receive slice of model
