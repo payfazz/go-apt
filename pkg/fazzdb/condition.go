@@ -4,6 +4,14 @@ import (
 	"fmt"
 )
 
+// SliceCondition is a struct that will handle condition in a slice
+type SliceCondition struct {
+	Connector Connector
+	Field     string
+	Operator  Operator
+	Value     interface{}
+}
+
 // Condition is a struct that will handle condition when building query
 type Condition struct {
 	Field      Column

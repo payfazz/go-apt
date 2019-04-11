@@ -627,6 +627,18 @@ func (q *Query) Columns(columns ...Column) *Query {
 	return q
 }
 
+// WhereMany is a function that will append slices of conditions into query
+func (q *Query) WhereMany(conditions ...SliceCondition) *Query {
+	for _, c := range conditions {
+		connector := c.Connector
+		if len(q.Conditions) == 0 {
+			connector = CO_NONE
+		}
+		q.AppendCondition(connector, c.Field, c.Operator, c.Value)
+	}
+	return q
+}
+
 // Where is a function that will add new condition that will check if column equals value given, connector
 // that is used between condition is AND connector
 func (q *Query) Where(key string, value interface{}) *Query {

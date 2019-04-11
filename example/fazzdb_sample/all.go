@@ -7,8 +7,15 @@ import (
 )
 
 func AllAuthors(query *fazzdb.Query) {
+	conditions := []fazzdb.SliceCondition{
+		{fazzdb.CO_OR, "country", fazzdb.OP_EQUALS, "United States"},
+		{fazzdb.CO_OR, "country", fazzdb.OP_EQUALS, "Japan"},
+		{fazzdb.CO_OR, "country", fazzdb.OP_EQUALS, "Singapore"},
+	}
+
 	rows, err := query.Use(model.AuthorModel()).
-		WhereIn("country", "United States", "Japan", "Singapore").
+		//WhereIn("country", "United States", "Japan", "Singapore").
+		WhereMany(conditions...).
 		OrderBy("country", fazzdb.DIR_ASC).
 		All()
 	if nil != err {
