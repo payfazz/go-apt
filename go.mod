@@ -13,6 +13,8 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.2
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
+	github.com/payfazz/go-middleware v0.0.0-20190324083140-9931d8c2ca01 // indirect
+	github.com/payfazz/go-router v0.0.0-20190319225834-51cc7c559a0f // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24 // indirect
