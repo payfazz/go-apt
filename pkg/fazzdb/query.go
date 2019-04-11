@@ -765,6 +765,14 @@ func (q *Query) GroupBy(column string) *Query {
 	return q
 }
 
+// OrderByMany is a function that will add new orders from slice
+func (q *Query) OrderByMany(orders ...Order) *Query {
+	for _, o := range orders {
+		q.appendOrderBy(q.Model.GetTable(), o.Field, o.Direction)
+	}
+	return q
+}
+
 // OrderBy is a function that will add new order by column with direction
 func (q *Query) OrderBy(key string, direction OrderDirection) *Query {
 	q.appendOrderBy(q.Model.GetTable(), Col(key), direction)
