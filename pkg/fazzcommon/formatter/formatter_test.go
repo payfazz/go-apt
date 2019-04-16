@@ -1,8 +1,6 @@
 package formatter
 
 import (
-	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
@@ -65,14 +63,4 @@ func TestEmptyCleanString(t *testing.T) {
 
 func TestMoneyFormat(t *testing.T) {
 	MoneyFormat(100000)
-}
-
-func TestResponseWithData(t *testing.T) {
-	w := httptest.NewRecorder()
-	ResponseWithData(w, http.StatusOK, "ok")
-}
-
-func TestJSONDecode(t *testing.T) {
-	h := httptest.NewRequest("GET", "https://test.com", nil)
-	JSONDecode(h, "")
 }

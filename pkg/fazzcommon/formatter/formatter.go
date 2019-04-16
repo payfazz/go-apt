@@ -1,12 +1,10 @@
 package formatter
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/leekchan/accounting"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/satori/go.uuid"
-	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -114,23 +112,4 @@ func CleanString(param *string) string {
 func MoneyFormat(param float64) string {
 	ac := accounting.Accounting{Precision: 2}
 	return ac.FormatMoney(param)
-}
-
-// Decode is a function to decode the data into json.
-func JSONDecode(request *http.Request, i interface{}) error {
-	defer request.Body.Close()
-	return json.NewDecoder(request.Body).Decode(i)
-}
-
-func encodeBody(writer http.ResponseWriter, data interface{}) error {
-	return json.NewEncoder(writer).Encode(data)
-}
-
-// ResponseWithData is a function to give a response with data.
-func ResponseWithData(writer http.ResponseWriter, statusCode int, data interface{}) {
-	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-	writer.WriteHeader(statusCode)
-	if data != nil {
-		encodeBody(writer, data)
-	}
 }
