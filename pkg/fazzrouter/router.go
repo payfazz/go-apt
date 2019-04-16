@@ -9,11 +9,11 @@ import (
 )
 
 type Route struct {
-	Pattern     string
 	Handlers    map[string]http.HandlerFunc
+	Pattern     string
 	Middlewares []interface{}
-	Groups      []*Route
 	Endpoints   []*Route
+	Groups      []*Route
 }
 
 func BaseRoute() *Route {
@@ -22,15 +22,14 @@ func BaseRoute() *Route {
 
 func (r *Route) Compile() http.HandlerFunc {
 	var handlers []interface{}
+	pathGroups := path.H{}
 
 	for _, m := range r.Middlewares {
 		handlers = append(handlers, m)
 	}
 
 	for _, g := range r.Groups {
-		handlers = append(handlers, path.H{
-			g.Pattern: g.Compile(),
-		}.C())
+		pathGroups[g.Pattern] = g.Compile()
 	}
 
 	for _, e := range r.Endpoints {
@@ -39,13 +38,14 @@ func (r *Route) Compile() http.HandlerFunc {
 			mHandlers[m] = h
 		}
 
-		handlers = append(handlers, path.H{
-			e.Pattern: middleware.Compile(
-				segment.MustEnd,
-				e.Middlewares,
-				mHandlers.C(),
-			),
-		}.C())
+		pathGroups[e.Pattern] = middleware.Compile(
+			segment.MustEnd,
+			e.Middlewares,
+			mHandlers.C(),
+		)
+	}
+	if len(pathGroups) > 0 {
+		handlers = append(handlers, pathGroups.C())
 	}
 
 	return middleware.Compile(handlers)
@@ -58,11 +58,6 @@ func (r *Route) Use(m ...interface{}) *Route {
 
 func (r *Route) Prefix(pattern string, fn func(r *Route)) *Route {
 	r.group(pattern, fn)
-	return r
-}
-
-func (r *Route) Group(fn func(r *Route)) *Route {
-	r.group("", fn)
 	return r
 }
 
