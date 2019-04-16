@@ -57,6 +57,15 @@ func IntegerToString(param int) string {
 	return strconv.Itoa(param)
 }
 
+// SliceUint8ToString used to convert []uint8 to string
+func SliceUint8ToString(ui []uint8) string {
+	runes := make([]rune, len(ui))
+	for i, v := range ui {
+		runes[i] = rune(v)
+	}
+	return string(runes)
+}
+
 // GenerateStringUUID used to generate UUID (return string).
 func GenerateStringUUID() string {
 	return fmt.Sprintf("%s", uuid.NewV4())
