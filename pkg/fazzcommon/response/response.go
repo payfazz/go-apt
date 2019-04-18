@@ -15,7 +15,7 @@ type Basic struct {
 
 // Json is a function to return json object with given data and statusCode
 func Json(w http.ResponseWriter, data interface{}, statusCode int) {
-	parseHeader(w, statusCode, content.Json)
+	parseHeader(w, statusCode, content.JSON)
 	if data != nil {
 		_ = json.NewEncoder(w).Encode(data)
 	}
@@ -33,6 +33,6 @@ func Error(w http.ResponseWriter, err httpError.HttpErrorInterface) {
 
 // parseHeader is a function to parse content data and add it to response header
 func parseHeader(w http.ResponseWriter, statusCode int, contentType string) {
-	w.Header().Set(header.ContentType, contentType)
+	w.Header().Set(header.CONTENT_TYPE, contentType)
 	w.WriteHeader(statusCode)
 }

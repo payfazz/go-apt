@@ -1,8 +1,8 @@
 package header
 
 const (
-	Authorization = "Authorization"
-	UserAgent     = "User-Agent"
-	ContentType   = "Content-Type"
-	ContentLength = "Content-Length"
+	AUTHORIZATION  = "Authorization"
+	USER_AGENT     = "User-Agent"
+	CONTENT_TYPE   = "Content-Type"
+	CONTENT_LENGTH = "Content-Length"
 )

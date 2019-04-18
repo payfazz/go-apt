@@ -1,7 +1,7 @@
 package content
 
 const (
-	Text               = "text/plain"
-	Json               = "application/json"
-	XWWWFormUrlEncoded = "application/x-www-form-urlencoded"
+	TEXT                  = "text/plain"
+	JSON                  = "application/json"
+	X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded"
 )
