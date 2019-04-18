@@ -83,6 +83,7 @@ const (
 	DT_STRING      DataType = "VARCHAR"
 	DT_INT         DataType = "INTEGER"
 	DT_SERIAL      DataType = "SERIAL"
+	DT_BIGSERIAL   DataType = "BIGSERIAL"
 	DT_BIGINT      DataType = "BIGINT"
 	DT_BOOL        DataType = "BOOLEAN"
 	DT_TEXT        DataType = "TEXT"
@@ -109,9 +110,9 @@ const (
 )
 
 const (
-	META_APP_ID = "APP_ID"
+	META_APP_ID  = "APP_ID"
 	META_VERSION = "VERSION"
-	META_TABLE = "fazz_metas"
+	META_TABLE   = "fazz_metas"
 )
 
 var DEFAULT_QUERY_CONFIG = Config{

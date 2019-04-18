@@ -332,6 +332,11 @@ func CreateSerial(name string) *MigrationColumn {
 	return createColumn(name, DT_SERIAL)
 }
 
+// CreateBigSerial is a function to create MigrationColumn of DataType BigSerial
+func CreateBigSerial(name string) *MigrationColumn {
+	return createColumn(name, DT_BIGSERIAL)
+}
+
 // CreateString is a function to create MigrationColumn of DataType Varchar
 func CreateString(name string) *MigrationColumn {
 	return createColumn(name, DT_STRING)
