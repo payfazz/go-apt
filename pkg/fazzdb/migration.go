@@ -342,6 +342,16 @@ func CreateString(name string) *MigrationColumn {
 	return createColumn(name, DT_STRING)
 }
 
+// CreateJson is a function to create MigrationColumn of DataType Json
+func CreateJson(name string) *MigrationColumn {
+	return createColumn(name, DT_JSON)
+}
+
+// CreateJsonB is a function to create MigrationColumn of DataType JsonB
+func CreateJsonB(name string) *MigrationColumn {
+	return createColumn(name, DT_JSONB)
+}
+
 // CreateBoolean is a function to create MigrationColumn of DataType Boolean
 func CreateBoolean(name string) *MigrationColumn {
 	return createColumn(name, DT_BOOL)
@@ -402,6 +412,16 @@ func AddString(name string) *MigrationColumn {
 	return addColumn(name, DT_STRING)
 }
 
+// AddJson is a function to add MigrationColumn of DataType Json
+func AddJson(name string) *MigrationColumn {
+	return addColumn(name, DT_JSON)
+}
+
+// AddJsonB is a function to add MigrationColumn of DataType JsonB
+func AddJsonB(name string) *MigrationColumn {
+	return addColumn(name, DT_JSONB)
+}
+
 // AddBoolean is a function to add MigrationColumn of DataType Boolean
 func AddBoolean(name string) *MigrationColumn {
 	return addColumn(name, DT_BOOL)
@@ -460,6 +480,16 @@ func AlterBigInteger(name string) *MigrationColumn {
 // AlterString is a function to alter MigrationColumn to DataType String
 func AlterString(name string) *MigrationColumn {
 	return alterColumn(name, DT_STRING)
+}
+
+// AlterJson is a function to alter MigrationColumn of DataType Json
+func AlterJson(name string) *MigrationColumn {
+	return alterColumn(name, DT_JSON)
+}
+
+// AlterJsonB is a function to alter MigrationColumn of DataType JsonB
+func AlterJsonB(name string) *MigrationColumn {
+	return alterColumn(name, DT_JSONB)
 }
 
 // AlterBoolean is a function to alter MigrationColumn to DataType Boolean

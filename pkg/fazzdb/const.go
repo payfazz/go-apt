@@ -81,6 +81,8 @@ const (
 const (
 	DT_UUID        DataType = "UUID"
 	DT_STRING      DataType = "VARCHAR"
+	DT_JSON        DataType = "JSON"
+	DT_JSONB       DataType = "JSONB"
 	DT_INT         DataType = "INTEGER"
 	DT_SERIAL      DataType = "SERIAL"
 	DT_BIGSERIAL   DataType = "BIGSERIAL"
