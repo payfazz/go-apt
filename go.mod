@@ -13,13 +13,12 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.2
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
-	github.com/payfazz/go-middleware v0.0.0-20190324083140-9931d8c2ca01 // indirect
-	github.com/payfazz/go-router v0.0.0-20190319225834-51cc7c559a0f // indirect
+	github.com/payfazz/go-middleware v0.0.0-20190324083140-9931d8c2ca01
+	github.com/payfazz/go-router v0.0.0-20190319225834-51cc7c559a0f
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24 // indirect
 	github.com/stretchr/testify v1.3.0
-	github.com/uniplaces/carbon v0.1.6
 	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c
 	google.golang.org/appengine v1.5.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
