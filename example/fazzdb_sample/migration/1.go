@@ -6,7 +6,7 @@ var Version1 = fazzdb.MigrationVersion{
 	Tables: []*fazzdb.MigrationTable{
 		fazzdb.CreateTable("authors", func(table *fazzdb.MigrationTable) {
 			table.Field(fazzdb.CreateSerial("id").Primary())
-			table.Field(fazzdb.CreateString("name", 50))
+			table.Field(fazzdb.CreateString("name", 50).Default("Test"))
 			table.Field(fazzdb.CreateString("country", 100))
 			table.Timestamps()
 			table.SoftDelete()

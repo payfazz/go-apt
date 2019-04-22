@@ -384,7 +384,18 @@ func (b *Builder) generateColumnQuery(column *MigrationColumn, first bool) strin
 		query = fmt.Sprintf(`%s PRIMARY KEY`, query)
 	}
 	if "" != column.defaultValue {
-		query = fmt.Sprintf(`%s DEFAULT %s`, query, column.defaultValue)
+		switch column.dataType {
+		case DT_STRING:
+			fallthrough
+		case DT_TEXT:
+			query = fmt.Sprintf(`%s DEFAULT '%s'`, query, column.defaultValue)
+		case DT_JSON:
+			query = fmt.Sprintf(`%s DEFAULT '%s'::JSON`, query, column.defaultValue)
+		case DT_JSONB:
+			query = fmt.Sprintf(`%s DEFAULT '%s'::JSONB`, query, column.defaultValue)
+		default:
+			query = fmt.Sprintf(`%s DEFAULT %s`, query, column.defaultValue)
+		}
 	}
 	if isAlter {
 		query = fmt.Sprintf(`%s USING "%s"::%s`, query, column.name, column.dataType)

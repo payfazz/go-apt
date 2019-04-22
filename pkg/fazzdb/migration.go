@@ -117,7 +117,6 @@ func (m *Migration) forceMigrate(query *Query, forced bool) {
 	if forced {
 		_, err := query.RawExec(`DROP SCHEMA public CASCADE;` +
 			`CREATE SCHEMA public;` +
-			`GRANT ALL ON SCHEMA public TO postgres;` +
 			`GRANT ALL ON SCHEMA public TO public;`)
 		if nil != err {
 			_ = query.Tx.Rollback()
