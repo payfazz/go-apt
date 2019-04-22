@@ -10,6 +10,7 @@ var Version1 = fazzdb.MigrationVersion{
 			table.Field(fazzdb.CreateString("country"))
 			table.Timestamps()
 			table.SoftDelete()
+			table.Indexes("name", "country")
 		}),
 		fazzdb.CreateTable("books", func(table *fazzdb.MigrationTable) {
 			table.Field(fazzdb.CreateString("id").Primary())

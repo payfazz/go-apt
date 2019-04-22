@@ -56,6 +56,8 @@ func (b *Builder) BuildCreateTable(table *MigrationTable) string {
 	}
 
 	query = fmt.Sprintf(`%s);`, query)
+	query = b.generateCreateIndex(query, table)
+
 	return query
 }
 
@@ -68,12 +70,16 @@ func (b *Builder) BuildAlterTable(table *MigrationTable) string {
 	}
 
 	query = fmt.Sprintf(`%s;`, query)
+	query = b.generateCreateIndex(query, table)
+	
 	return query
 }
 
 // BuildDropTable is a function that will return drop query from given table
 func (b *Builder) BuildDropTable(table *MigrationTable) string {
-	return fmt.Sprintf(`DROP TABLE IF EXISTS "%s";`, table.name)
+	query := b.generateDropIndex("", table)
+	query = fmt.Sprintf(`%s DROP TABLE IF EXISTS "%s";`, query, table.name)
+	return query
 }
 
 // BuildCreateEnum is a function that will return create query from given enum
@@ -397,6 +403,32 @@ func (b *Builder) generateColumnQuery(column *MigrationColumn, first bool) strin
 func (b *Builder) generateReferenceQuery(reference *MigrationReference, first bool) string {
 	query := b.firstOrComma(first)
 	return fmt.Sprintf(`%s FOREIGN KEY ("%s") REFERENCES "%s" ("%s")`, query, reference.key, reference.otherTable, reference.otherKey)
+}
+
+// generateCreateIndex is a function that will generate create index query from given indexes
+func (b *Builder) generateCreateIndex(query string, table *MigrationTable) string {
+	if len(table.indexes) > 0 {
+		query = b.generateDropIndex(query, table)
+		query = fmt.Sprintf(`%s CREATE INDEX %s_indexes ON %s (`, query, table.name, table.name)
+		for i, index := range table.indexes {
+			if i != 0 {
+				query = fmt.Sprintf(`%s, `, query)
+			}
+			query = fmt.Sprintf(`%s "%s"`, query, index)
+		}
+		query = fmt.Sprintf(`%s);`, query)
+	}
+
+	return query
+}
+
+// generateDropIndex is a function that will generate drop index query from given indexes
+func (b *Builder) generateDropIndex(query string, table *MigrationTable) string {
+	if len(table.indexes) > 0 {
+		query = fmt.Sprintf(`%s DROP INDEX IF EXISTS %s_indexes CASCADE;`, query, table.name)
+	}
+
+	return query
 }
 
 // firstOrComma is a function that will determine if comma is needed before the query from given first variable

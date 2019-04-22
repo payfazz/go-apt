@@ -59,4 +59,6 @@ Features:
   - [x] Create Enum
   - [ ] Alter Enum
   - [x] Drop Enum
+  - [x] Create Index
+  - [x] Drop Index
 - [ ] Config
