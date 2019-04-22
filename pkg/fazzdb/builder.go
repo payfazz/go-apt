@@ -2,6 +2,7 @@ package fazzdb
 
 import (
 	`fmt`
+	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
 	`sync`
 )
 
@@ -370,14 +371,7 @@ func (b *Builder) generateColumnQuery(column *MigrationColumn, first bool) strin
 	query = fmt.Sprintf(`%s "%s" %s %s`, query, column.name, typePrefix, column.dataType)
 
 	if len(column.typeArgs) > 0 {
-		query = fmt.Sprintf(`%s(`, query)
-		for i, arg := range column.typeArgs {
-			if i != 0 {
-				query = fmt.Sprintf(`%s,`, query)
-			}
-			query = fmt.Sprintf(`%s%d`, query, arg)
-		}
-		query = fmt.Sprintf(`%s)`, query)
+		query = fmt.Sprintf(`%s(%s)`, query, formatter.SliceJoins(column.typeArgs, ","))
 	}
 
 	if column.command == MC_CREATE && (!column.nullable || column.primaryKey) {

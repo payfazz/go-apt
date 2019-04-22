@@ -344,8 +344,8 @@ func CreateBigSerial(name string) *MigrationColumn {
 }
 
 // CreateString is a function to create MigrationColumn of DataType Varchar
-func CreateString(name string) *MigrationColumn {
-	return createColumn(name, DT_STRING)
+func CreateString(name string, length int) *MigrationColumn {
+	return createColumn(name, DT_STRING, length)
 }
 
 // CreateJson is a function to create MigrationColumn of DataType Json
@@ -414,8 +414,8 @@ func AddBigInteger(name string) *MigrationColumn {
 }
 
 // AddString is a function to add MigrationColumn of DataType String
-func AddString(name string) *MigrationColumn {
-	return addColumn(name, DT_STRING)
+func AddString(name string, length int) *MigrationColumn {
+	return addColumn(name, DT_STRING, length)
 }
 
 // AddJson is a function to add MigrationColumn of DataType Json
@@ -484,8 +484,8 @@ func AlterBigInteger(name string) *MigrationColumn {
 }
 
 // AlterString is a function to alter MigrationColumn to DataType String
-func AlterString(name string) *MigrationColumn {
-	return alterColumn(name, DT_STRING)
+func AlterString(name string, length int) *MigrationColumn {
+	return alterColumn(name, DT_STRING, length)
 }
 
 // AlterJson is a function to alter MigrationColumn of DataType Json
