@@ -114,7 +114,7 @@ const (
 const (
 	META_APP_ID  = "APP_ID"
 	META_VERSION = "VERSION"
-	META_TABLE   = "fazz_metas"
+	META_TABLE   = "fazzMetas"
 )
 
 var DEFAULT_QUERY_CONFIG = Config{
