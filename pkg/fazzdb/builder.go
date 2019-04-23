@@ -167,8 +167,10 @@ func (b *Builder) BuildInsert(model ModelInterface, doNothing bool) string {
 func (b *Builder) BuildSelect(model ModelInterface, param *Parameter, aggregate Aggregate, aggregateColumn string) string {
 	query := `SELECT `
 
-	if aggregate != AG_NONE {
+	if aggregate != AG_NONE && aggregate != AG_COUNT {
 		query = fmt.Sprintf(`%s %s("%s")`, query, aggregate, aggregateColumn)
+	} else if aggregate == AG_COUNT {
+		query = fmt.Sprintf(`%s %s(%s)`, query, aggregate, aggregateColumn)
 	} else if model.ColumnCount() != 0 {
 		query = b.generateValues(query, model, param, b.alwaysFalse, b.generateSelectColumns)
 	} else {
