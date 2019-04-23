@@ -85,8 +85,8 @@ func (b *Builder) BuildDropTable(table *MigrationTable) string {
 
 // BuildCreateEnum is a function that will return create query from given enum
 func (b *Builder) BuildCreateEnum(enum *MigrationEnum) string {
-	query := fmt.Sprintf(`CREATE TYPE "%s" AS ENUM (`, enum.name)
-	for i, v := range enum.values {
+	query := fmt.Sprintf(`CREATE TYPE "%s" AS ENUM (`, enum.Name)
+	for i, v := range enum.Values {
 		if i != 0 {
 			query = fmt.Sprintf(`%s, `, query)
 		}
@@ -98,7 +98,7 @@ func (b *Builder) BuildCreateEnum(enum *MigrationEnum) string {
 
 // BuildDropEnum is a function that will return drop query from given enum
 func (b *Builder) BuildDropEnum(enum *MigrationEnum) string {
-	return fmt.Sprintf(`DROP TYPE IF EXISTS "%s";`, enum.name)
+	return fmt.Sprintf(`DROP TYPE IF EXISTS "%s";`, enum.Name)
 }
 
 // BuildDelete is a function that will return delete query from given model and parameter

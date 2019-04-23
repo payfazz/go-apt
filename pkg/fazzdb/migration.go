@@ -661,21 +661,21 @@ func (mr *MigrationReference) OnDelete(action ReferenceAction) *MigrationReferen
 
 // MigrationEnum is a struct that is used to store information about migration enum
 type MigrationEnum struct {
-	name   string
-	values []string
+	Name   string
+	Values []string
 }
 
 // NewEnum is a constructor to MigrationEnum
 func NewEnum(name string, values ...string) *MigrationEnum {
 	return &MigrationEnum{
-		name:   fmt.Sprintf("%s_enum", name),
-		values: values,
+		Name:   fmt.Sprintf("%s_enum", name),
+		Values: values,
 	}
 }
 
 // GetType is a function to return enum name with public prefix
 func (me *MigrationEnum) GetType() string {
-	return fmt.Sprintf(`"public"."%s"`, me.name)
+	return fmt.Sprintf(`"public"."%s"`, me.Name)
 }
 
 // GetDataType is a function to return enum data type for column use

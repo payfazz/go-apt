@@ -8,9 +8,9 @@ import (
 
 func AllAuthors(query *fazzdb.Query) {
 	conditions := []fazzdb.SliceCondition{
-		{fazzdb.CO_OR, "country", fazzdb.OP_EQUALS, "United States"},
-		{fazzdb.CO_OR, "country", fazzdb.OP_EQUALS, "Japan"},
-		{fazzdb.CO_OR, "country", fazzdb.OP_EQUALS, "Singapore"},
+		{Connector:fazzdb.CO_OR, Field: "country", Operator: fazzdb.OP_EQUALS, Value: "United States"},
+		{Connector:fazzdb.CO_OR, Field: "country", Operator: fazzdb.OP_EQUALS, Value: "Japan"},
+		{Connector: fazzdb.CO_OR, Field: "country", Operator: fazzdb.OP_EQUALS, Value: "Singapore"},
 	}
 
 	rows, err := query.Use(model.AuthorModel()).
