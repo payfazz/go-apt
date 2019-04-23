@@ -393,7 +393,7 @@ func CreateTimestampTz(name string, timezone int) *MigrationColumn {
 }
 
 // CreateEnum is a function to create MigrationColumn of DataType Enum
-func CreateEnum(name string, enum MigrationEnum) *MigrationColumn {
+func CreateEnum(name string, enum *MigrationEnum) *MigrationColumn {
 	return createColumn(name, enum.GetDataType())
 }
 
@@ -533,7 +533,7 @@ func AlterTimestampTz(name string, timezone int) *MigrationColumn {
 }
 
 // AlterEnum is a function to alter MigrationColumn to DataType Enum
-func AlterEnum(name string, enum MigrationEnum) *MigrationColumn {
+func AlterEnum(name string, enum *MigrationEnum) *MigrationColumn {
 	return alterColumn(name, enum.GetDataType())
 }
 
