@@ -103,7 +103,7 @@ func (b *Builder) BuildDropEnum(enum *MigrationEnum) string {
 
 // BuildDelete is a function that will return delete query from given model and parameter
 func (b *Builder) BuildDelete(model ModelInterface, param *Parameter) string {
-	query := fmt.Sprintf(`DELETE FROM %s`, model.GetTable())
+	query := fmt.Sprintf(`DELETE FROM "%s"`, model.GetTable())
 	query = b.generateConditions(query, model.GetTable(), param)
 	query = fmt.Sprintf(`%s;`, query)
 	return query
@@ -111,7 +111,7 @@ func (b *Builder) BuildDelete(model ModelInterface, param *Parameter) string {
 
 // BuildUpdate is a function that will return delete query from given model and parameter
 func (b *Builder) BuildUpdate(model ModelInterface, param *Parameter) string {
-	query := fmt.Sprintf(`UPDATE %s SET`, model.GetTable())
+	query := fmt.Sprintf(`UPDATE "%s" SET`, model.GetTable())
 	query = b.generateValues(query, model, param, b.isPrimaryKeyOrCreatedAt, b.generateUpdateColumns)
 	query = b.generateConditions(query, model.GetTable(), param)
 	query = fmt.Sprintf(`%s;`, query)
@@ -120,7 +120,7 @@ func (b *Builder) BuildUpdate(model ModelInterface, param *Parameter) string {
 
 // BuildBulkInsert is a function that will return bulk insert query from given model and slice of data
 func (b *Builder) BuildBulkInsert(model ModelInterface, data []interface{}) string {
-	query := fmt.Sprintf(`INSERT INTO %s`, model.GetTable())
+	query := fmt.Sprintf(`INSERT INTO "%s"`, model.GetTable())
 
 	query = fmt.Sprintf(`%s (`, query)
 	query = b.generateValues(query, model, nil, b.isAutoIncrementPrimaryKey, b.generateInsertColumns)
@@ -146,7 +146,7 @@ func (b *Builder) BuildBulkInsert(model ModelInterface, data []interface{}) stri
 
 // BuildInsert is a function that will return insert query from given model
 func (b *Builder) BuildInsert(model ModelInterface, doNothing bool) string {
-	query := fmt.Sprintf(`INSERT INTO %s`, model.GetTable())
+	query := fmt.Sprintf(`INSERT INTO "%s"`, model.GetTable())
 
 	query = fmt.Sprintf(`%s (`, query)
 	query = b.generateValues(query, model, nil, b.isAutoIncrementPrimaryKey, b.generateInsertColumns)
@@ -168,14 +168,14 @@ func (b *Builder) BuildSelect(model ModelInterface, param *Parameter, aggregate 
 	query := `SELECT `
 
 	if aggregate != AG_NONE {
-		query = fmt.Sprintf(`%s %s(%s)`, query, aggregate, aggregateColumn)
+		query = fmt.Sprintf(`%s %s("%s")`, query, aggregate, aggregateColumn)
 	} else if model.ColumnCount() != 0 {
 		query = b.generateValues(query, model, param, b.alwaysFalse, b.generateSelectColumns)
 	} else {
 		query = fmt.Sprintf(`%s *`, query)
 	}
 
-	query = fmt.Sprintf(`%s FROM %s`, query, model.GetTable())
+	query = fmt.Sprintf(`%s FROM "%s"`, query, model.GetTable())
 	query = b.generateConditions(query, model.GetTable(), param)
 
 	if len(param.Groups) > 0 {
@@ -414,7 +414,7 @@ func (b *Builder) generateReferenceQuery(reference *MigrationReference, first bo
 func (b *Builder) generateCreateIndex(query string, table *MigrationTable) string {
 	if len(table.indexes) > 0 {
 		query = b.generateDropIndex(query, table)
-		query = fmt.Sprintf(`%s CREATE INDEX %s_indexes ON %s (`, query, table.name, table.name)
+		query = fmt.Sprintf(`%s CREATE INDEX "%s_indexes" ON "%s" (`, query, table.name, table.name)
 		for i, index := range table.indexes {
 			if i != 0 {
 				query = fmt.Sprintf(`%s, `, query)
@@ -430,7 +430,7 @@ func (b *Builder) generateCreateIndex(query string, table *MigrationTable) strin
 // generateDropIndex is a function that will generate drop index query from given indexes
 func (b *Builder) generateDropIndex(query string, table *MigrationTable) string {
 	if len(table.indexes) > 0 {
-		query = fmt.Sprintf(`%s DROP INDEX IF EXISTS %s_indexes CASCADE;`, query, table.name)
+		query = fmt.Sprintf(`%s DROP INDEX IF EXISTS "%s_indexes" CASCADE;`, query, table.name)
 	}
 
 	return query
