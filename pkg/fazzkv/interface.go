@@ -7,4 +7,5 @@ type Store interface {
 	Get(key string) (string, error)
 	Delete(key string) error
 	Truncate() error
+	Increment(key string) error
 }

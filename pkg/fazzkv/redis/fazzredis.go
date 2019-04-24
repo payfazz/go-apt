@@ -40,6 +40,11 @@ func (kv *fazzRedis) Truncate() error {
 	return kv.client.FlushAll().Err()
 }
 
+// Increment allow user to increment integer data without resetting expiry time
+func (kv *fazzRedis) Increment(key string) error {
+	return kv.client.Incr(key).Err()
+}
+
 // SetWithExpire allow user to set data and expired time at one time.
 func (kv *fazzRedis) SetWithExpire(key string, value interface{}, duration time.Duration) error {
 	return kv.client.Set(key, value, duration).Err()
