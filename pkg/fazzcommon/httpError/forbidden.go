@@ -8,7 +8,7 @@ type ForbiddenError struct {
 }
 
 // Forbidden is a constructor to create ForbiddenError instance
-func Forbidden(err error) *ForbiddenError {
+func Forbidden(err error) HttpErrorInterface {
 	return &ForbiddenError{
 		BaseError: code(http.StatusForbidden, err),
 	}

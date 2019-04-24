@@ -8,7 +8,7 @@ type NotFoundError struct {
 }
 
 // NotFound is a constructor to create NotFoundError instance
-func NotFound(err error) *NotFoundError {
+func NotFound(err error) HttpErrorInterface {
 	return &NotFoundError{
 		BaseError: code(http.StatusNotFound, err),
 	}
