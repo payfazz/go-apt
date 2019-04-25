@@ -40,9 +40,7 @@ func (c *Condition) namedString(table string) string {
 	query := ""
 	key := c.Field.ToString(table)
 	switch c.Operator {
-	case OP_IS_NOT_NULL:
-		fallthrough
-	case OP_IS_NULL:
+	case OP_IS_NOT_NULL, OP_IS_NULL:
 		query = fmt.Sprintf("%s %s %s", c.Connector, key, c.Operator)
 	case OP_IN:
 		query = fmt.Sprintf("%s %s %s (:%s)", c.Connector, key, c.Operator, c.Prefix)

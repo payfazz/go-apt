@@ -387,19 +387,7 @@ func (b *Builder) generateColumnQuery(column *MigrationColumn, first bool) strin
 	}
 	if "" != column.defaultValue {
 		switch column.dataType {
-		case DT_SERIAL:
-			fallthrough
-		case DT_BIGSERIAL:
-			fallthrough
-		case DT_INT:
-			fallthrough
-		case DT_BIGINT:
-			fallthrough
-		case DT_DOUBLE:
-			fallthrough
-		case DT_NUMERIC:
-			fallthrough
-		case DT_DECIMAL:
+		case DT_SERIAL, DT_BIGSERIAL, DT_INT, DT_BIGINT, DT_DOUBLE, DT_NUMERIC, DT_DECIMAL:
 			query = fmt.Sprintf(`%s DEFAULT %s`, query, column.defaultValue)
 		case DT_JSON:
 			query = fmt.Sprintf(`%s DEFAULT '%s'::JSON`, query, column.defaultValue)
