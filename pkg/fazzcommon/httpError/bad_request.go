@@ -8,7 +8,7 @@ type BadRequestError struct {
 }
 
 // BadRequest is a constructor to create BadRequestError instance
-func BadRequest(err error) HttpErrorInterface {
+func BadRequest(err error) error {
 	return &BadRequestError{
 		BaseError: code(http.StatusBadRequest, err),
 	}

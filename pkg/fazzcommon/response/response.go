@@ -37,8 +37,12 @@ func Success(w http.ResponseWriter, success bool, statusCode int) {
 }
 
 // Error is a function to return http error
-func Error(w http.ResponseWriter, err httpError.HttpErrorInterface) {
-	Json(w, err, err.GetCode())
+func Error(w http.ResponseWriter, err error) {
+	if be, ok := err.(httpError.HttpErrorInterface); ok {
+		Json(w, be, be.GetCode())
+	} else {
+		Json(w, err, http.StatusInternalServerError)
+	}
 }
 
 // parseHeader is a function to parse content data and add it to response header

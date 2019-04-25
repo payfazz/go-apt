@@ -8,7 +8,7 @@ type UnauthorizedError struct {
 }
 
 // Unauthorized is a constructor to create UnauthorizedError instance
-func Unauthorized(err error) HttpErrorInterface {
+func Unauthorized(err error) error {
 	return &UnauthorizedError{
 		BaseError: code(http.StatusUnauthorized, err),
 	}
