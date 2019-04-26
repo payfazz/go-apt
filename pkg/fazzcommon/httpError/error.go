@@ -40,19 +40,27 @@ func (e *BaseError) GetDetail() interface{} {
 }
 
 // base is a constructor for http error with custom message
-func base(code int, message string, err error) BaseError {
+func base(code int, message string, err interface{}) BaseError {
 	return BaseError{
 		Code:    code,
 		Message: message,
-		Trace:   err.Error(),
+		Trace:   getError(err),
 	}
 }
 
 // code is a constructor for http error with default status text message
-func code(code int, err string) BaseError {
+func code(code int, err interface{}) BaseError {
 	return BaseError{
 		Code:    code,
 		Message: http.StatusText(code),
-		Trace:   err,
+		Trace:   getError(err),
 	}
+}
+
+// getError is a function for get error message from string or error
+func getError(err interface{}) string {
+	if v, ok := err.(error); ok {
+		return v.Error()
+	}
+	return fmt.Sprint(err)
 }
