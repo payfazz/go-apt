@@ -49,10 +49,10 @@ func base(code int, message string, err error) BaseError {
 }
 
 // code is a constructor for http error with default status text message
-func code(code int, err error) BaseError {
+func code(code int, err string) BaseError {
 	return BaseError{
 		Code:    code,
 		Message: http.StatusText(code),
-		Trace:   err.Error(),
+		Trace:   err,
 	}
 }

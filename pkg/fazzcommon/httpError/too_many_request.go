@@ -8,7 +8,7 @@ type TooManyRequestError struct {
 }
 
 // TooManyRequest is a constructor to create BadRequestError instance
-func TooManyRequest(err error) error {
+func TooManyRequest(err string) error {
 	return &TooManyRequestError{
 		BaseError: code(http.StatusTooManyRequests, err),
 	}

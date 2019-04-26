@@ -8,7 +8,7 @@ type InternalServerError struct {
 }
 
 // InternalServer is a constructor to create InternalServerError instance
-func InternalServer(err error) error {
+func InternalServer(err string) error {
 	return &InternalServerError{
 		BaseError: code(http.StatusInternalServerError, err),
 	}
