@@ -64,6 +64,12 @@ func SliceUint8ToString(ui []uint8) string {
 	return string(runes)
 }
 
+// StringToInt64 used to get int64 value from string, without try to catch an error.
+func StringToInt64(param string) int64 {
+	val, _ := strconv.ParseInt(param, 10, 64)
+	return val
+}
+
 // GenerateStringUUID used to generate UUID (return string).
 func GenerateStringUUID() string {
 	return fmt.Sprintf("%s", uuid.NewV4())
@@ -112,4 +118,114 @@ func CleanString(param *string) string {
 func MoneyFormat(param float64) string {
 	ac := accounting.Accounting{Precision: 2}
 	return ac.FormatMoney(param)
+}
+
+// ToStringPtr used to return string pointer from param
+func ToStringPtr(param interface{}) *string {
+	result := fmt.Sprint(param)
+	return &result
+}
+
+// ToFloat32Ptr used to return float32 pointer from param
+func ToFloat32Ptr(param interface{}) *float32 {
+	var result float32
+	switch i := param.(type) {
+	case float32:
+		result = i
+	case float64:
+		result = float32(i)
+	case int64:
+		result = float32(i)
+	case int32:
+		result = float32(i)
+	case int:
+		result = float32(i)
+	case uint64:
+		result = float32(i)
+	case uint32:
+		result = float32(i)
+	case uint:
+		result = float32(i)
+	default:
+		return nil
+	}
+	return &result
+}
+
+// ToFloat64Ptr used to return float64 pointer from param
+func ToFloat64Ptr(param interface{}) *float64 {
+	var result float64
+	switch i := param.(type) {
+	case float64:
+		result = i
+	case float32:
+		result = float64(i)
+	case int64:
+		result = float64(i)
+	case int32:
+		result = float64(i)
+	case int:
+		result = float64(i)
+	case uint64:
+		result = float64(i)
+	case uint32:
+		result = float64(i)
+	case uint:
+		result = float64(i)
+	default:
+		return nil
+	}
+	return &result
+}
+
+// ToIntPtr used to return int pointer from param
+func ToIntPtr(param interface{}) *int {
+	var result int
+	switch i := param.(type) {
+	case float64:
+		result = int(i)
+	case float32:
+		result = int(i)
+	case int64:
+		result = int(i)
+	case int32:
+		result = int(i)
+	case int:
+		result = i
+	case uint64:
+		result = int(i)
+	case uint32:
+		result = int(i)
+	case uint:
+		result = int(i)
+	default:
+		return nil
+	}
+	return &result
+}
+
+// ToInt64Ptr used to return int64 pointer from param
+func ToInt64Ptr(param interface{}) *int64 {
+	var result int64
+	switch i := param.(type) {
+	case float64:
+		result = int64(i)
+	case float32:
+		result = int64(i)
+	case int64:
+		result = i
+	case int32:
+		result = int64(i)
+	case int:
+		result = int64(i)
+	case uint64:
+		result = int64(i)
+	case uint32:
+		result = int64(i)
+	case uint:
+		result = int64(i)
+	default:
+		return nil
+	}
+	return &result
 }
