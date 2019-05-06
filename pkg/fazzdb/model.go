@@ -245,7 +245,7 @@ func (m *Model) MapPayload(v ModelInterface) map[string]interface{} {
 				results[DELETED_AT] = model.DeletedAt
 			}
 		} else {
-			results[formatter.ToLowerFirst(classType.Field(i).Name)] = classValue.Field(i).Interface()
+			results[formatter.ToLowerFirst(classType.Field(i).Tag.Get("db"))] = classValue.Field(i).Interface()
 		}
 	}
 	return results
