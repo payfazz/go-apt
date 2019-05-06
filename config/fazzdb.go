@@ -2,15 +2,17 @@ package config
 
 import (
 	"fmt"
+	"sync"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
-	"sync"
 )
 
 var Parameter = fazzdb.Config{
-	Limit:  0,
-	Offset: 0,
-	Lock:   fazzdb.LO_NONE,
+	Limit:           0,
+	Offset:          0,
+	Lock:            fazzdb.LO_NONE,
+	DevelopmentMode: true,
 }
 
 var DbConf = map[string]string{

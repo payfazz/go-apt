@@ -17,10 +17,11 @@ func initQuery() *Query {
 	}
 
 	return QueryDb(db, Config{
-		Limit:  0,
-		Offset: 0,
-		Lock:   LO_NONE,
-	}, true)
+		Limit:           0,
+		Offset:          0,
+		Lock:            LO_NONE,
+		DevelopmentMode: true,
+	})
 }
 
 func initTestDb(query *Query) {

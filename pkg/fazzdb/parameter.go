@@ -8,24 +8,26 @@ import (
 // NewParameter is a constructor that will return Parameter instance
 func NewParameter(config Config) *Parameter {
 	return &Parameter{
-		Values: make(map[string]interface{}, 0),
-		Offset: config.Offset,
-		Limit:  config.Limit,
-		Lock:   config.Lock,
+		Values:          make(map[string]interface{}, 0),
+		Offset:          config.Offset,
+		Limit:           config.Limit,
+		Lock:            config.Lock,
+		DevelopmentMode: config.DevelopmentMode,
 	}
 }
 
 // Parameter is a struct that is used to contain all configuration of your query
 type Parameter struct {
-	Conditions []Condition
-	Havings    []Condition
-	Values     map[string]interface{}
-	Columns    []Column
-	Orders     []Order
-	Groups     []Column
-	Lock       Lock
-	Limit      int
-	Offset     int
+	Conditions      []Condition
+	Havings         []Condition
+	Values          map[string]interface{}
+	Columns         []Column
+	Orders          []Order
+	Groups          []Column
+	Lock            Lock
+	Limit           int
+	Offset          int
+	DevelopmentMode bool
 }
 
 // appendGroupConditions is a function that is used to append multiple conditions as one new Conditions
@@ -153,6 +155,12 @@ func (p *Parameter) setLimit(limit int) *Parameter {
 // setOffset is a function to set Offset attribute
 func (p *Parameter) setOffset(offset int) *Parameter {
 	p.Offset = offset
+	return p
+}
+
+// setDevelopmentMode is a function to set DevelopmentMode attribute
+func (p *Parameter) setDevelopmentMode(developmentMode bool) *Parameter {
+	p.DevelopmentMode = developmentMode
 	return p
 }
 

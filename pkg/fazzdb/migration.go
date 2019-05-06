@@ -48,7 +48,7 @@ func Migrate(db *sqlx.DB, appId string, forceMigrate bool, versions ...Migration
 	}
 
 	tx, _ := db.Beginx()
-	query := QueryTx(tx, DEFAULT_QUERY_CONFIG, false)
+	query := QueryTx(tx, DEFAULT_QUERY_CONFIG)
 
 	m.forceMigrate(query, forceMigrate)
 

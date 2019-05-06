@@ -13,42 +13,39 @@ import (
 // QueryDb creates a new pointer to the Query instance using a sqlx.DB instance and config struct,
 // this constructor will automatically create a new transaction for query used in this Query instance
 // this Query instance will automatically commit and rollback on the query it runs
-func QueryDb(db *sqlx.DB, config Config, developmentMode bool) *Query {
+func QueryDb(db *sqlx.DB, config Config) *Query {
 	return &Query{
-		Config:          config,
-		Parameter:       NewParameter(config),
-		Model:           nil,
-		Builder:         NewBuilder(),
-		Db:              db,
-		AutoCommit:      true,
-		DevelopmentMode: developmentMode,
+		Config:     config,
+		Parameter:  NewParameter(config),
+		Model:      nil,
+		Builder:    NewBuilder(),
+		Db:         db,
+		AutoCommit: true,
 	}
 }
 
 // QueryTx creates a new pointer to the Query instance using a sqlx.Tx instance and config struct,
 // this constructor will use the provided transaction and will not commit or rollback any query it runs
-func QueryTx(tx *sqlx.Tx, config Config, developmentMode bool) *Query {
+func QueryTx(tx *sqlx.Tx, config Config) *Query {
 	return &Query{
-		Config:          config,
-		Parameter:       NewParameter(config),
-		Model:           nil,
-		Builder:         NewBuilder(),
-		Tx:              tx,
-		AutoCommit:      false,
-		DevelopmentMode: developmentMode,
+		Config:     config,
+		Parameter:  NewParameter(config),
+		Model:      nil,
+		Builder:    NewBuilder(),
+		Tx:         tx,
+		AutoCommit: false,
 	}
 }
 
 // Query is a struct that will handle query building and struct mapping to the database
 type Query struct {
 	*Parameter
-	Config          Config
-	Model           ModelInterface
-	Builder         *Builder
-	Db              *sqlx.DB
-	Tx              *sqlx.Tx
-	AutoCommit      bool
-	DevelopmentMode bool
+	Config     Config
+	Model      ModelInterface
+	Builder    *Builder
+	Db         *sqlx.DB
+	Tx         *sqlx.Tx
+	AutoCommit bool
 }
 
 // RawExec is a function that will run exec to a raw query with provided payload
@@ -72,7 +69,7 @@ func (q *Query) RawExecCtx(ctx context.Context, query string, payload ...interfa
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return false, q.errorWithQuery("RawExecCtx[Exec]", query, err)
 		}
 		return false, err
@@ -98,7 +95,7 @@ func (q *Query) RawFirstCtx(ctx context.Context, sample interface{}, query strin
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawFirstCtx[makeTypeOf]", query, err)
 		}
 		return nil, err
@@ -108,7 +105,7 @@ func (q *Query) RawFirstCtx(ctx context.Context, sample interface{}, query strin
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawFirstCtx[Preparex]", query, err)
 		}
 		return nil, err
@@ -123,7 +120,7 @@ func (q *Query) RawFirstCtx(ctx context.Context, sample interface{}, query strin
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawFirstCtx[Get]", query, err)
 		}
 		return nil, err
@@ -148,7 +145,7 @@ func (q *Query) RawAllCtx(ctx context.Context, sample interface{}, query string,
 	results, err := q.makeSliceOf(sample)
 	if nil != err {
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawAllCtx[makeSliceOf]", query, err)
 		}
 		q.autoRollback()
@@ -159,7 +156,7 @@ func (q *Query) RawAllCtx(ctx context.Context, sample interface{}, query string,
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawAllCtx[Preparex]", query, err)
 		}
 		return nil, err
@@ -174,7 +171,7 @@ func (q *Query) RawAllCtx(ctx context.Context, sample interface{}, query string,
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawAllCtx[Select]", query, err)
 		}
 		return nil, err
@@ -200,7 +197,7 @@ func (q *Query) RawNamedExecCtx(ctx context.Context, query string, payload map[s
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return false, q.errorWithQuery("RawNamedExecCtx[PrepareNamed]", query, err)
 		}
 		return false, err
@@ -215,7 +212,7 @@ func (q *Query) RawNamedExecCtx(ctx context.Context, query string, payload map[s
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return false, q.errorWithQuery("RawNamedExecCtx[Exec]", query, err)
 		}
 		return false, err
@@ -247,7 +244,7 @@ func (q *Query) RawNamedFirstCtx(
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawNamedFirstCtx[makeTypeOf]", query, err)
 		}
 		return nil, err
@@ -257,7 +254,7 @@ func (q *Query) RawNamedFirstCtx(
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawNamedFirstCtx[PrepareNamed]", query, err)
 		}
 		return nil, err
@@ -272,7 +269,7 @@ func (q *Query) RawNamedFirstCtx(
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawNamedFirstCtx[Get]", query, err)
 		}
 		return nil, err
@@ -304,7 +301,7 @@ func (q *Query) RawNamedAllCtx(
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawNamedAllCtx[makeSliceOf]", query, err)
 		}
 		return nil, err
@@ -314,7 +311,7 @@ func (q *Query) RawNamedAllCtx(
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawNamedAllCtx[PrepareNamed]", query, err)
 		}
 		return nil, err
@@ -329,7 +326,7 @@ func (q *Query) RawNamedAllCtx(
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("RawNamedAllCtx[Select]", query, err)
 		}
 		return nil, err
@@ -412,7 +409,7 @@ func (q *Query) InsertCtx(ctx context.Context, doNothing bool) (interface{}, err
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("InsertCtx[PrepareNamed]", query, err)
 		}
 		return nil, err
@@ -427,7 +424,7 @@ func (q *Query) InsertCtx(ctx context.Context, doNothing bool) (interface{}, err
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("InsertCtx[Get]", query, err)
 		}
 		return nil, err
@@ -473,7 +470,7 @@ func (q *Query) BulkInsertCtx(ctx context.Context, data interface{}) (bool, erro
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return false, q.errorWithQuery("BulkInsertCtx[PrepareNamed]", query, err)
 		}
 		return false, err
@@ -488,7 +485,7 @@ func (q *Query) BulkInsertCtx(ctx context.Context, data interface{}) (bool, erro
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return false, q.errorWithQuery("BulkInsertCtx[Exec]", query, err)
 		}
 		return false, err
@@ -527,7 +524,7 @@ func (q *Query) UpdateCtx(ctx context.Context) (bool, error) {
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return false, q.errorWithQuery("UpdateCtx[PrepareNamed]", query, err)
 		}
 		return false, err
@@ -542,7 +539,7 @@ func (q *Query) UpdateCtx(ctx context.Context) (bool, error) {
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return false, q.errorWithQuery("UpdateCtx[Exec]", query, err)
 		}
 		return false, err
@@ -587,7 +584,7 @@ func (q *Query) DeleteCtx(ctx context.Context) (bool, error) {
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return false, q.errorWithQuery("DeleteCtx[PrepareNamed]", query, err)
 		}
 		return false, err
@@ -602,7 +599,7 @@ func (q *Query) DeleteCtx(ctx context.Context) (bool, error) {
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return false, q.errorWithQuery("DeleteCtx[Exec]", query, err)
 		}
 		return false, err
@@ -799,7 +796,7 @@ func (q *Query) OrWhereNotNil(key string) *Query {
 // GroupWhere is a function that will receive a function that return a group of condition to be grouped
 // together, connector that is used between condition is AND connector
 func (q *Query) GroupWhere(conditionFunc func(query *Query) *Query) *Query {
-	query := QueryTx(q.Tx, q.Config, q.DevelopmentMode).Use(q.Model)
+	query := QueryTx(q.Tx, q.Config).Use(q.Model)
 	param := conditionFunc(query).Parameter
 	q.appendGroupConditions(param, CO_AND)
 	return q
@@ -808,7 +805,7 @@ func (q *Query) GroupWhere(conditionFunc func(query *Query) *Query) *Query {
 // OrGroupWhere is a function that will receive a function that return a group of condition to be grouped
 // together, connector that is used between condition is OR connector
 func (q *Query) OrGroupWhere(conditionFunc func(query *Query) *Query) *Query {
-	query := QueryTx(q.Tx, q.Config, q.DevelopmentMode).Use(q.Model)
+	query := QueryTx(q.Tx, q.Config).Use(q.Model)
 	param := conditionFunc(query).Parameter
 	q.appendGroupConditions(param, CO_OR)
 	return q
@@ -841,7 +838,7 @@ func (q *Query) OrHavingOp(key Column, operator Operator, value interface{}) *Qu
 // GroupWhere is a function that will receive a function that return a group of condition to be grouped
 // together, connector that is used between condition is AND connector
 func (q *Query) GroupHaving(conditionFunc func(query *Query) *Query) *Query {
-	query := QueryTx(q.Tx, q.Config, q.DevelopmentMode).Use(q.Model)
+	query := QueryTx(q.Tx, q.Config).Use(q.Model)
 	param := conditionFunc(query).Parameter
 	q.appendGroupHavings(param, CO_AND)
 	return q
@@ -850,7 +847,7 @@ func (q *Query) GroupHaving(conditionFunc func(query *Query) *Query) *Query {
 // OrGroupWhere is a function that will receive a function that return a group of condition to be grouped
 // together, connector that is used between condition is OR connector
 func (q *Query) OrGroupHaving(conditionFunc func(query *Query) *Query) *Query {
-	query := QueryTx(q.Tx, q.Config, q.DevelopmentMode).Use(q.Model)
+	query := QueryTx(q.Tx, q.Config).Use(q.Model)
 	param := conditionFunc(query).Parameter
 	q.appendGroupHavings(param, CO_OR)
 	return q
@@ -897,6 +894,12 @@ func (q *Query) WithOffset(offset int) *Query {
 // WithLock is a function that will add lock to current query
 func (q *Query) WithLock(lock Lock) *Query {
 	q.setLock(lock)
+	return q
+}
+
+// ShowQuery is a function that will set DevelopmentMode to current query
+func (q *Query) ShowQuery(show bool) *Query {
+	q.setDevelopmentMode(show)
 	return q
 }
 
@@ -948,7 +951,7 @@ func (q *Query) first(ctx context.Context, withTrash TrashStatus) (interface{}, 
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return false, q.errorWithQuery("first[Get]", stmt.QueryString, err)
 		}
 		return nil, err
@@ -993,7 +996,7 @@ func (q *Query) all(ctx context.Context, withTrash TrashStatus) (interface{}, er
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return false, q.errorWithQuery("all[Select]", stmt.QueryString, err)
 		}
 		return nil, err
@@ -1034,7 +1037,7 @@ func (q *Query) aggregate(ctx context.Context, aggregate Aggregate, column strin
 	if nil != err {
 		q.autoRollback()
 
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, q.errorWithQuery("aggregate[Get]", stmt.QueryString, err)
 		}
 		return nil, err
@@ -1063,7 +1066,7 @@ func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withT
 
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
-		if q.DevelopmentMode {
+		if q.Config.DevelopmentMode {
 			return nil, nil, q.errorWithQuery(prefix, query, err)
 		}
 		return nil, nil, err

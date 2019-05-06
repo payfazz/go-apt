@@ -19,7 +19,7 @@ func main() {
 		migration.Version2,
 	)
 
-	query := fazzdb.QueryDb(config.GetDB(), config.Parameter, true)
+	query := fazzdb.QueryDb(config.GetDB(), config.Parameter)
 	fazzdb_sample.InsertAuthor(query)
 	fazzdb_sample.InsertBook(query)
 
