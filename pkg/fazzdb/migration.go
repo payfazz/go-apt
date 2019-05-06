@@ -12,7 +12,7 @@ import (
 func FazzMetaModel() *FazzMeta {
 	return &FazzMeta{
 		Model: PlainModel(
-			"fazzMetas",
+			"fazz_metas",
 			[]Column{
 				Col("key"),
 				Col("value"),
