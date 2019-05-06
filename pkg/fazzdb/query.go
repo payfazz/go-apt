@@ -897,7 +897,7 @@ func (q *Query) WithLock(lock Lock) *Query {
 	return q
 }
 
-// ShowQuery is a function that will set DevelopmentMode to current query
+// ShowQuery is a function that will set DevelopmentMode to show parameter
 func (q *Query) ShowQuery(show bool) *Query {
 	q.setDevelopmentMode(show)
 	return q
