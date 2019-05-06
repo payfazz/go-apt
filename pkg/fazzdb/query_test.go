@@ -2,10 +2,11 @@ package fazzdb
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func initQuery() *Query {
@@ -19,7 +20,7 @@ func initQuery() *Query {
 		Limit:  0,
 		Offset: 0,
 		Lock:   LO_NONE,
-	})
+	}, true)
 }
 
 func initTestDb(query *Query) {
