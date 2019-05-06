@@ -2,14 +2,15 @@ package fazzdb_sample
 
 import (
 	"fmt"
+
 	"github.com/payfazz/go-apt/example/fazzdb_sample/model"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
 func AllAuthors(query *fazzdb.Query) {
 	conditions := []fazzdb.SliceCondition{
-		{Connector:fazzdb.CO_OR, Field: "country", Operator: fazzdb.OP_EQUALS, Value: "United States"},
-		{Connector:fazzdb.CO_OR, Field: "country", Operator: fazzdb.OP_EQUALS, Value: "Japan"},
+		{Connector: fazzdb.CO_OR, Field: "country", Operator: fazzdb.OP_EQUALS, Value: "United States"},
+		{Connector: fazzdb.CO_OR, Field: "country", Operator: fazzdb.OP_EQUALS, Value: "Japan"},
 		{Connector: fazzdb.CO_OR, Field: "country", Operator: fazzdb.OP_EQUALS, Value: "Singapore"},
 	}
 

@@ -2,7 +2,7 @@ package request
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
 	"strings"
 )
@@ -30,7 +30,7 @@ func ParseQueryParam(r *http.Request, param map[string]string) (map[string]strin
 	}
 
 	if len(missingFields) > 0 {
-		return nil, fmt.Errorf("missing required fields (%s)", strings.Join(missingFields, ", "))
+		return nil, errors.New("missing required fields (%s)", strings.Join(missingFields, ", "))
 	}
 
 	return result, nil

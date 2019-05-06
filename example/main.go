@@ -1,13 +1,14 @@
 package main
 
 import (
+	"math/rand"
+	"time"
+
 	_ "github.com/lib/pq"
 	"github.com/payfazz/go-apt/config"
 	"github.com/payfazz/go-apt/example/fazzdb_sample"
 	"github.com/payfazz/go-apt/example/fazzdb_sample/migration"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
-	"math/rand"
-	"time"
 )
 
 func main() {
@@ -18,7 +19,7 @@ func main() {
 		migration.Version2,
 	)
 
-	query := fazzdb.QueryDb(config.GetDB(), config.Parameter)
+	query := fazzdb.QueryDb(config.GetDB(), config.Parameter, true)
 	fazzdb_sample.InsertAuthor(query)
 	fazzdb_sample.InsertBook(query)
 

@@ -2,9 +2,10 @@ package fazzdb
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
-	"log"
 )
 
 // FazzMetaModel is a constructor of FazzMeta model
@@ -47,7 +48,7 @@ func Migrate(db *sqlx.DB, appId string, forceMigrate bool, versions ...Migration
 	}
 
 	tx, _ := db.Beginx()
-	query := QueryTx(tx, DEFAULT_QUERY_CONFIG)
+	query := QueryTx(tx, DEFAULT_QUERY_CONFIG, false)
 
 	m.forceMigrate(query, forceMigrate)
 
