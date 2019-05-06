@@ -344,7 +344,12 @@ func CreateBigSerial(name string) *MigrationColumn {
 }
 
 // CreateString is a function to create MigrationColumn of DataType Varchar
-func CreateString(name string, length int) *MigrationColumn {
+func CreateString(name string) *MigrationColumn {
+	return createColumn(name, DT_STRING)
+}
+
+// CreateStringLen is a function to create MigrationColumn of DataType Varchar(n)
+func CreateStringLen(name string, length int) *MigrationColumn {
 	return createColumn(name, DT_STRING, length)
 }
 
@@ -413,8 +418,13 @@ func AddBigInteger(name string) *MigrationColumn {
 	return addColumn(name, DT_BIGINT)
 }
 
-// AddString is a function to add MigrationColumn of DataType String
-func AddString(name string, length int) *MigrationColumn {
+// AddString is a function to add MigrationColumn of DataType Varchar
+func AddString(name string) *MigrationColumn {
+	return addColumn(name, DT_STRING)
+}
+
+// AddStringLen is a function to add MigrationColumn of DataType Varchar(n)
+func AddStringLen(name string, length int) *MigrationColumn {
 	return addColumn(name, DT_STRING, length)
 }
 
@@ -483,8 +493,13 @@ func AlterBigInteger(name string) *MigrationColumn {
 	return alterColumn(name, DT_BIGINT)
 }
 
-// AlterString is a function to alter MigrationColumn to DataType String
-func AlterString(name string, length int) *MigrationColumn {
+// AlterString is a function to alter MigrationColumn to DataType Varchar
+func AlterString(name string) *MigrationColumn {
+	return alterColumn(name, DT_STRING)
+}
+
+// AlterStringLen is a function to alter MigrationColumn to DataType Varchar(n)
+func AlterStringLen(name string, length int) *MigrationColumn {
 	return alterColumn(name, DT_STRING, length)
 }
 
