@@ -33,9 +33,9 @@ create table complete_tests
       primary key,
   name      varchar,
   number    integer,
-  "createdAt" timestamp,
-  "updatedAt" timestamp,
-  "deletedAt" timestamp
+  "created_at" timestamp,
+  "updated_at" timestamp,
+  "deleted_at" timestamp
 );`
 
 	_, err := query.RawExec(qs)
@@ -45,7 +45,7 @@ create table complete_tests
 }
 
 func initTestData(query *Query) {
-	qd := `INSERT INTO complete_tests ("name", "number", "createdAt", "updatedAt", "deletedAt") VALUES
+	qd := `INSERT INTO complete_tests ("name", "number", "created_at", "updated_at", "deleted_at") VALUES
 ('test_name_1', 23, '2019-03-28 02:00:00', '2019-03-29 03:00:00', NULL),
 ('test_name_2', 5, '2019-03-28 02:00:00', NULL, NULL),
 ('test_name_3', 19, '2019-03-28 02:00:00', NULL, NULL),
@@ -66,7 +66,7 @@ func initTestData(query *Query) {
 }
 
 func initGroupByData(query *Query) {
-	qd := `INSERT INTO complete_tests ("name", "number", "createdAt") VALUES
+	qd := `INSERT INTO complete_tests ("name", "number", "created_at") VALUES
 ('test_name_1', 23, '2019-03-28 02:00:00'),
 ('test_name_1', 5, '2019-03-28 02:00:00'),
 ('test_name_1', 19, '2019-03-28 02:00:00'),

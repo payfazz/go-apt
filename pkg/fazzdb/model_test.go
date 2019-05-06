@@ -1,9 +1,10 @@
 package fazzdb
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestModel_ColumnCount(t *testing.T) {
@@ -34,10 +35,10 @@ func TestModel_GetColumns(t *testing.T) {
 	require.Equal(t, []Column{Col("id"), Col("name"), Col("number")}, ai.GetColumns())
 	require.Equal(t, []Column{Col("id"), Col("name"), Col("number")}, u.GetColumns())
 	require.Equal(t, []Column{Col("id"), Col("name"), Col("number")}, p.GetColumns())
-	require.Equal(t, []Column{Col("id"), Col("createdAt"), Col("updatedAt")}, ts.GetColumns())
-	require.Equal(t, []Column{Col("id"), Col("deletedAt")}, sd.GetColumns())
-	require.Equal(t, []Column{Col("id"), Col("name"), Col("number"), Col("createdAt"),
-		Col("updatedAt"), Col("deletedAt")}, c.GetColumns())
+	require.Equal(t, []Column{Col("id"), Col("created_at"), Col("updated_at")}, ts.GetColumns())
+	require.Equal(t, []Column{Col("id"), Col("deleted_at")}, sd.GetColumns())
+	require.Equal(t, []Column{Col("id"), Col("name"), Col("number"), Col("created_at"),
+		Col("updated_at"), Col("deleted_at")}, c.GetColumns())
 }
 
 func TestModel_IsAutoIncrement(t *testing.T) {
@@ -90,8 +91,8 @@ func TestModel_Get(t *testing.T) {
 	assert.Panics(t, func() { ai.Get("name") })
 	assert.Panics(t, func() { u.Get("name") })
 	assert.Panics(t, func() { p.Get("name") })
-	assert.Panics(t, func() { ts.Get("createdAt") })
-	assert.Panics(t, func() { sd.Get("deletedAt") })
+	assert.Panics(t, func() { ts.Get("created_at") })
+	assert.Panics(t, func() { sd.Get("deleted_at") })
 	require.Equal(t, "c_name_test", c.Get("name"))
 }
 

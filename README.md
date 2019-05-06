@@ -38,8 +38,8 @@ Features:
 - [x] ORM
   - [x] Base Model
   - [x] Uuid Model
-  - [x] Timestamp (createdAt, updatedAt)
-  - [x] Soft Delete (deletedAt)
+  - [x] Timestamp (created_at, updated_at)
+  - [x] Soft Delete (deleted_at)
   - [ ] Recover Soft Delete [NOT TESTED]
 - [x] Handle Context
 - [ ] Migration

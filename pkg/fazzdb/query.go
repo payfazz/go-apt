@@ -1206,7 +1206,7 @@ func (q *Query) assignModel(result interface{}, m Model) interface{} {
 	return complete.Interface()
 }
 
-// modelWithTime is a function that will return a model with assigned createdAt, updatedAt, and deletedAt
+// modelWithTime is a function that will return a model with assigned created_at, updated_at, and deleted_at
 func (q *Query) modelWithTime(mi ModelInterface, m Model) Model {
 	if m.IsTimestamps() {
 		m.CreatedAt = mi.GetCreatedAt()

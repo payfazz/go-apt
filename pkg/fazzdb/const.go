@@ -73,9 +73,9 @@ const (
 )
 
 const (
-	CREATED_AT = "createdAt"
-	UPDATED_AT = "updatedAt"
-	DELETED_AT = "deletedAt"
+	CREATED_AT = "created_at"
+	UPDATED_AT = "updated_at"
+	DELETED_AT = "deleted_at"
 )
 
 const (

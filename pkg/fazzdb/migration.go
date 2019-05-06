@@ -264,26 +264,26 @@ func (mt *MigrationTable) Reference(reference *MigrationReference) {
 	mt.references = append(mt.references, reference)
 }
 
-// Timestamps is a function that will add createdAt and updatedAt column automatically
+// Timestamps is a function that will add created_at and updated_at column automatically
 func (mt *MigrationTable) Timestamps() {
-	mt.Field(CreateTimestamp("createdAt").Nullable())
-	mt.Field(CreateTimestamp("updatedAt").Nullable())
+	mt.Field(CreateTimestamp("created_at").Nullable())
+	mt.Field(CreateTimestamp("updated_at").Nullable())
 }
 
-// TimestampsTz is a function that will add createdAt and updatedAt column automatically with timezone
+// TimestampsTz is a function that will add created_at and updated_at column automatically with timezone
 func (mt *MigrationTable) TimestampsTz(timezone int) {
-	mt.Field(CreateTimestampTz("createdAt", timezone).Nullable())
-	mt.Field(CreateTimestampTz("updatedAt", timezone).Nullable())
+	mt.Field(CreateTimestampTz("created_at", timezone).Nullable())
+	mt.Field(CreateTimestampTz("updated_at", timezone).Nullable())
 }
 
-// SoftDelete is a function that will add deletedAt column automatically
+// SoftDelete is a function that will add deleted_at column automatically
 func (mt *MigrationTable) SoftDelete() {
-	mt.Field(CreateTimestamp("deletedAt").Nullable())
+	mt.Field(CreateTimestamp("deleted_at").Nullable())
 }
 
-// SoftDeleteTz is a function that will add deletedAt column automatically with timezone
+// SoftDeleteTz is a function that will add deleted_at column automatically with timezone
 func (mt *MigrationTable) SoftDeleteTz(timezone int) {
-	mt.Field(CreateTimestampTz("deletedAt", timezone).Nullable())
+	mt.Field(CreateTimestampTz("deleted_at", timezone).Nullable())
 }
 
 // PrimaryKeys is a function that will append column into primaryKeys

@@ -1,8 +1,9 @@
 package fazzdb
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestBuilder_BuildInsert(t *testing.T) {
@@ -23,17 +24,17 @@ func TestBuilder_BuildInsert(t *testing.T) {
 
 	t.Run("BuildInsert TimestampModel", func(t *testing.T) {
 		tsQuery := builder.BuildInsert(ts, false)
-		require.Equal(t, `INSERT INTO timestamp_tests ( "createdAt", "updatedAt" ) VALUES ( :createdAt, :updatedAt ) RETURNING id;`, tsQuery)
+		require.Equal(t, `INSERT INTO timestamp_tests ( "created_at", "updated_at" ) VALUES ( :created_at, :updated_at ) RETURNING id;`, tsQuery)
 	})
 
 	t.Run("BuildInsert SoftDeleteModel", func(t *testing.T) {
 		sdQuery := builder.BuildInsert(sd, false)
-		require.Equal(t, `INSERT INTO soft_delete_tests ( "deletedAt" ) VALUES ( :deletedAt ) RETURNING id;`, sdQuery)
+		require.Equal(t, `INSERT INTO soft_delete_tests ( "deleted_at" ) VALUES ( :deleted_at ) RETURNING id;`, sdQuery)
 	})
 
 	t.Run("BuildInsert CompleteModel", func(t *testing.T) {
 		cQuery := builder.BuildInsert(c, false)
-		require.Equal(t, `INSERT INTO complete_tests ( "name", "number", "createdAt", "updatedAt", "deletedAt" ) VALUES ( :name, :number, :createdAt, :updatedAt, :deletedAt ) RETURNING id;`, cQuery)
+		require.Equal(t, `INSERT INTO complete_tests ( "name", "number", "created_at", "updated_at", "deleted_at" ) VALUES ( :name, :number, :created_at, :updated_at, :deleted_at ) RETURNING id;`, cQuery)
 	})
 }
 
@@ -59,19 +60,19 @@ func TestBuilder_BuildUpdate(t *testing.T) {
 	t.Run("BuildUpdate TimestampModel", func(t *testing.T) {
 		param.Conditions = generateWhereIdParameter(ts)
 		tsQuery := builder.BuildUpdate(ts, param)
-		require.Equal(t, `UPDATE timestamp_tests SET "updatedAt" = :updatedAt WHERE  "timestamp_tests"."id" = :id;`, tsQuery)
+		require.Equal(t, `UPDATE timestamp_tests SET "updated_at" = :updated_at WHERE  "timestamp_tests"."id" = :id;`, tsQuery)
 	})
 
 	t.Run("BuildUpdate SoftDeleteModel", func(t *testing.T) {
 		param.Conditions = generateWhereIdParameter(sd)
 		sdQuery := builder.BuildUpdate(sd, param)
-		require.Equal(t, `UPDATE soft_delete_tests SET "deletedAt" = :deletedAt WHERE  "soft_delete_tests"."id" = :id;`, sdQuery)
+		require.Equal(t, `UPDATE soft_delete_tests SET "deleted_at" = :deleted_at WHERE  "soft_delete_tests"."id" = :id;`, sdQuery)
 	})
 
 	t.Run("BuildUpdate CompleteModel", func(t *testing.T) {
 		param.Conditions = generateWhereIdParameter(c)
 		cQuery := builder.BuildUpdate(c, param)
-		require.Equal(t, `UPDATE complete_tests SET "name" = :name, "number" = :number, "updatedAt" = :updatedAt, "deletedAt" = :deletedAt WHERE  "complete_tests"."id" = :id;`, cQuery)
+		require.Equal(t, `UPDATE complete_tests SET "name" = :name, "number" = :number, "updated_at" = :updated_at, "deleted_at" = :deleted_at WHERE  "complete_tests"."id" = :id;`, cQuery)
 	})
 }
 
@@ -128,7 +129,7 @@ func TestBuilder_BuildBulkInsert(t *testing.T) {
 	}
 
 	cQuery := builder.BuildBulkInsert(c, data)
-	require.Equal(t, `INSERT INTO complete_tests ( "name", "number", "createdAt", "updatedAt", "deletedAt" ) VALUES ( :0name, :0number, :0createdAt, :0updatedAt, :0deletedAt ), ( :1name, :1number, :1createdAt, :1updatedAt, :1deletedAt );`, cQuery)
+	require.Equal(t, `INSERT INTO complete_tests ( "name", "number", "created_at", "updated_at", "deleted_at" ) VALUES ( :0name, :0number, :0created_at, :0updated_at, :0deleted_at ), ( :1name, :1number, :1created_at, :1updated_at, :1deleted_at );`, cQuery)
 }
 
 func TestBuilder_BuildSelect(t *testing.T) {
@@ -146,7 +147,7 @@ func TestBuilder_BuildSelect(t *testing.T) {
 			Connector: CO_AND,
 		},
 		{
-			Field:      Col("number"),
+			Field:     Col("number"),
 			Prefix:    "number1",
 			Operator:  OP_MORE_THAN,
 			Connector: CO_AND,
@@ -161,8 +162,8 @@ func TestBuilder_BuildSelect(t *testing.T) {
 					Connector: CO_NONE,
 				},
 				{
-					Field:     Col("createdAt"),
-					Prefix:    "createdAt",
+					Field:     Col("created_at"),
+					Prefix:    "created_at",
 					Operator:  OP_LESS_THAN_EQUALS,
 					Connector: CO_AND,
 				},
@@ -183,7 +184,7 @@ func TestBuilder_BuildSelect(t *testing.T) {
 	}
 
 	cQuery := builder.BuildSelect(c, param, AG_NONE, "")
-	require.Equal(t, `SELECT  "complete_tests"."id", "complete_tests"."name", "complete_tests"."number", "complete_tests"."createdAt", "complete_tests"."updatedAt", "complete_tests"."deletedAt" FROM complete_tests WHERE  "complete_tests"."name" LIKE :name0 AND "complete_tests"."number" < :number0 AND "complete_tests"."number" > :number1 OR (  "complete_tests"."id" = :id AND "complete_tests"."createdAt" <= :createdAt OR "complete_tests"."name" = :name1 ) AND "complete_tests"."name" IN (:name2) LIMIT 15 OFFSET 5 FOR SHARE;`, cQuery)
+	require.Equal(t, `SELECT  "complete_tests"."id", "complete_tests"."name", "complete_tests"."number", "complete_tests"."created_at", "complete_tests"."updated_at", "complete_tests"."deleted_at" FROM complete_tests WHERE  "complete_tests"."name" LIKE :name0 AND "complete_tests"."number" < :number0 AND "complete_tests"."number" > :number1 OR (  "complete_tests"."id" = :id AND "complete_tests"."created_at" <= :created_at OR "complete_tests"."name" = :name1 ) AND "complete_tests"."name" IN (:name2) LIMIT 15 OFFSET 5 FOR SHARE;`, cQuery)
 }
 
 func generateWhereIdParameter(m ModelInterface) []Condition {

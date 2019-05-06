@@ -1,11 +1,12 @@
 package fazzdb
 
 import (
-	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
-	"github.com/satori/go.uuid"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
+	uuid "github.com/satori/go.uuid"
 )
 
 // ModelInterface is an interface that will be used to get model information and used in various task by Query instance
@@ -14,11 +15,11 @@ type ModelInterface interface {
 	GetModel() Model
 	// GetTable is a function that will return the table name of the Model instance
 	GetTable() string
-	// GetCreatedAt is a function that will return createdAt value
+	// GetCreatedAt is a function that will return created_at value
 	GetCreatedAt() *time.Time
-	// GetUpdatedAt is a function that will return updatedAt value
+	// GetUpdatedAt is a function that will return updated_at value
 	GetUpdatedAt() *time.Time
-	// GetDeletedAt is a function that will return deletedAt value
+	// GetDeletedAt is a function that will return deleted_at value
 	GetDeletedAt() *time.Time
 	// GetColumns is a function that will return the slice of columns of the Model instance
 	GetColumns() []Column
@@ -32,9 +33,9 @@ type ModelInterface interface {
 	GenerateId(v ModelInterface)
 	// ColumnCount is a function that will return the length of columns of the Model instance
 	ColumnCount() int
-	// IsTimestamps is a function that will return true if the Model instance using createdAt and updatedAt field
+	// IsTimestamps is a function that will return true if the Model instance using created_at and updated_at field
 	IsTimestamps() bool
-	// IsSoftDelete is a function that will return true if the Model instance is using deletedAt field
+	// IsSoftDelete is a function that will return true if the Model instance is using deleted_at field
 	IsSoftDelete() bool
 	// IsUuid is a function that will return true if the Model instance is created using UuidModel constructor
 	IsUuid() bool
@@ -45,13 +46,13 @@ type ModelInterface interface {
 	// MapPayload is a function that will map all column value as a map[string]interface{} with lowered first character as key
 	MapPayload(v ModelInterface) map[string]interface{}
 
-	// created is a function that will set createdAt field with current time, used when inserting model with timestamp
+	// created is a function that will set created_at field with current time, used when inserting model with timestamp
 	created()
-	// updated is a function that will set updatedAt field with current time, used when updating model with timestamp
+	// updated is a function that will set updated_at field with current time, used when updating model with timestamp
 	updated()
-	// deleted is a function that will set deletedAt field with current time, used when soft deleting model
+	// deleted is a function that will set deleted_at field with current time, used when soft deleting model
 	deleted()
-	// recovered is a function that will set deletedAt field with nil, used when recovering soft deleted model
+	// recovered is a function that will set deleted_at field with nil, used when recovering soft deleted model
 	recovered()
 }
 
@@ -108,9 +109,9 @@ type Model struct {
 	AutoIncrement bool
 	Timestamps    bool
 	SoftDelete    bool
-	CreatedAt     *time.Time `db:"createdAt"`
-	UpdatedAt     *time.Time `db:"updatedAt"`
-	DeletedAt     *time.Time `db:"deletedAt"`
+	CreatedAt     *time.Time `db:"created_at"`
+	UpdatedAt     *time.Time `db:"updated_at"`
+	DeletedAt     *time.Time `db:"deleted_at"`
 }
 
 // GeneratePK is a function that MUST be overridden by UuidModel, if it's not overridden it will panic.
@@ -157,17 +158,17 @@ func (m *Model) GetTable() string {
 	return m.Table
 }
 
-// GetCreatedAt is a function that will return createdAt value
+// GetCreatedAt is a function that will return created_at value
 func (m *Model) GetCreatedAt() *time.Time {
 	return m.CreatedAt
 }
 
-// GetUpdatedAt is a function that will return updatedAt value
+// GetUpdatedAt is a function that will return updated_at value
 func (m *Model) GetUpdatedAt() *time.Time {
 	return m.UpdatedAt
 }
 
-// GetDeletedAt is a function that will return deletedAt value
+// GetDeletedAt is a function that will return deleted_at value
 func (m *Model) GetDeletedAt() *time.Time {
 	return m.DeletedAt
 }
@@ -199,12 +200,12 @@ func (m *Model) ColumnCount() int {
 	return len(m.Columns)
 }
 
-// IsTimestamps is a function that will return true if the Model instance using createdAt and updatedAt field
+// IsTimestamps is a function that will return true if the Model instance using created_at and updated_at field
 func (m *Model) IsTimestamps() bool {
 	return m.Timestamps
 }
 
-// IsSoftDelete is a function that will return true if the Model instance is using deletedAt field
+// IsSoftDelete is a function that will return true if the Model instance is using deleted_at field
 func (m *Model) IsSoftDelete() bool {
 	return m.SoftDelete
 }
@@ -243,14 +244,14 @@ func (m *Model) MapPayload(v ModelInterface) map[string]interface{} {
 			if model.IsSoftDelete() {
 				results[DELETED_AT] = model.DeletedAt
 			}
- 		} else {
+		} else {
 			results[formatter.ToLowerFirst(classType.Field(i).Name)] = classValue.Field(i).Interface()
 		}
 	}
 	return results
 }
 
-// created is a function that will set createdAt field with current time, used when inserting model with timestamp
+// created is a function that will set created_at field with current time, used when inserting model with timestamp
 func (m *Model) created() {
 	if m.IsTimestamps() {
 		now := time.Now()
@@ -258,7 +259,7 @@ func (m *Model) created() {
 	}
 }
 
-// updated is a function that will set updatedAt field with current time, used when updating model with timestamp
+// updated is a function that will set updated_at field with current time, used when updating model with timestamp
 func (m *Model) updated() {
 	if m.IsTimestamps() {
 		now := time.Now()
@@ -266,7 +267,7 @@ func (m *Model) updated() {
 	}
 }
 
-// deleted is a function that will set deletedAt field with current time, used when soft deleting model
+// deleted is a function that will set deleted_at field with current time, used when soft deleting model
 func (m *Model) deleted() {
 	if m.IsSoftDelete() {
 		now := time.Now()
@@ -274,12 +275,12 @@ func (m *Model) deleted() {
 	}
 }
 
-// recovered is a function that will set deletedAt field with nil, used when recovering soft deleted model
+// recovered is a function that will set deleted_at field with nil, used when recovering soft deleted model
 func (m *Model) recovered() {
 	m.DeletedAt = nil
 }
 
-// handleTimestamp is a function that will automatically append createdAt and updatedAt to
+// handleTimestamp is a function that will automatically append created_at and updated_at to
 // Columns attribute in Model instance
 func (m *Model) handleTimestamp() {
 	if m.IsTimestamps() {
@@ -288,7 +289,7 @@ func (m *Model) handleTimestamp() {
 	}
 }
 
-// handleSoftDelete is a function that will automatically append deletedAt to
+// handleSoftDelete is a function that will automatically append deleted_at to
 // Columns attribute in Model instance
 func (m *Model) handleSoftDelete() {
 	if m.IsSoftDelete() {
