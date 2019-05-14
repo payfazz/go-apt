@@ -2,6 +2,7 @@ package fazzkv
 
 import (
 	"context"
+	"errors"
 
 	"github.com/payfazz/go-apt/pkg/fazzkv/redis"
 )
@@ -18,6 +19,10 @@ func NewRedisContext(ctx context.Context, addr string, password string) context.
 
 // GetRedisContext is a function to get redis object from context
 // Must be used after NewRedisContext
-func GetRedisContext(ctx context.Context) redis.RedisInterface {
-	return ctx.Value(rdKey).(redis.RedisInterface)
+func GetRedisContext(ctx context.Context) (redis.RedisInterface, error) {
+	rds := ctx.Value(rdKey).(redis.RedisInterface)
+	if nil == rds {
+		return nil, errors.New("redis instance not found in context, make sure to call NewRedisContext before calling GetRedisContext")
+	}
+	return rds, nil
 }

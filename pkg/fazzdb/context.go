@@ -2,6 +2,7 @@ package fazzdb
 
 import (
 	"context"
+	"errors"
 )
 
 type txKeyType struct{}
@@ -22,12 +23,20 @@ func NewQueryContext(ctx context.Context, queryDb *Query) context.Context {
 
 // GetTransactionContext is a function to get transaction query object from context
 // Must be used after NewTransactionContext
-func GetTransactionContext(ctx context.Context) *Query {
-	return ctx.Value(txKey).(*Query)
+func GetTransactionContext(ctx context.Context) (*Query, error) {
+	query := ctx.Value(txKey).(*Query)
+	if nil == query {
+		return nil, errors.New("transaction instance not found in context, make sure to call NewTransactionContext before calling GetTransactionContext")
+	}
+	return query, nil
 }
 
 // GetQueryContext is a function to get db query object from context.
 // Must be used after NewQueryContext
-func GetQueryContext(ctx context.Context) *Query {
-	return ctx.Value(qdbKey).(*Query)
+func GetQueryContext(ctx context.Context) (*Query, error) {
+	query := ctx.Value(qdbKey).(*Query)
+	if nil == query {
+		return nil, errors.New("query db instance not found in context, make sure to call NewQueryContext before calling GetQueryContext")
+	}
+	return query, nil
 }
