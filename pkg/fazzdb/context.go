@@ -10,11 +10,6 @@ type qdbKeyType struct{}
 var txKey txKeyType
 var qdbKey qdbKeyType
 
-// Context is a struct to handle query object inside context
-type Context struct {
-	Query *Query
-}
-
 // NewTransactionContext is a function to append transaction query object into context
 func NewTransactionContext(ctx context.Context, queryTx *Query) context.Context {
 	return context.WithValue(ctx, txKey, queryTx)
