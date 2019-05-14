@@ -10,8 +10,7 @@ type rdKeyType struct{}
 var rdKey rdKeyType
 
 // NewRedisContext is a function to append redis object into context
-func NewRedisContext(ctx context.Context, addr string, password string) context.Context {
-	rds, _ := NewFazzRedis(addr, password)
+func NewRedisContext(ctx context.Context, rds RedisInterface) context.Context {
 	return context.WithValue(ctx, rdKey, rds)
 }
 
