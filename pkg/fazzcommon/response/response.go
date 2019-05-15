@@ -2,10 +2,11 @@ package response
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/payfazz/go-apt/pkg/fazzcommon/httpError"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/value/content"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/value/header"
-	"net/http"
 )
 
 // basicResponse is a struct to contain default response message
@@ -34,6 +35,11 @@ func Text(w http.ResponseWriter, msg string, statusCode int) {
 // Success is a function to return success status and statusCode
 func Success(w http.ResponseWriter, success bool, statusCode int) {
 	Json(w, successResponse{Success: success}, statusCode)
+}
+
+// NotFound is a function to return 404 statusCode with empty body
+func NotFound(w http.ResponseWriter) {
+	Json(w, struct{}{}, http.StatusNotFound)
 }
 
 // Error is a function to return http error
