@@ -42,7 +42,7 @@ func (fm *FazzMeta) Payload() map[string]interface{} {
 }
 
 // Migrate is a constructor of Migration struct that will run creation and seed of meta table and other migration
-func Migrate(db *sqlx.DB, appId string, forceMigrate bool, versions ...MigrationVersion) {
+func Migrate(db *sqlx.DB, appId string, forceMigrate bool, dbUsers []string, versions ...MigrationVersion) {
 	m := &Migration{
 		Versions: versions,
 	}
@@ -50,7 +50,7 @@ func Migrate(db *sqlx.DB, appId string, forceMigrate bool, versions ...Migration
 	tx, _ := db.Beginx()
 	query := QueryTx(tx, DEFAULT_QUERY_CONFIG)
 
-	m.forceMigrate(query, forceMigrate)
+	m.forceMigrate(query, forceMigrate, dbUsers)
 
 	m.RunMeta(query, appId)
 	if m.isRightApp(query, appId) {
@@ -114,12 +114,12 @@ func (m *Migration) Run(query *Query) {
 	}
 }
 
-func (m *Migration) forceMigrate(query *Query, forced bool, dbUsers ...string) {
+func (m *Migration) forceMigrate(query *Query, forced bool, dbUsers []string) {
 	if forced {
-		queryString := `DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO public;`
+		queryString := `DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON ALL TABLES IN SCHEMA public TO public;`
 
 		for _, v := range dbUsers {
-			queryString = fmt.Sprintf("%s GRANT ALL ON SCHEMA public TO %s;", queryString, v)
+			queryString = fmt.Sprintf("%s GRANT ALL ON ALL TABLES IN SCHEMA public TO %s;", queryString, v)
 		}
 
 		_, err := query.RawExec(queryString)
