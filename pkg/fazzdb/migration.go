@@ -114,11 +114,15 @@ func (m *Migration) Run(query *Query) {
 	}
 }
 
-func (m *Migration) forceMigrate(query *Query, forced bool) {
+func (m *Migration) forceMigrate(query *Query, forced bool, dbUsers ...string) {
 	if forced {
-		_, err := query.RawExec(`DROP SCHEMA public CASCADE;` +
-			`CREATE SCHEMA public;` +
-			`GRANT ALL ON SCHEMA public TO public;`)
+		queryString := `DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO public;`
+
+		for _, v := range dbUsers {
+			queryString = fmt.Sprintf("%s GRANT ALL ON SCHEMA public TO %s;", queryString, v)
+		}
+
+		_, err := query.RawExec(queryString)
 		if nil != err {
 			_ = query.Tx.Rollback()
 			panic(err)
