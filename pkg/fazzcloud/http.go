@@ -105,7 +105,12 @@ func (hr *HTTPClient) Get(path string, params *map[string]string, headers *map[s
 		return http.StatusInternalServerError, nil, err
 	}
 
-	hr.cacheRequest(hr.httpCache, url, formatter.ConvertMapToString(*params), *headers, "", GET)
+	cvt := ""
+	if params != nil {
+		cvt = formatter.ConvertMapToString(*params)
+	}
+
+	hr.cacheRequest(hr.httpCache, url, cvt, *headers, "", GET)
 
 	response, err := hr.httpClient.Do(req)
 
