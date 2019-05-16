@@ -123,6 +123,9 @@ func MoneyFormat(param float64) string {
 
 // ConvertMapToString is a function that used to convert map to string
 func ConvertMapToString(value map[string]string) string {
+	if len(value) < 1 {
+		return ""
+	}
 	str := "map["
 	for key, val := range value {
 		str = fmt.Sprintf("%s%s:%s", str, key, val)
