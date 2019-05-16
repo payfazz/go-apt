@@ -66,10 +66,12 @@ func (hr *HTTPClient) clearCache() {
 	hr.httpCache = &httpCache{}
 }
 
-func (hr *HTTPClient) cacheRequest(cache *httpCache, path string, params string, headers map[string]string, contentType string, method string) {
+func (hr *HTTPClient) cacheRequest(cache *httpCache, path string, params string, headers *map[string]string, contentType string, method string) {
 	cache.path = path
 	cache.params = params
-	cache.headers = headers
+	if headers != nil {
+		cache.headers = *headers
+	}
 	cache.contentType = contentType
 	cache.method = method
 }
@@ -81,6 +83,7 @@ func (hr *HTTPClient) cacheResponse(cache *httpCache, responseCode int, response
 
 // Get is a function to get the data from http call.
 func (hr *HTTPClient) Get(path string, params *map[string]string, headers *map[string]string) (int, []byte, error) {
+	cvt := ""
 	hr.clearCache()
 
 	url := hr.getURL(path)
@@ -105,16 +108,10 @@ func (hr *HTTPClient) Get(path string, params *map[string]string, headers *map[s
 		return http.StatusInternalServerError, nil, err
 	}
 
-	cvt := ""
 	if params != nil {
 		cvt = formatter.ConvertMapToString(*params)
 	}
-	hdr := make(map[string]string)
-	if headers != nil {
-		hdr = *headers
-	}
-
-	hr.cacheRequest(hr.httpCache, url, cvt, hdr, "", GET)
+	hr.cacheRequest(hr.httpCache, url, cvt, headers, "", GET)
 
 	response, err := hr.httpClient.Do(req)
 
@@ -148,11 +145,7 @@ func (hr *HTTPClient) Send(path string, method string, contentType string, param
 		return http.StatusInternalServerError, nil, err
 	}
 
-	hdr := make(map[string]string)
-	if headers != nil {
-		hdr = *headers
-	}
-	hr.cacheRequest(hr.httpCache, url, string(params), hdr, contentType, method)
+	hr.cacheRequest(hr.httpCache, url, string(params), headers, contentType, method)
 
 	response, err := hr.httpClient.Do(req)
 	if err != nil {
@@ -182,12 +175,7 @@ func (hr *HTTPClient) Delete(path string, headers *map[string]string) (int, []by
 	if err != nil {
 		return http.StatusInternalServerError, nil, err
 	}
-
-	hdr := make(map[string]string)
-	if headers != nil {
-		hdr = *headers
-	}
-	hr.cacheRequest(hr.httpCache, url, "", hdr, "", DELETE)
+	hr.cacheRequest(hr.httpCache, url, "", headers, "", DELETE)
 
 	response, err := hr.httpClient.Do(req)
 
