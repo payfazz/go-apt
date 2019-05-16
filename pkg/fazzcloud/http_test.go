@@ -33,6 +33,7 @@ func TestFailedHTTPClient_Get(t *testing.T) {
 
 	httpClient = NewHTTPClient("http://dummy.restapiexample.com/api/v1/create")
 	_, _, err = httpClient.Get("", nil, nil)
+	httpClient.TraceRequest()
 	if err == nil {
 		t.Fatalf("failed to test failed http client get")
 	}

@@ -2,13 +2,14 @@ package formatter
 
 import (
 	"fmt"
-	"github.com/leekchan/accounting"
-	"github.com/microcosm-cc/bluemonday"
-	"github.com/satori/go.uuid"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/leekchan/accounting"
+	"github.com/microcosm-cc/bluemonday"
+	uuid "github.com/satori/go.uuid"
 )
 
 // ToLowerFirst is a function that will change the first character of a string into a lowercase letter.
@@ -47,12 +48,12 @@ func StringToFloat(param string) float64 {
 
 // FloatToString used to get string value from float64.
 func FloatToString(param float64) string {
-	return strconv.Itoa(int(param))
+	return fmt.Sprintf("%0.5f", param)
 }
 
 // IntegerToString used to get string value from integer.
 func IntegerToString(param int) string {
-	return strconv.Itoa(param)
+	return fmt.Sprintf("%d", param)
 }
 
 // SliceUint8ToString used to convert []uint8 to string
@@ -118,6 +119,15 @@ func CleanString(param *string) string {
 func MoneyFormat(param float64) string {
 	ac := accounting.Accounting{Precision: 2}
 	return ac.FormatMoney(param)
+}
+
+// ConvertMapToString is a function that used to convert map to string
+func ConvertMapToString(value map[string]string) string {
+	str := "map["
+	for key, val := range value {
+		str = fmt.Sprintf("%s%s:%s", str, key, val)
+	}
+	return fmt.Sprintf("%s]", str)
 }
 
 // ToStringPtr used to return string pointer from param
