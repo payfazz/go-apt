@@ -109,8 +109,12 @@ func (hr *HTTPClient) Get(path string, params *map[string]string, headers *map[s
 	if params != nil {
 		cvt = formatter.ConvertMapToString(*params)
 	}
+	hdr := make(map[string]string)
+	if headers != nil {
+		hdr = *headers
+	}
 
-	hr.cacheRequest(hr.httpCache, url, cvt, *headers, "", GET)
+	hr.cacheRequest(hr.httpCache, url, cvt, hdr, "", GET)
 
 	response, err := hr.httpClient.Do(req)
 
@@ -144,7 +148,11 @@ func (hr *HTTPClient) Send(path string, method string, contentType string, param
 		return http.StatusInternalServerError, nil, err
 	}
 
-	hr.cacheRequest(hr.httpCache, url, string(params), *headers, contentType, method)
+	hdr := make(map[string]string)
+	if headers != nil {
+		hdr = *headers
+	}
+	hr.cacheRequest(hr.httpCache, url, string(params), hdr, contentType, method)
 
 	response, err := hr.httpClient.Do(req)
 	if err != nil {
@@ -174,7 +182,12 @@ func (hr *HTTPClient) Delete(path string, headers *map[string]string) (int, []by
 	if err != nil {
 		return http.StatusInternalServerError, nil, err
 	}
-	hr.cacheRequest(hr.httpCache, url, "", *headers, "", DELETE)
+
+	hdr := make(map[string]string)
+	if headers != nil {
+		hdr = *headers
+	}
+	hr.cacheRequest(hr.httpCache, url, "", hdr, "", DELETE)
 
 	response, err := hr.httpClient.Do(req)
 
