@@ -2,19 +2,13 @@ package fazzdb
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/jmoiron/sqlx"
 )
 
 // Run is a function that used to run the service under tx
-func Run(ctx context.Context, db *sqlx.DB, config Config, fn func() error) error {
-	opt := &sql.TxOptions{
-		Isolation: sql.LevelRepeatableRead,
-		ReadOnly:  false,
-	}
-
-	tx, err := db.BeginTxx(ctx, opt)
+func Run(ctx context.Context, db *sqlx.DB, config Config, fn func(ctx context.Context) error) error {
+	tx, err := db.Beginx()
 	if nil != err {
 		return err
 	}
@@ -22,7 +16,7 @@ func Run(ctx context.Context, db *sqlx.DB, config Config, fn func() error) error
 	q := QueryTx(tx, config)
 	ctx = NewTransactionContext(ctx, q)
 
-	err = fn()
+	err = fn(ctx)
 	if nil != err {
 		_ = q.Tx.Rollback()
 		return err
@@ -33,6 +27,6 @@ func Run(ctx context.Context, db *sqlx.DB, config Config, fn func() error) error
 }
 
 // RunDefault basic boiler plate to start the transaction
-func RunDefault(ctx context.Context, db *sqlx.DB, fn func() error) error {
+func RunDefault(ctx context.Context, db *sqlx.DB, fn func(ctx context.Context) error) error {
 	return Run(ctx, db, DEFAULT_QUERY_CONFIG, fn)
 }
