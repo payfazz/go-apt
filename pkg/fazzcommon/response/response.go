@@ -55,7 +55,7 @@ func Error(w http.ResponseWriter, err error) {
 // ErrorWithLog is a function to return http error and a flag to show / hide log
 func ErrorWithLog(w http.ResponseWriter, err error, showLog bool) {
 	if showLog {
-		log.Println("ERROR_LOG: ", err.Error())
+		log.Println("[ERROR_LOG]", err.Error())
 	}
 	Error(w, err)
 }
