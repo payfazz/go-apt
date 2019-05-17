@@ -2,6 +2,7 @@ package response
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/payfazz/go-apt/pkg/fazzcommon/httpError"
@@ -49,6 +50,14 @@ func Error(w http.ResponseWriter, err error) {
 	} else {
 		Json(w, err, http.StatusInternalServerError)
 	}
+}
+
+// ErrorWithLog is a function to return http error and a flag to show / hide log
+func ErrorWithLog(w http.ResponseWriter, err error, showLog bool) {
+	if showLog {
+		log.Println("ERROR_LOG: ", err.Error())
+	}
+	Error(w, err)
 }
 
 // parseHeader is a function to parse content data and add it to response header
