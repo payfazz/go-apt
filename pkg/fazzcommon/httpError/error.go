@@ -39,8 +39,8 @@ func (e *BaseError) GetDetail() interface{} {
 	return e.Trace
 }
 
-// base is a constructor for http error with custom message
-func base(code int, message string, err interface{}) BaseError {
+// Base is a constructor for http error with custom message
+func Base(code int, message string, err interface{}) BaseError {
 	return BaseError{
 		Code:    code,
 		Message: message,
@@ -48,8 +48,8 @@ func base(code int, message string, err interface{}) BaseError {
 	}
 }
 
-// code is a constructor for http error with default status text message
-func code(code int, err interface{}) BaseError {
+// Code is a constructor for http error with default status text message
+func Code(code int, err interface{}) BaseError {
 	return BaseError{
 		Code:    code,
 		Message: http.StatusText(code),

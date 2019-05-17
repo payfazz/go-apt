@@ -10,6 +10,6 @@ type NotFoundError struct {
 // NotFound is a constructor to create NotFoundError instance
 func NotFound(err interface{}) error {
 	return &NotFoundError{
-		BaseError: code(http.StatusNotFound, err),
+		BaseError: Code(http.StatusNotFound, err),
 	}
 }

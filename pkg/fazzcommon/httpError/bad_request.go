@@ -10,6 +10,6 @@ type BadRequestError struct {
 // BadRequest is a constructor to create BadRequestError instance
 func BadRequest(err interface{}) error {
 	return &BadRequestError{
-		BaseError: code(http.StatusBadRequest, err),
+		BaseError: Code(http.StatusBadRequest, err),
 	}
 }

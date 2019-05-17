@@ -10,6 +10,6 @@ type ForbiddenError struct {
 // Forbidden is a constructor to create ForbiddenError instance
 func Forbidden(err interface{}) error {
 	return &ForbiddenError{
-		BaseError: code(http.StatusForbidden, err),
+		BaseError: Code(http.StatusForbidden, err),
 	}
 }

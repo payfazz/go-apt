@@ -10,6 +10,6 @@ type UnauthorizedError struct {
 // Unauthorized is a constructor to create UnauthorizedError instance
 func Unauthorized(err interface{}) error {
 	return &UnauthorizedError{
-		BaseError: code(http.StatusUnauthorized, err),
+		BaseError: Code(http.StatusUnauthorized, err),
 	}
 }

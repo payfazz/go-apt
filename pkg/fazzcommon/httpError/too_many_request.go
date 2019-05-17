@@ -10,6 +10,6 @@ type TooManyRequestError struct {
 // TooManyRequest is a constructor to create BadRequestError instance
 func TooManyRequest(err interface{}) error {
 	return &TooManyRequestError{
-		BaseError: code(http.StatusTooManyRequests, err),
+		BaseError: Code(http.StatusTooManyRequests, err),
 	}
 }
