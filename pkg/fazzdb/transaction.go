@@ -2,13 +2,19 @@ package fazzdb
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/jmoiron/sqlx"
 )
 
 // Run is a function that used to run the service under tx
 func Run(ctx context.Context, db *sqlx.DB, config Config, fn func() error) error {
-	tx, err := db.Beginx()
+	opt := &sql.TxOptions{
+		Isolation: sql.LevelRepeatableRead,
+		ReadOnly:  false,
+	}
+
+	tx, err := db.BeginTxx(ctx, opt)
 	if nil != err {
 		return err
 	}
