@@ -727,6 +727,10 @@ func (q *Query) WhereMany(conditions ...SliceCondition) *Query {
 		connector := c.Connector
 		if len(q.Conditions) == 0 {
 			connector = CO_NONE
+		} else if connector == CO_NONE {
+			// Temporary fix if there is NONE connector after first condition
+			// TODO: figure out better way to handle this
+			connector = CO_AND
 		}
 		q.AppendCondition(connector, c.Field, c.Operator, c.Value)
 	}
