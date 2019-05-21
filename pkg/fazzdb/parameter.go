@@ -1,8 +1,7 @@
 package fazzdb
 
 import (
-	"strconv"
-	"time"
+	"fmt"
 )
 
 // NewParameter is a constructor that will return Parameter instance
@@ -85,7 +84,7 @@ func (p *Parameter) appendCondition(
 	operator Operator,
 	value interface{},
 ) *Parameter {
-	prefix := p.getPrefix()
+	prefix := p.getPrefix(field.Key)
 	p.Conditions = append(p.Conditions, Condition{
 		Field:     field,
 		Operator:  operator,
@@ -108,7 +107,7 @@ func (p *Parameter) appendHaving(
 	operator Operator,
 	value interface{},
 ) *Parameter {
-	prefix := p.getPrefix()
+	prefix := p.getPrefix(field.Key)
 	p.Havings = append(p.Havings, Condition{
 		Field:     field,
 		Operator:  operator,
@@ -165,7 +164,6 @@ func (p *Parameter) setDevelopmentMode(developmentMode bool) *Parameter {
 }
 
 // getPrefix is a function to generate prefix for condition arguments using nanoseconds
-func (p *Parameter) getPrefix() string {
-	prefix := (time.Now().UnixNano() / int64(time.Microsecond)) % int64(100000000)
-	return strconv.Itoa(int(prefix))
+func (p *Parameter) getPrefix(key string) string {
+	return fmt.Sprintf("%d.%s", len(p.Conditions), key)
 }
