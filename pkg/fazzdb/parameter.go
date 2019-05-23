@@ -2,6 +2,8 @@ package fazzdb
 
 import (
 	"fmt"
+	"log"
+	"time"
 )
 
 // NewParameter is a constructor that will return Parameter instance
@@ -96,6 +98,10 @@ func (p *Parameter) appendCondition(
 		return p
 	}
 
+	if _, ok := p.Values[prefix]; ok {
+		log.Printf("[ALERT] Collision on condition prefix: %s", prefix)
+	}
+
 	p.Values[prefix] = value
 	return p
 }
@@ -114,6 +120,11 @@ func (p *Parameter) appendHaving(
 		Connector: connector,
 		Prefix:    prefix,
 	})
+
+	if _, ok := p.Values[prefix]; ok {
+		log.Printf("[ALERT] Collision on having prefix: %s", prefix)
+	}
+
 	p.Values[prefix] = value
 	return p
 }
@@ -165,5 +176,6 @@ func (p *Parameter) setDevelopmentMode(developmentMode bool) *Parameter {
 
 // getPrefix is a function to generate prefix for condition arguments using nanoseconds
 func (p *Parameter) getPrefix(key string) string {
-	return fmt.Sprintf("%d.%s", len(p.Conditions), key)
+	postfix := time.Now().UnixNano() / int64(time.Microsecond) % 100000
+	return fmt.Sprintf("%d.%s.%d", len(p.Conditions), key, postfix)
 }

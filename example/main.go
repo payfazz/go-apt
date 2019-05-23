@@ -37,6 +37,7 @@ func main() {
 
 	fazzdb_sample.AllAuthors(query)
 	fazzdb_sample.AllBooks(query)
+	fazzdb_sample.AllBooksSliceConditions(query)
 
 	fazzdb_sample.RawFirst(query)
 	fazzdb_sample.RawAll(query)

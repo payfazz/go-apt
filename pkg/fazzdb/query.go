@@ -732,7 +732,15 @@ func (q *Query) WhereMany(conditions ...SliceCondition) *Query {
 			// TODO: figure out better way to handle this
 			connector = CO_AND
 		}
-		q.AppendCondition(connector, c.Field, c.Operator, c.Value)
+
+		if len(c.Conditions) > 0 {
+			query := QueryTx(q.Tx, q.Config).
+				Use(q.Model).
+				WhereMany(c.Conditions...)
+			q.appendGroupConditions(query.Parameter, connector)
+		} else {
+			q.AppendCondition(connector, c.Field, c.Operator, c.Value)
+		}
 	}
 	return q
 }
