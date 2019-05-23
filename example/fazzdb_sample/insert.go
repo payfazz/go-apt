@@ -3,13 +3,12 @@ package fazzdb_sample
 import (
 	"github.com/payfazz/go-apt/example/fazzdb_sample/model"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
-	"log"
 )
 
 func InsertBook(query *fazzdb.Query) {
 	row, err := query.Use(model.AuthorModel()).First()
 	if nil != err {
-		log.Fatalln(err)
+		panic(err)
 	}
 	author := row.(*model.Author)
 

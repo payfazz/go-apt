@@ -2,7 +2,6 @@ package fazzdb
 
 import (
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -99,7 +98,7 @@ func (p *Parameter) appendCondition(
 	}
 
 	if _, ok := p.Values[prefix]; ok {
-		log.Printf("[ALERT] Collision on condition prefix: %s", prefix)
+		alert(fmt.Sprintf("Collision on condition prefix: %s", prefix))
 	}
 
 	p.Values[prefix] = value
@@ -122,7 +121,7 @@ func (p *Parameter) appendHaving(
 	})
 
 	if _, ok := p.Values[prefix]; ok {
-		log.Printf("[ALERT] Collision on having prefix: %s", prefix)
+		alert(fmt.Sprintf("Collision on having prefix: %s", prefix))
 	}
 
 	p.Values[prefix] = value
