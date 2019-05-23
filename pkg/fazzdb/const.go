@@ -122,3 +122,8 @@ var DEFAULT_QUERY_CONFIG = Config{
 	Offset: 0,
 	Lock:   LO_NONE,
 }
+
+const (
+	MODE_VERBOSE = "VERBOSE"
+	MODE_SILENT  = "SILENT"
+)

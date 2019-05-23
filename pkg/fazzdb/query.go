@@ -60,6 +60,8 @@ func (q *Query) RawExecCtx(ctx context.Context, query string, payload ...interfa
 		return false, err
 	}
 
+	info(query)
+
 	if nil == ctx {
 		_, err = q.Tx.Exec(query, payload...)
 	} else {
@@ -100,6 +102,8 @@ func (q *Query) RawFirstCtx(ctx context.Context, sample interface{}, query strin
 		}
 		return nil, err
 	}
+
+	info(query)
 
 	stmt, err := q.Tx.Preparex(query)
 	if nil != err {
@@ -152,6 +156,8 @@ func (q *Query) RawAllCtx(ctx context.Context, sample interface{}, query string,
 		return nil, err
 	}
 
+	info(query)
+
 	stmt, err := q.Tx.Preparex(query)
 	if nil != err {
 		q.autoRollback()
@@ -192,6 +198,8 @@ func (q *Query) RawNamedExecCtx(ctx context.Context, query string, payload map[s
 	if nil != err {
 		return false, err
 	}
+
+	info(query)
 
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
@@ -250,6 +258,8 @@ func (q *Query) RawNamedFirstCtx(
 		return nil, err
 	}
 
+	info(query)
+
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
 		q.autoRollback()
@@ -306,6 +316,8 @@ func (q *Query) RawNamedAllCtx(
 		}
 		return nil, err
 	}
+
+	info(query)
 
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
@@ -405,6 +417,8 @@ func (q *Query) InsertCtx(ctx context.Context, doNothing bool) (interface{}, err
 
 	query := q.Builder.BuildInsert(q.Model, doNothing)
 
+	info(query)
+
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
 		q.autoRollback()
@@ -466,6 +480,8 @@ func (q *Query) BulkInsertCtx(ctx context.Context, data interface{}) (bool, erro
 	query := q.Builder.BuildBulkInsert(q.Model, slice)
 	payloads := q.bulkPayload(slice)
 
+	info(query)
+
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
 		q.autoRollback()
@@ -519,6 +535,8 @@ func (q *Query) UpdateCtx(ctx context.Context) (bool, error) {
 
 	query := q.Builder.BuildUpdate(q.Model, q.Parameter)
 	query = q.bindIn(query)
+
+	info(query)
 
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
@@ -579,6 +597,8 @@ func (q *Query) DeleteCtx(ctx context.Context) (bool, error) {
 
 	query := q.Builder.BuildDelete(q.Model, q.Parameter)
 	query = q.bindIn(query)
+
+	info(query)
 
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {
@@ -1087,6 +1107,8 @@ func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withT
 
 	query := q.Builder.BuildSelect(q.Model, q.Parameter, aggregate, aggregateColumn)
 	query = q.bindIn(query)
+
+	info(query)
 
 	stmt, err := q.Tx.PrepareNamed(query)
 	if nil != err {

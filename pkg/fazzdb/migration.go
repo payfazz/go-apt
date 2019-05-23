@@ -2,7 +2,6 @@ package fazzdb
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
@@ -78,7 +77,7 @@ func (m *Migration) RunMeta(query *Query, appId string) {
 		},
 	}
 
-	log.Printf("Creating meta table")
+	show("Creating meta table")
 	metaMigration.Run(query, false)
 
 	if !m.isMetaExist(query) {
@@ -92,25 +91,25 @@ func (m *Migration) Run(query *Query) {
 	metaVersion := m.metaVersion(query)
 	appVersion := m.appVersion()
 
-	log.Printf("Meta version: %d", metaVersion)
-	log.Printf("App version: %d", appVersion)
+	show(fmt.Sprintf("Meta version: %d", metaVersion))
+	show(fmt.Sprintf("App version: %d", appVersion))
 
 	if appVersion < metaVersion {
 		panic("meta version is bigger than app version")
 	} else if appVersion > metaVersion {
 		for index, v := range m.Versions {
 			if index >= metaVersion {
-				log.Printf("Running migration version %d", metaVersion+1)
+				show(fmt.Sprintf("Running migration version %d", metaVersion+1))
 				v.Run(query, true)
 
 				metaVersion++
 				m.incrementMetaVersion(query, metaVersion)
-				log.Printf("Migration version %d done!", metaVersion)
+				show(fmt.Sprintf("Migration version %d done!", metaVersion))
 			}
 		}
 		_ = query.Tx.Commit()
 	} else {
-		log.Println("Same meta and app version, doing nothing!")
+		show("Same meta and app version, doing nothing!")
 	}
 }
 
@@ -195,7 +194,7 @@ func (m *Migration) seedMetaAppId(query *Query, appId string) {
 	appIdModel.Key = META_APP_ID
 	appIdModel.Value = appId
 
-	log.Printf("Seeding meta app id")
+	show("Seeding meta app id")
 	_, err := query.Use(appIdModel).InsertOnConflict(true)
 	if nil != err {
 		_ = query.Tx.Rollback()
@@ -209,7 +208,7 @@ func (m *Migration) seedMetaVersion(query *Query) {
 	versionModel.Key = META_VERSION
 	versionModel.Value = "0"
 
-	log.Printf("Seeding meta version")
+	show("Seeding meta version")
 	_, err := query.Use(versionModel).InsertOnConflict(true)
 	if nil != err {
 		_ = query.Tx.Rollback()
