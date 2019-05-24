@@ -1,9 +1,10 @@
 package fazzdb
 
 import (
-	`fmt`
+	"fmt"
+	"sync"
+
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
-	`sync`
 )
 
 var once sync.Once
@@ -18,7 +19,7 @@ func NewBuilder() *Builder {
 }
 
 // Builder is a struct that will handle transforming parameters into query string
-type Builder struct {}
+type Builder struct{}
 
 // BuildCreateTable is a function that will return create query from given table
 func (b *Builder) BuildCreateTable(table *MigrationTable) string {
@@ -72,7 +73,7 @@ func (b *Builder) BuildAlterTable(table *MigrationTable) string {
 
 	query = fmt.Sprintf(`%s;`, query)
 	query = b.generateCreateIndex(query, table)
-	
+
 	return query
 }
 
@@ -201,6 +202,10 @@ func (b *Builder) BuildSelect(model ModelInterface, param *Parameter, aggregate 
 				query = fmt.Sprintf(`%s, `, query)
 			}
 			query = fmt.Sprintf(`%s %s %s`, query, key, order.Direction)
+
+			if order.NullsLast {
+				query = fmt.Sprintf(`%s NULLS LAST`, query)
+			}
 		}
 	}
 

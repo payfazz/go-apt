@@ -18,6 +18,7 @@ func main() {
 		migration.Version1,
 		migration.Version2,
 	)
+	fazzdb.Verbose()
 
 	query := fazzdb.QueryDb(config.GetDB(), config.Parameter)
 	fazzdb_sample.InsertAuthor(query)
