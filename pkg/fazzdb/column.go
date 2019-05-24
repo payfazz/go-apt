@@ -65,6 +65,7 @@ func (c *Column) ToString(table string) string {
 type Order struct {
 	Field     Column
 	Direction OrderDirection
+	NullsLast bool
 }
 
 // ToString is a function that wrap toString function
