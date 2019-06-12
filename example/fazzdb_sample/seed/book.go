@@ -43,11 +43,6 @@ func BookSeeder() *BookSeed {
 				{"title": "Iron men", "year": 1990, "stock": 10, "status": model.BOOK_AVAILABLE, "authorId": 1},
 				{"title": "Blackjack", "year": 1967, "stock": 15, "status": model.BOOK_AVAILABLE, "authorId": 1},
 				{"title": "21", "year": 1972, "stock": 18, "status": model.BOOK_AVAILABLE, "authorId": 2},
-				{"title": "Eagle Eye", "year": 1978, "stock": 12, "status": model.BOOK_AVAILABLE, "authorId": 2},
-				{"title": "Hurk", "year": 1982, "stock": 22, "status": model.BOOK_AVAILABLE, "authorId": 3},
-				{"title": "Viking", "year": 1989, "stock": 25, "status": model.BOOK_AVAILABLE, "authorId": 3},
-				{"title": "Tor", "year": 1993, "stock": 8, "status": model.BOOK_AVAILABLE, "authorId": 1},
-				{"title": "Roki", "year": 1996, "stock": 13, "status": model.BOOK_AVAILABLE, "authorId": 2},
 			},
 		},
 	}

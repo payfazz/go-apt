@@ -2,6 +2,8 @@ package fazzdb
 
 import (
 	"fmt"
+	"log"
+	"reflect"
 	"sync"
 
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
@@ -20,6 +22,48 @@ func NewBuilder() *Builder {
 
 // Builder is a struct that will handle transforming parameters into query string
 type Builder struct{}
+
+// BuildSeeder is a struct that will return insert query for given seeder
+func (b *Builder) BuildSeeder(table string, columns []string, values []map[string]interface{}) string {
+	query := fmt.Sprintf(`INSERT INTO "%s" (`, table)
+
+	for i, col := range columns {
+		if i != 0 {
+			query = fmt.Sprintf(`%s, `, query)
+		}
+		query = fmt.Sprintf(`%s "%s"`, query, col)
+	}
+	query = fmt.Sprintf(`%s ) VALUES`, query)
+
+	log.Println("builder", len(values))
+
+	for i, row := range values {
+		if i != 0 {
+			query = fmt.Sprintf(`%s, `, query)
+		}
+		query = fmt.Sprintf(`%s (`, query)
+		for j, col := range columns {
+			if j != 0 {
+				query = fmt.Sprintf(`%s, `, query)
+			}
+
+			value := row[col]
+			kind := reflect.ValueOf(value).Kind()
+			if nil == value {
+				query = fmt.Sprintf(`%s NULL`, query)
+			} else if kind == reflect.String {
+				query = fmt.Sprintf(`%s '%v'`, query, value)
+			} else {
+				query = fmt.Sprintf(`%s %v`, query, row[col])
+			}
+		}
+		query = fmt.Sprintf(`%s )`, query)
+	}
+
+	query = fmt.Sprintf(`%s;`, query)
+
+	return query
+}
 
 // BuildCreateTable is a function that will return create query from given table
 func (b *Builder) BuildCreateTable(table *MigrationTable) string {

@@ -23,6 +23,7 @@ var Version2 = fazzdb.MigrationVersion{
 	Seeds: []fazzdb.SeederInterface{
 		seed.AuthorSeeder(),
 		seed.BookSeeder(),
+		seed.BookObjectSeeder(),
 	},
 	Raw: `CREATE TABLE raw_queries (id serial primary key, name varchar);`,
 }
