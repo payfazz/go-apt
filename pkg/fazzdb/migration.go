@@ -41,7 +41,7 @@ func (fm *FazzMeta) Payload() map[string]interface{} {
 }
 
 // Migrate is a constructor of Migration struct that will run creation and seed of meta table and other migration
-func Migrate(db *sqlx.DB, appId string, forceMigrate bool, versions ...MigrationVersion) {
+func Migrate(db *sqlx.DB, appId string, forceMigrate bool, runSeeder bool, versions ...MigrationVersion) {
 	m := &Migration{
 		Versions: versions,
 	}
@@ -53,7 +53,7 @@ func Migrate(db *sqlx.DB, appId string, forceMigrate bool, versions ...Migration
 
 	m.RunMeta(query, appId)
 	if m.isRightApp(query, appId) {
-		m.Run(query)
+		m.Run(query, runSeeder)
 	} else {
 		panic("migrating to wrong app")
 	}
@@ -78,7 +78,7 @@ func (m *Migration) RunMeta(query *Query, appId string) {
 	}
 
 	show("Creating meta table")
-	metaMigration.Run(query, false)
+	metaMigration.Run(query, true, false)
 
 	if !m.isMetaExist(query) {
 		m.seedMetaAppId(query, appId)
@@ -87,7 +87,7 @@ func (m *Migration) RunMeta(query *Query, appId string) {
 }
 
 // Run is a function that will run all migration tables and enums from Versions in Migration
-func (m *Migration) Run(query *Query) {
+func (m *Migration) Run(query *Query, runSeeder bool) {
 	metaVersion := m.metaVersion(query)
 	appVersion := m.appVersion()
 
@@ -100,7 +100,7 @@ func (m *Migration) Run(query *Query) {
 		for index, v := range m.Versions {
 			if index >= metaVersion {
 				show(fmt.Sprintf("Running migration version %d", metaVersion+1))
-				v.Run(query, true)
+				v.Run(query, runSeeder, true)
 
 				metaVersion++
 				m.incrementMetaVersion(query, metaVersion)
@@ -708,7 +708,7 @@ type MigrationVersion struct {
 }
 
 // Run is a function that will run all tables and enums command in a MigrationVersion
-func (mv *MigrationVersion) Run(query *Query, autoDrop bool) {
+func (mv *MigrationVersion) Run(query *Query, runSeeder bool, autoDrop bool) {
 	builder := NewBuilder()
 
 	if "" != mv.Raw {
@@ -751,5 +751,7 @@ func (mv *MigrationVersion) Run(query *Query, autoDrop bool) {
 		panic(err)
 	}
 
-	Seed(query, mv.Seeds...)
+	if runSeeder {
+		Seed(query, mv.Seeds...)
+	}
 }
