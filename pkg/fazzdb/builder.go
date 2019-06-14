@@ -2,7 +2,6 @@ package fazzdb
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"sync"
 
@@ -34,8 +33,6 @@ func (b *Builder) BuildSeeder(table string, columns []string, values []map[strin
 		query = fmt.Sprintf(`%s "%s"`, query, col)
 	}
 	query = fmt.Sprintf(`%s ) VALUES`, query)
-
-	log.Println("builder", len(values))
 
 	for i, row := range values {
 		if i != 0 {

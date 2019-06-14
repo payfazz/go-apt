@@ -1,7 +1,6 @@
 package fazzdb
 
 import (
-	"log"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -127,8 +126,6 @@ func generateEmpty(meta TableMeta, values []map[string]interface{}) []map[string
 			values[i][CREATED_AT] = now.Format(time.RFC3339)
 		}
 	}
-
-	log.Println("seed", len(values))
 
 	return values
 }
