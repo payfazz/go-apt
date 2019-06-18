@@ -18,7 +18,6 @@ require (
 	github.com/payfazz/go-middleware v0.0.0-20190324083140-9931d8c2ca01
 	github.com/payfazz/go-router v0.0.0-20190319225834-51cc7c559a0f
 	github.com/pkg/errors v0.8.1 // indirect
-	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24 // indirect
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c

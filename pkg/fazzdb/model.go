@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
-	uuid "github.com/satori/go.uuid"
 )
 
 // ModelInterface is an interface that will be used to get model information and used in various task by Query instance
@@ -191,7 +191,10 @@ func (m *Model) GenerateId(v ModelInterface) {
 	}
 
 	pkField := strings.Title(m.GetPK())
-	id := uuid.NewV4().String()
+
+	v4, _ := uuid.NewV4()
+	id := v4.String()
+
 	reflect.ValueOf(v).Elem().FieldByName(pkField).Set(reflect.ValueOf(id))
 }
 

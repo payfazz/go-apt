@@ -3,7 +3,7 @@ package fazzdb
 import (
 	"time"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 )
 
 type SeedType string
@@ -119,7 +119,8 @@ func generateEmpty(meta TableMeta, values []map[string]interface{}) []map[string
 
 	for i, v := range values {
 		if _, ok := v[meta.PrimaryKey]; !ok || nil == v[meta.PrimaryKey] {
-			values[i][meta.PrimaryKey] = uuid.NewV4().String()
+			v4, _ := uuid.NewV4()
+			values[i][meta.PrimaryKey] = v4.String()
 		}
 		if _, ok := v[CREATED_AT]; !ok || nil == v[CREATED_AT] {
 			now := time.Now().UTC()
