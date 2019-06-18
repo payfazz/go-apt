@@ -22,6 +22,20 @@ func NewBuilder() *Builder {
 // Builder is a struct that will handle transforming parameters into query string
 type Builder struct{}
 
+// BuildTruncateTables is a function that will return truncate query for given tables
+func (b *Builder) BuildTruncateTables(tables ...string) string {
+	query := fmt.Sprintf(`TRUNCATE `)
+	for i, table := range tables {
+		if i != 0 {
+			query = fmt.Sprintf(`%s, `, query)
+		}
+		query = fmt.Sprintf(`%s "%s"`, query, table)
+	}
+
+	query = fmt.Sprintf(`%s CASCADE;`, query)
+	return query
+}
+
 // BuildSeeder is a struct that will return insert query for given seeder
 func (b *Builder) BuildSeeder(table string, columns []string, values []map[string]interface{}) string {
 	query := fmt.Sprintf(`INSERT INTO "%s" (`, table)

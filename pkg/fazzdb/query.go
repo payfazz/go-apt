@@ -48,6 +48,17 @@ type Query struct {
 	AutoCommit bool
 }
 
+// TruncateCtx is a function that will truncate given tables using Context
+func (q *Query) TruncateCtx(ctx context.Context, tables ...string) (bool, error) {
+	query := q.Builder.BuildTruncateTables(tables...)
+	return q.RawExecCtx(ctx, query)
+}
+
+// TruncateCtx is a function that will truncate given tables
+func (q *Query) Truncate(tables ...string) (bool, error) {
+	return q.TruncateCtx(nil, tables...)
+}
+
 // RawExec is a function that will run exec to a raw query with provided payload
 func (q *Query) RawExec(query string, payload ...interface{}) (bool, error) {
 	return q.RawExecCtx(nil, query, payload...)
