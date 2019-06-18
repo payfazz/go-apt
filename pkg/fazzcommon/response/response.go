@@ -48,7 +48,7 @@ func Error(w http.ResponseWriter, err error) {
 	if be, ok := err.(httpError.HttpErrorInterface); ok {
 		Json(w, be, be.GetCode())
 	} else {
-		Json(w, err, http.StatusInternalServerError)
+		Error(w, httpError.InternalServer(err))
 	}
 }
 
