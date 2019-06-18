@@ -7,9 +7,9 @@ import (
 	"strings"
 	"unicode"
 
+	uuid "github.com/gofrs/uuid"
 	"github.com/leekchan/accounting"
 	"github.com/microcosm-cc/bluemonday"
-	uuid "github.com/satori/go.uuid"
 )
 
 // ToLowerFirst is a function that will change the first character of a string into a lowercase letter.
@@ -73,7 +73,11 @@ func StringToInt64(param string) int64 {
 
 // GenerateStringUUID used to generate UUID (return string).
 func GenerateStringUUID() string {
-	return fmt.Sprintf("%s", uuid.NewV4())
+	uuid, err := uuid.NewV4()
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%s", uuid)
 }
 
 // SanitizePhone used to sanitize Indonesia's phone number from 08 to +628.
