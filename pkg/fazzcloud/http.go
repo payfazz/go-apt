@@ -25,6 +25,7 @@ const (
 type HTTPClientInterface interface {
 	Get(path string, params *map[string]string, headers *map[string]string) (int, []byte, error)
 	Send(path string, method string, contentType string, params []byte, headers *map[string]string) (int, []byte, error)
+	SendWithCookies(path string, method string, contentType string, params []byte, headers *map[string]string, cookies []*http.Cookie) (int, []byte, []*http.Cookie, error)
 	Delete(path string, headers *map[string]string) (int, []byte, error)
 	TraceRequest()
 }
@@ -50,16 +51,19 @@ func (hr *HTTPClient) getURL(path string) string {
 	return fmt.Sprintf("%s/%s", hr.host, path)
 }
 
-func (hr *HTTPClient) readResponse(response *http.Response, err error) ([]byte, error) {
+func (hr *HTTPClient) readResponse(response *http.Response, err error) ([]byte, []*http.Cookie, error) {
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	cookie := response.Cookies()
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
 	if response.StatusCode < http.StatusOK || response.StatusCode > 299 {
-		return body, errors.New(string(body))
+		return nil, nil, errors.New(string(body))
 	}
-	return body, err
+
+	return body, cookie, err
 }
 
 func (hr *HTTPClient) clearCache() {
@@ -79,6 +83,48 @@ func (hr *HTTPClient) cacheRequest(cache *httpCache, path string, params string,
 func (hr *HTTPClient) cacheResponse(cache *httpCache, responseCode int, response []byte) {
 	cache.responseCode = responseCode
 	cache.response = response
+}
+
+func (hr *HTTPClient) send(path string, method string, contentType string, params []byte, headers *map[string]string, cookies []*http.Cookie) (int, []byte, []*http.Cookie, error) {
+	hr.clearCache()
+	url := hr.getURL(path)
+
+	// send request and params
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(params))
+
+	// set headers from params
+	req.Header.Set("Content-Type", contentType)
+
+	//set cookies
+	if cookies != nil && len(cookies) != 0 {
+		for _, cook := range cookies {
+			req.AddCookie(cook)
+		}
+	}
+
+	if headers != nil && len(*headers) != 0 {
+		for k, v := range *headers {
+			req.Header.Set(k, v)
+		}
+	}
+
+	if err != nil {
+		return http.StatusInternalServerError, nil, nil, err
+	}
+
+	hr.cacheRequest(hr.httpCache, url, string(params), headers, contentType, method)
+
+	response, err := hr.httpClient.Do(req)
+	if err != nil {
+		return http.StatusInternalServerError, nil, nil, err
+	}
+
+	// read and parse responses
+	resp, cookie, err := hr.readResponse(response, err)
+
+	hr.cacheResponse(hr.httpCache, response.StatusCode, resp)
+
+	return response.StatusCode, resp, cookie, err
 }
 
 // Get is a function to get the data from http call.
@@ -116,7 +162,7 @@ func (hr *HTTPClient) Get(path string, params *map[string]string, headers *map[s
 	response, err := hr.httpClient.Do(req)
 
 	// parse response from response into bytes
-	resp, err := hr.readResponse(response, err)
+	resp, _, err := hr.readResponse(response, err)
 	if err != nil {
 		return http.StatusInternalServerError, nil, err
 	}
@@ -128,35 +174,25 @@ func (hr *HTTPClient) Get(path string, params *map[string]string, headers *map[s
 
 // Post is a function that used to post the data into another http url.
 func (hr *HTTPClient) Send(path string, method string, contentType string, params []byte, headers *map[string]string) (int, []byte, error) {
-	hr.clearCache()
-	url := hr.getURL(path)
+	code, resp, _, err := hr.send(path, method, contentType, params, headers, nil)
 
-	// send request and params
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(params))
-
-	// set headers from params
-	req.Header.Set("Content-Type", contentType)
-	if headers != nil && len(*headers) != 0 {
-		for k, v := range *headers {
-			req.Header.Set(k, v)
-		}
-	}
 	if err != nil {
 		return http.StatusInternalServerError, nil, err
 	}
 
-	hr.cacheRequest(hr.httpCache, url, string(params), headers, contentType, method)
+	return code, resp, err
+}
 
-	response, err := hr.httpClient.Do(req)
+//SendWithCookies is a function that used to post the data into another http url
+//with code, res, cookie and error as it return.
+func (hr *HTTPClient) SendWithCookies(path string, method string, contentType string, params []byte, headers *map[string]string, cookies []*http.Cookie) (int, []byte, []*http.Cookie, error) {
+	code, resp, cookie, err := hr.send(path, method, contentType, params, headers, cookies)
+
 	if err != nil {
-		return http.StatusInternalServerError, nil, err
+		return http.StatusInternalServerError, nil, nil, err
 	}
 
-	// read and parse responses
-	resp, err := hr.readResponse(response, err)
-
-	hr.cacheResponse(hr.httpCache, response.StatusCode, resp)
-	return response.StatusCode, resp, err
+	return code, resp, cookie, err
 }
 
 // Delete is a function that used to send delete http verb.
@@ -180,7 +216,7 @@ func (hr *HTTPClient) Delete(path string, headers *map[string]string) (int, []by
 	response, err := hr.httpClient.Do(req)
 
 	// parse response from response into bytes
-	resp, err := hr.readResponse(response, err)
+	resp, _, err := hr.readResponse(response, err)
 	if err != nil {
 		return http.StatusInternalServerError, nil, err
 	}
@@ -212,3 +248,4 @@ func NewHTTPClient(host string) HTTPClientInterface {
 	}
 	return &HTTPClient{host: host, httpClient: httpClient, httpCache: &httpCache{}}
 }
+
