@@ -24,6 +24,7 @@ const (
 
 type HTTPClientInterface interface {
 	Get(path string, params *map[string]string, headers *map[string]string) (int, []byte, error)
+	GetWithCookies(path string, params *map[string]string, headers *map[string]string) (int, []byte, []*http.Cookie, error)
 	Send(path string, method string, contentType string, params []byte, headers *map[string]string) (int, []byte, error)
 	SendWithCookies(path string, method string, contentType string, params []byte, headers *map[string]string, cookies []*http.Cookie) (int, []byte, []*http.Cookie, error)
 	Delete(path string, headers *map[string]string) (int, []byte, error)
@@ -85,6 +86,51 @@ func (hr *HTTPClient) cacheResponse(cache *httpCache, responseCode int, response
 	cache.response = response
 }
 
+func (hr *HTTPClient) get(path string, params *map[string]string, headers *map[string]string) (int, []byte, []*http.Cookie, error) {
+	cvt := ""
+	hr.clearCache()
+
+	url := hr.getURL(path)
+	req, err := http.NewRequest("GET", url, nil)
+
+	// set headers from params
+	if headers != nil && len(*headers) != 0 {
+		for k, v := range *headers {
+			req.Header.Set(k, v)
+		}
+	}
+
+	// set request params from params
+	if params != nil && len(*params) != 0 {
+		q := req.URL.Query()
+		for key, value := range *params {
+			q.Add(key, value)
+		}
+		req.URL.RawQuery = q.Encode()
+	}
+
+	if err != nil {
+		return http.StatusInternalServerError, nil, nil, err
+	}
+
+	if params != nil {
+		cvt = formatter.ConvertMapToString(*params)
+	}
+	hr.cacheRequest(hr.httpCache, url, cvt, headers, "", GET)
+
+	response, err := hr.httpClient.Do(req)
+
+	// parse response from response into bytes
+	resp, cookies, err := hr.readResponse(response, err)
+	if err != nil {
+		return http.StatusInternalServerError, nil, nil, err
+	}
+
+	hr.cacheResponse(hr.httpCache, response.StatusCode, resp)
+	// return response to caller
+	return response.StatusCode, resp, cookies, err
+}
+
 func (hr *HTTPClient) send(path string, method string, contentType string, params []byte, headers *map[string]string, cookies []*http.Cookie) (int, []byte, []*http.Cookie, error) {
 	hr.clearCache()
 	url := hr.getURL(path)
@@ -97,8 +143,8 @@ func (hr *HTTPClient) send(path string, method string, contentType string, param
 
 	//set cookies
 	if cookies != nil && len(cookies) != 0 {
-		for _, cook := range cookies {
-			req.AddCookie(cook)
+		for _, cookie := range cookies {
+			req.AddCookie(cookie)
 		}
 	}
 
@@ -129,47 +175,24 @@ func (hr *HTTPClient) send(path string, method string, contentType string, param
 
 // Get is a function to get the data from http call.
 func (hr *HTTPClient) Get(path string, params *map[string]string, headers *map[string]string) (int, []byte, error) {
-	cvt := ""
-	hr.clearCache()
+	code, resp, _, err := hr.get(path, params, headers)
 
-	url := hr.getURL(path)
-	req, err := http.NewRequest("GET", url, nil)
-
-	// set headers from params
-	if headers != nil && len(*headers) != 0 {
-		for k, v := range *headers {
-			req.Header.Set(k, v)
-		}
-	}
-
-	// set request params from params
-	if params != nil && len(*params) != 0 {
-		q := req.URL.Query()
-		for key, value := range *params {
-			q.Add(key, value)
-		}
-		req.URL.RawQuery = q.Encode()
-	}
 	if err != nil {
 		return http.StatusInternalServerError, nil, err
 	}
 
-	if params != nil {
-		cvt = formatter.ConvertMapToString(*params)
-	}
-	hr.cacheRequest(hr.httpCache, url, cvt, headers, "", GET)
+	return code, resp, err
+}
 
-	response, err := hr.httpClient.Do(req)
+//GetWithCookies is a function to get the data and cookie from http call.
+func (hr *HTTPClient) GetWithCookies(path string, params *map[string]string, headers *map[string]string) (int, []byte, []*http.Cookie, error) {
+	code, resp, cookies, err := hr.get(path, params, headers)
 
-	// parse response from response into bytes
-	resp, _, err := hr.readResponse(response, err)
 	if err != nil {
-		return http.StatusInternalServerError, nil, err
+		return http.StatusInternalServerError, nil, nil, err
 	}
 
-	hr.cacheResponse(hr.httpCache, response.StatusCode, resp)
-	// return response to caller
-	return response.StatusCode, resp, err
+	return code, resp, cookies, err
 }
 
 // Post is a function that used to post the data into another http url.
