@@ -91,6 +91,7 @@ func (hr *HTTPClient) get(path string, params *map[string]string, headers *map[s
 	hr.clearCache()
 
 	url := hr.getURL(path)
+
 	req, err := http.NewRequest("GET", url, nil)
 
 	// set headers from params
@@ -130,7 +131,7 @@ func (hr *HTTPClient) get(path string, params *map[string]string, headers *map[s
 	// parse response from response into bytes
 	resp, respCookies, err := hr.readResponse(response, err)
 	if err != nil {
-		return http.StatusInternalServerError, nil, nil, err
+		return response.StatusCode, nil, nil, err
 	}
 
 	hr.cacheResponse(hr.httpCache, response.StatusCode, resp)
@@ -169,7 +170,7 @@ func (hr *HTTPClient) send(path string, method string, contentType string, param
 
 	response, err := hr.httpClient.Do(req)
 	if err != nil {
-		return http.StatusInternalServerError, nil, nil, err
+		return response.StatusCode, nil, nil, err
 	}
 
 	// read and parse responses
@@ -185,7 +186,7 @@ func (hr *HTTPClient) Get(path string, params *map[string]string, headers *map[s
 	code, resp, _, err := hr.get(path, params, headers, nil)
 
 	if err != nil {
-		return http.StatusInternalServerError, nil, err
+		return code, nil, err
 	}
 
 	return code, resp, err
@@ -196,7 +197,7 @@ func (hr *HTTPClient) GetWithCookies(path string, params *map[string]string, hea
 	code, resp, respCookies, err := hr.get(path, params, headers, cookies)
 
 	if err != nil {
-		return http.StatusInternalServerError, nil, nil, err
+		return code, nil, nil, err
 	}
 
 	return code, resp, respCookies, err
@@ -207,7 +208,7 @@ func (hr *HTTPClient) Send(path string, method string, contentType string, param
 	code, resp, _, err := hr.send(path, method, contentType, params, headers, nil)
 
 	if err != nil {
-		return http.StatusInternalServerError, nil, err
+		return code, nil, err
 	}
 
 	return code, resp, err
@@ -219,7 +220,7 @@ func (hr *HTTPClient) SendWithCookies(path string, method string, contentType st
 	code, resp, respCookies, err := hr.send(path, method, contentType, params, headers, cookies)
 
 	if err != nil {
-		return http.StatusInternalServerError, nil, nil, err
+		return code, nil, nil, err
 	}
 
 	return code, resp, respCookies, err
