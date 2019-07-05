@@ -8,20 +8,20 @@ import (
 // HttpErrorInterface is an interface for all http error
 type HttpErrorInterface interface {
 	GetCode() int
-	GetMessage() string
+	GetStatusCode() string
 	GetDetail() interface{}
 }
 
 // BaseError is a struct that contain basic requirements for http error struct
 type BaseError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Trace   string `json:"error"`
+	Code       int    `json:"-"`
+	StatusCode string `json:"code"`
+	Message    string `json:"message"`
 }
 
 // Error is a function to implement error interface
 func (e *BaseError) Error() string {
-	return fmt.Sprintf("%d %s: %s", e.Code, http.StatusText(e.Code), e.Trace)
+	return fmt.Sprintf("%d %s: %s", e.Code, http.StatusText(e.Code), e.Message)
 }
 
 // GetCode is a function to return http error code
@@ -29,31 +29,31 @@ func (e *BaseError) GetCode() int {
 	return e.Code
 }
 
-// GetMessage is a function to return error message
-func (e *BaseError) GetMessage() string {
-	return e.Message
+// GetStatusCode is a function to return error message
+func (e *BaseError) GetStatusCode() string {
+	return e.StatusCode
 }
 
 // GetDetail is a function to return raw error message
 func (e *BaseError) GetDetail() interface{} {
-	return e.Trace
+	return e.Message
 }
 
 // Base is a constructor for http error with custom message
 func Base(code int, message string, err interface{}) BaseError {
 	return BaseError{
-		Code:    code,
-		Message: message,
-		Trace:   getError(err),
+		Code:       code,
+		StatusCode: message,
+		Message:    getError(err),
 	}
 }
 
 // Code is a constructor for http error with default status text message
 func Code(code int, err interface{}) BaseError {
 	return BaseError{
-		Code:    code,
-		Message: http.StatusText(code),
-		Trace:   getError(err),
+		Code:       code,
+		StatusCode: http.StatusText(code),
+		Message:    getError(err),
 	}
 }
 
