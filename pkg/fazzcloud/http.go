@@ -169,8 +169,10 @@ func (hr *HTTPClient) send(path string, method string, contentType string, param
 	hr.cacheRequest(hr.httpCache, url, string(params), headers, contentType, method)
 
 	response, err := hr.httpClient.Do(req)
-	if err != nil {
+	if err != nil && response != nil {
 		return response.StatusCode, nil, nil, err
+	} else if response == nil {
+		return http.StatusInternalServerError, nil, nil, err
 	}
 
 	// read and parse responses
@@ -279,4 +281,3 @@ func NewHTTPClient(host string) HTTPClientInterface {
 	}
 	return &HTTPClient{host: host, httpClient: httpClient, httpCache: &httpCache{}}
 }
-
