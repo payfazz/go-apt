@@ -130,8 +130,10 @@ func (hr *HTTPClient) get(path string, params *map[string]string, headers *map[s
 
 	// parse response from response into bytes
 	resp, respCookies, err := hr.readResponse(response, err)
-	if err != nil {
+	if err != nil && response != nil {
 		return response.StatusCode, nil, nil, err
+	} else if response == nil {
+		return http.StatusInternalServerError, nil, nil, err
 	}
 
 	hr.cacheResponse(hr.httpCache, response.StatusCode, resp)
