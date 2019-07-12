@@ -1,0 +1,90 @@
+package command
+
+import (
+	"context"
+	"errors"
+	"github.com/gofrs/uuid"
+	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/data"
+	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/event"
+)
+
+// TodoCommand is a interface for todo commands
+type TodoCommand interface {
+	Create(ctx context.Context, payload data.PayloadCreateTodo) (*string, error)
+	Update(ctx context.Context, payload data.PayloadUpdateTodo) error
+	Delete(ctx context.Context, id string) error
+}
+
+type todoCommand struct {
+	eventRepo TodoEventRepository
+}
+
+// Create is a command for Create Todo
+func (t *todoCommand) Create(ctx context.Context, payload data.PayloadCreateTodo) (*string, error) {
+
+	uuidV4, _ := uuid.NewV4()
+	id := uuidV4.String()
+
+	eventData := event.TodoCreatedData{
+		Id:   id,
+		Text: payload.Text,
+	}
+	savedEvent, err := t.eventRepo.Save(ctx, event.TODO_CREATED, eventData)
+	if err != nil {
+		return nil, err
+	}
+
+	err = t.eventRepo.Publish(ctx, savedEvent)
+	if err != nil {
+		return nil, err
+	}
+
+	return &id, nil
+}
+
+// Update is a command for Update Todo
+func (t *todoCommand) Update(ctx context.Context, payload data.PayloadUpdateTodo) error {
+	todoExists, err := t.eventRepo.IsExists(ctx, payload.Id)
+	if err != nil {
+		return err
+	}
+	if !todoExists {
+		return errors.New("todo not found")
+	}
+
+	eventData := event.TodoUpdatedData(payload)
+	savedEvent, err := t.eventRepo.Save(ctx, event.TODO_UPDATED, eventData)
+	if err != nil {
+		return err
+	}
+
+	err = t.eventRepo.Publish(ctx, savedEvent)
+	return err
+}
+
+// Delete is a command for Delete Todo
+func (t *todoCommand) Delete(ctx context.Context, id string) error {
+	todoExists, err := t.eventRepo.IsExists(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !todoExists {
+		return errors.New("todo not found")
+	}
+
+	eventData := event.TodoDeletedData{Id: id}
+	savedEvent, err := t.eventRepo.Save(ctx, event.TODO_DELETED, eventData)
+	if err != nil {
+		return err
+	}
+
+	err = t.eventRepo.Publish(ctx, savedEvent)
+	return err
+}
+
+// NewTodoCommand is a constructor for todo command handler
+func NewTodoCommand() TodoCommand {
+	return &todoCommand{
+		eventRepo: NewTodoEventRepository(),
+	}
+}
