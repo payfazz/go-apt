@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/gofrs/uuid"
 	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/data"
-	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/event"
 )
 
 // TodoCommand is a interface for todo commands
@@ -25,11 +24,11 @@ func (t *todoCommand) Create(ctx context.Context, payload data.PayloadCreateTodo
 	uuidV4, _ := uuid.NewV4()
 	id := uuidV4.String()
 
-	eventData := event.TodoCreatedData{
+	eventData := data.TodoCreated{
 		Id:   id,
 		Text: payload.Text,
 	}
-	savedEvent, err := t.eventRepo.Save(ctx, event.TODO_CREATED, eventData)
+	savedEvent, err := t.eventRepo.Save(ctx, data.EVENT_TODO_CREATED, eventData)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +51,8 @@ func (t *todoCommand) Update(ctx context.Context, payload data.PayloadUpdateTodo
 		return errors.New("todo not found")
 	}
 
-	eventData := event.TodoUpdatedData(payload)
-	savedEvent, err := t.eventRepo.Save(ctx, event.TODO_UPDATED, eventData)
+	eventData := data.TodoUpdated(payload)
+	savedEvent, err := t.eventRepo.Save(ctx, data.EVENT_TODO_UPDATED, eventData)
 	if err != nil {
 		return err
 	}
@@ -72,8 +71,8 @@ func (t *todoCommand) Delete(ctx context.Context, id string) error {
 		return errors.New("todo not found")
 	}
 
-	eventData := event.TodoDeletedData{Id: id}
-	savedEvent, err := t.eventRepo.Save(ctx, event.TODO_DELETED, eventData)
+	eventData := data.TodoDeleted{Id: id}
+	savedEvent, err := t.eventRepo.Save(ctx, data.EVENT_TODO_DELETED, eventData)
 	if err != nil {
 		return err
 	}
