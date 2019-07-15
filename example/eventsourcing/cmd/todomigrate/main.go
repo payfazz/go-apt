@@ -8,7 +8,7 @@ import (
 
 func main() {
 	fazzdb.Migrate(config.GetDB(),
-		"estodo-example",
+		"esexample",
 		true,
 		true,
 		migration.Version1,

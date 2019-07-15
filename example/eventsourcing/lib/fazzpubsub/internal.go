@@ -1,24 +1,8 @@
-package pubsub
+package fazzpubsub
 
 import (
 	"context"
-	"sync"
 )
-
-type Msg struct {
-	Data []byte
-}
-
-type MsgHandler func(msg *Msg)
-
-type Subscription interface {
-	Unsubscribe() error
-}
-
-type PubSub interface {
-	Publish(ctx context.Context, subject string, data []byte) error
-	Subscribe(ctx context.Context, subject string, cb MsgHandler) (Subscription, error)
-}
 
 type internalPubSub struct {
 	subs map[string][]subscription
@@ -54,14 +38,4 @@ func NewInternalPubSub() PubSub {
 	return &internalPubSub{
 		subs: map[string][]subscription{},
 	}
-}
-
-var ps PubSub
-var psOnce sync.Once
-
-func SingletonPubSub() PubSub {
-	psOnce.Do(func() {
-		ps = NewInternalPubSub()
-	})
-	return ps
 }

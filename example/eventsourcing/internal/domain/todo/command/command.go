@@ -15,7 +15,7 @@ type TodoCommand interface {
 }
 
 type todoCommand struct {
-	eventRepo TodoEventRepository
+	repository TodoEventRepository
 }
 
 // Create is a command for Create Todo
@@ -28,12 +28,12 @@ func (t *todoCommand) Create(ctx context.Context, payload data.PayloadCreateTodo
 		Id:   id,
 		Text: payload.Text,
 	}
-	savedEvent, err := t.eventRepo.Save(ctx, data.EVENT_TODO_CREATED, eventData)
+	savedEvent, err := t.repository.Save(ctx, data.EVENT_TODO_CREATED, eventData)
 	if err != nil {
 		return nil, err
 	}
 
-	err = t.eventRepo.Publish(ctx, savedEvent)
+	err = t.repository.Publish(ctx, "", savedEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (t *todoCommand) Create(ctx context.Context, payload data.PayloadCreateTodo
 
 // Update is a command for Update Todo
 func (t *todoCommand) Update(ctx context.Context, payload data.PayloadUpdateTodo) error {
-	todoExists, err := t.eventRepo.IsExists(ctx, payload.Id)
+	todoExists, err := t.repository.IsExists(ctx, payload.Id)
 	if err != nil {
 		return err
 	}
@@ -52,18 +52,18 @@ func (t *todoCommand) Update(ctx context.Context, payload data.PayloadUpdateTodo
 	}
 
 	eventData := data.TodoUpdated(payload)
-	savedEvent, err := t.eventRepo.Save(ctx, data.EVENT_TODO_UPDATED, eventData)
+	savedEvent, err := t.repository.Save(ctx, data.EVENT_TODO_UPDATED, eventData)
 	if err != nil {
 		return err
 	}
 
-	err = t.eventRepo.Publish(ctx, savedEvent)
+	err = t.repository.Publish(ctx, "", savedEvent)
 	return err
 }
 
 // Delete is a command for Delete Todo
 func (t *todoCommand) Delete(ctx context.Context, id string) error {
-	todoExists, err := t.eventRepo.IsExists(ctx, id)
+	todoExists, err := t.repository.IsExists(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -72,18 +72,18 @@ func (t *todoCommand) Delete(ctx context.Context, id string) error {
 	}
 
 	eventData := data.TodoDeleted{Id: id}
-	savedEvent, err := t.eventRepo.Save(ctx, data.EVENT_TODO_DELETED, eventData)
+	savedEvent, err := t.repository.Save(ctx, data.EVENT_TODO_DELETED, eventData)
 	if err != nil {
 		return err
 	}
 
-	err = t.eventRepo.Publish(ctx, savedEvent)
+	err = t.repository.Publish(ctx, "", savedEvent)
 	return err
 }
 
 // NewTodoCommand is a constructor for todo command handler
-func NewTodoCommand() TodoCommand {
+func NewTodoCommand(repository TodoEventRepository) TodoCommand {
 	return &todoCommand{
-		eventRepo: NewTodoEventRepository(),
+		repository: repository,
 	}
 }

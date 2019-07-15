@@ -1,4 +1,4 @@
-package es
+package fazzeventsource
 
 import (
 	"github.com/jmoiron/sqlx/types"

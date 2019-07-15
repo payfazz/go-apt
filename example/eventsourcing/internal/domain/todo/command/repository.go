@@ -2,26 +2,22 @@ package command
 
 import (
 	"context"
-	"encoding/json"
-	"github.com/payfazz/go-apt/example/eventsourcing/lib/es"
-	"github.com/payfazz/go-apt/example/eventsourcing/lib/pubsub"
+	"github.com/payfazz/go-apt/example/eventsourcing/lib/fazzeventsource"
 )
 
 // TodoEventRepository is repository for todo event
 type TodoEventRepository interface {
-	es.EventRepository
+	fazzeventsource.EventStore
 	IsExists(ctx context.Context, id string) (bool, error)
-	Publish(ctx context.Context, event *es.Event) error
 }
 
 type todoEventRepository struct {
-	es.EventRepository
-	bus pubsub.PubSub
+	fazzeventsource.EventStore
 }
 
 // IsExists check if todo exists and not deleted
 func (t *todoEventRepository) IsExists(ctx context.Context, id string) (bool, error) {
-	evs, err := t.AggregateById(ctx, id)
+	evs, err := t.FindByInstanceId(ctx, id)
 	if err != nil {
 		return false, err
 	}
@@ -30,21 +26,9 @@ func (t *todoEventRepository) IsExists(ctx context.Context, id string) (bool, er
 	return exists, nil
 }
 
-// Publish do publishing to event bus
-func (t *todoEventRepository) Publish(ctx context.Context, ev *es.Event) error {
-	evJson, err := json.Marshal(ev)
-	if err != nil {
-		return err
-	}
-	err = t.bus.Publish(ctx, ev.Type, evJson)
-	return err
-
-}
-
 // NewTodoEventRepository is constructor for Todo Event Repository
-func NewTodoEventRepository() TodoEventRepository {
+func NewTodoEventRepository(store fazzeventsource.EventStore) TodoEventRepository {
 	return &todoEventRepository{
-		EventRepository: es.NewEventStore(),
-		bus:             pubsub.SingletonPubSub(),
+		EventStore: store,
 	}
 }

@@ -9,39 +9,41 @@ import (
 
 // ServiceInterface interface that used for serving the service
 type ServiceInterface interface {
-	All(ctx context.Context) ([]query.Todo, error)
+	All(ctx context.Context) ([]*query.Todo, error)
 	Create(ctx context.Context, payload data.PayloadCreateTodo) (*string, error)
 	Update(ctx context.Context, payload data.PayloadUpdateTodo) error
 	Delete(ctx context.Context, id string) error
 }
 
 type service struct {
-	Command command.TodoCommand
+	command command.TodoCommand
+	query   query.TodoQuery
 }
 
 // All is a function to get all todo task
-func (s *service) All(ctx context.Context) ([]query.Todo, error) {
-	panic("implement me")
+func (s *service) All(ctx context.Context) ([]*query.Todo, error) {
+	return s.query.All(ctx)
 }
 
 // Create is a function to create a todo task
 func (s *service) Create(ctx context.Context, payload data.PayloadCreateTodo) (*string, error) {
-	return s.Command.Create(ctx, payload)
+	return s.command.Create(ctx, payload)
 }
 
 // Update is a function to update a todo task
 func (s *service) Update(ctx context.Context, payload data.PayloadUpdateTodo) error {
-	return s.Command.Update(ctx, payload)
+	return s.command.Update(ctx, payload)
 }
 
 // Delete is a function to update a todo task
 func (s *service) Delete(ctx context.Context, id string) error {
-	return s.Command.Delete(ctx, id)
+	return s.command.Delete(ctx, id)
 }
 
 // NewTodoService is a function to construct todo service
-func NewTodoService() ServiceInterface {
+func NewTodoService(command command.TodoCommand, query query.TodoQuery) ServiceInterface {
 	return &service{
-		Command: command.NewTodoCommand(),
+		command: command,
+		query:   query,
 	}
 }
