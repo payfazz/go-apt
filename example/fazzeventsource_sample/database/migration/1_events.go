@@ -1,8 +1,8 @@
 package migration
 
 import (
-	"github.com/payfazz/go-apt/example/eventsourcing/lib/fazzeventsource"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
+	"github.com/payfazz/go-apt/pkg/fazzeventsource"
 )
 
 var Version1 = fazzdb.MigrationVersion{

@@ -2,17 +2,19 @@ package command
 
 import (
 	"context"
-	"github.com/payfazz/go-apt/example/eventsourcing/lib/fazzeventsource"
+	"github.com/payfazz/go-apt/pkg/fazzeventsource"
 )
 
 // TodoEventRepository is repository for todo event
 type TodoEventRepository interface {
 	fazzeventsource.EventStore
+	fazzeventsource.EventPublisher
 	IsExists(ctx context.Context, id string) (bool, error)
 }
 
 type todoEventRepository struct {
 	fazzeventsource.EventStore
+	fazzeventsource.EventPublisher
 }
 
 // IsExists check if todo exists and not deleted
@@ -27,8 +29,9 @@ func (t *todoEventRepository) IsExists(ctx context.Context, id string) (bool, er
 }
 
 // NewTodoEventRepository is constructor for Todo Event Repository
-func NewTodoEventRepository(store fazzeventsource.EventStore) TodoEventRepository {
+func NewTodoEventRepository(store fazzeventsource.EventStore, publisher fazzeventsource.EventPublisher) TodoEventRepository {
 	return &todoEventRepository{
-		EventStore: store,
+		EventStore:     store,
+		EventPublisher: publisher,
 	}
 }

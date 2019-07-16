@@ -1,9 +1,8 @@
-package sync
+package query
 
 import (
 	"context"
-	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/data"
-	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/query"
+	"github.com/payfazz/go-apt/example/fazzeventsource_sample/internal/domain/todo/data"
 )
 
 // TodoSyncHandler is event handler interface for todo event
@@ -14,11 +13,11 @@ type TodoSyncHandler interface {
 }
 
 type todoSyncHandler struct {
-	repository query.TodoReadRepository
+	repository TodoReadRepository
 }
 
 func (t *todoSyncHandler) HandleTodoCreated(ctx context.Context, data data.TodoCreated) error {
-	todo := query.TodoReadModel()
+	todo := TodoReadModel()
 	todo.Id = data.Id
 	todo.Text = data.Text
 	todo.Completed = false
@@ -27,7 +26,7 @@ func (t *todoSyncHandler) HandleTodoCreated(ctx context.Context, data data.TodoC
 }
 
 func (t *todoSyncHandler) HandleTodoUpdated(ctx context.Context, data data.TodoUpdated) error {
-	todo := query.TodoReadModel()
+	todo := TodoReadModel()
 	todo.Id = data.Id
 	todo.Text = data.Text
 	todo.Completed = data.Completed
@@ -36,12 +35,12 @@ func (t *todoSyncHandler) HandleTodoUpdated(ctx context.Context, data data.TodoU
 }
 
 func (t *todoSyncHandler) HandleTodoDeleted(ctx context.Context, data data.TodoDeleted) error {
-	todo := query.TodoReadModel()
+	todo := TodoReadModel()
 	todo.Id = data.Id
 	err := t.repository.Delete(ctx, todo)
 	return err
 }
 
-func NewTodoSyncHandler(repository query.TodoReadRepository) TodoSyncHandler {
+func NewTodoSyncHandler(repository TodoReadRepository) TodoSyncHandler {
 	return &todoSyncHandler{repository: repository}
 }

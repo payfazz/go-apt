@@ -2,7 +2,7 @@ package test
 
 import (
 	"context"
-	"github.com/payfazz/go-apt/example/eventsourcing/config"
+	"github.com/payfazz/go-apt/example/fazzeventsource_sample/config"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 

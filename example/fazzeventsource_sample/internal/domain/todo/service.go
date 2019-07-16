@@ -2,9 +2,9 @@ package todo
 
 import (
 	"context"
-	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/command"
-	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/data"
-	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/query"
+	"github.com/payfazz/go-apt/example/fazzeventsource_sample/internal/domain/todo/command"
+	"github.com/payfazz/go-apt/example/fazzeventsource_sample/internal/domain/todo/data"
+	"github.com/payfazz/go-apt/example/fazzeventsource_sample/internal/domain/todo/query"
 )
 
 // ServiceInterface interface that used for serving the service

@@ -2,8 +2,8 @@ package query
 
 import (
 	"context"
-	"github.com/payfazz/go-apt/example/eventsourcing/lib/fazzcontext"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
+	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
 // TodoReadRepository is repository of read model for todo
@@ -19,7 +19,7 @@ type todoReadRepository struct {
 }
 
 func (t *todoReadRepository) All(ctx context.Context) ([]*Todo, error) {
-	q, err := fazzcontext.GetQuery(ctx)
+	q, err := fazzdb.GetQueryContext(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (t *todoReadRepository) All(ctx context.Context) ([]*Todo, error) {
 }
 
 func (t *todoReadRepository) Create(ctx context.Context, todo *Todo) (*string, error) {
-	q, err := fazzcontext.GetQuery(ctx)
+	q, err := fazzdb.GetQueryContext(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (t *todoReadRepository) Create(ctx context.Context, todo *Todo) (*string, e
 }
 
 func (t *todoReadRepository) Update(ctx context.Context, todo *Todo) error {
-	q, err := fazzcontext.GetQuery(ctx)
+	q, err := fazzdb.GetQueryContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func (t *todoReadRepository) Update(ctx context.Context, todo *Todo) error {
 }
 
 func (t *todoReadRepository) Delete(ctx context.Context, todo *Todo) error {
-	q, err := fazzcontext.GetQuery(ctx)
+	q, err := fazzdb.GetQueryContext(ctx)
 	if nil != err {
 		return err
 	}

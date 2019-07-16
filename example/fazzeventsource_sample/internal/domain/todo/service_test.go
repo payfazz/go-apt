@@ -1,12 +1,12 @@
 package todo
 
 import (
-	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/command"
-	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/data"
-	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/query"
-	"github.com/payfazz/go-apt/example/eventsourcing/lib/fazzeventsource"
-	"github.com/payfazz/go-apt/example/eventsourcing/lib/fazzpubsub"
-	"github.com/payfazz/go-apt/example/eventsourcing/test"
+	"github.com/payfazz/go-apt/example/fazzeventsource_sample/internal/domain/todo/command"
+	"github.com/payfazz/go-apt/example/fazzeventsource_sample/internal/domain/todo/data"
+	"github.com/payfazz/go-apt/example/fazzeventsource_sample/internal/domain/todo/query"
+	"github.com/payfazz/go-apt/example/fazzeventsource_sample/test"
+	"github.com/payfazz/go-apt/pkg/fazzeventsource"
+	"github.com/payfazz/go-apt/pkg/fazzpubsub"
 	"testing"
 )
 
@@ -57,9 +57,10 @@ func TestService(t *testing.T) {
 
 func provideTodoService() ServiceInterface {
 	pubsub := fazzpubsub.NewInternalPubSub()
-	store := fazzeventsource.NewEventStore(pubsub)
+	eventStore := fazzeventsource.NewPostgresEventStore("events")
+	eventPublisher := fazzeventsource.NewEventPublisher(pubsub, "todo")
 
-	eventRepo := command.NewTodoEventRepository(store)
+	eventRepo := command.NewTodoEventRepository(eventStore, eventPublisher)
 	todoCommand := command.NewTodoCommand(eventRepo)
 
 	readModel := query.TodoReadModel()

@@ -3,8 +3,8 @@ package fazzeventsource
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/jmoiron/sqlx/types"
-	"github.com/payfazz/go-apt/example/eventsourcing/lib/fazzpubsub"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"time"
 )
@@ -12,16 +12,15 @@ import (
 // EventStore is an interface used for event store
 type EventStore interface {
 	Save(ctx context.Context, eventType string, eventData interface{}) (*Event, error)
-	Publish(ctx context.Context, topic string, event *Event) error
 	FindByInstanceId(ctx context.Context, id string) ([]*Event, error)
 }
 
-type postgresEventRepository struct {
-	pubsub fazzpubsub.PubSub
+type postgresEventStore struct {
+	tableName string
 }
 
 // Save is a function to save event to event store
-func (e *postgresEventRepository) Save(ctx context.Context, eventType string, eventData interface{}) (*Event, error) {
+func (e *postgresEventStore) Save(ctx context.Context, eventType string, eventData interface{}) (*Event, error) {
 
 	dataJsonByte, err := json.Marshal(eventData)
 	if err != nil {
@@ -35,24 +34,13 @@ func (e *postgresEventRepository) Save(ctx context.Context, eventType string, ev
 	}
 
 	var ev = &Event{}
-	queryGet := `INSERT INTO events (type,data,created_at) VALUES ($1,$2,$3) RETURNING *`
+	queryGet := fmt.Sprintf(`INSERT INTO %s (type,data,created_at) VALUES ($1,$2,$3) RETURNING *`, e.tableName)
 	result, err := query.RawFirstCtx(ctx, ev, queryGet, eventType, dataJsonText, time.Now())
 	return result.(*Event), err
 }
 
-// Publish do publishing to event pubsub
-func (e *postgresEventRepository) Publish(ctx context.Context, topic string, event *Event) error {
-	evJson, err := json.Marshal(event)
-	if err != nil {
-		return err
-	}
-	err = e.pubsub.Publish(ctx, topic, evJson)
-	return err
-
-}
-
 // FindByInstanceId return all events related to id in data sorted from last event
-func (e *postgresEventRepository) FindByInstanceId(ctx context.Context, id string) ([]*Event, error) {
+func (e *postgresEventStore) FindByInstanceId(ctx context.Context, id string) ([]*Event, error) {
 	query, err := fazzdb.GetQueryContext(ctx)
 	if err != nil {
 		return nil, err
@@ -65,7 +53,9 @@ func (e *postgresEventRepository) FindByInstanceId(ctx context.Context, id strin
 	return evs, err
 }
 
-// NewEventStore is a function to create new EventStore
-func NewEventStore(pubsub fazzpubsub.PubSub) EventStore {
-	return &postgresEventRepository{pubsub: pubsub}
+// NewPostgresEventStore is a function to create new EventStore
+func NewPostgresEventStore(tableName string) EventStore {
+	return &postgresEventStore{
+		tableName: tableName,
+	}
 }

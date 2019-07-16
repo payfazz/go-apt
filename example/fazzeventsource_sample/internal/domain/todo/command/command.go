@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/gofrs/uuid"
-	"github.com/payfazz/go-apt/example/eventsourcing/internal/domain/todo/data"
+	"github.com/payfazz/go-apt/example/fazzeventsource_sample/internal/domain/todo/data"
 )
 
 // TodoCommand is a interface for todo commands
@@ -33,7 +33,7 @@ func (t *todoCommand) Create(ctx context.Context, payload data.PayloadCreateTodo
 		return nil, err
 	}
 
-	err = t.repository.Publish(ctx, "", savedEvent)
+	err = t.repository.Publish(ctx, savedEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (t *todoCommand) Update(ctx context.Context, payload data.PayloadUpdateTodo
 		return err
 	}
 
-	err = t.repository.Publish(ctx, "", savedEvent)
+	err = t.repository.Publish(ctx, savedEvent)
 	return err
 }
 
@@ -77,7 +77,7 @@ func (t *todoCommand) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	err = t.repository.Publish(ctx, "", savedEvent)
+	err = t.repository.Publish(ctx, savedEvent)
 	return err
 }
 
