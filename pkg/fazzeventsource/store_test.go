@@ -2,7 +2,7 @@ package fazzeventsource
 
 import (
 	"github.com/gofrs/uuid"
-	"github.com/payfazz/go-apt/example/fazzeventsource_sample/test"
+	"github.com/payfazz/go-apt/example/eventsource/test"
 	"testing"
 )
 

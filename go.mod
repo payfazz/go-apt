@@ -15,6 +15,8 @@ require (
 	github.com/lib/pq v1.1.1
 	github.com/mattn/go-sqlite3 v1.10.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2
+	github.com/nats-io/nats-server/v2 v2.0.2 // indirect
+	github.com/nats-io/nats.go v1.8.1
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/payfazz/go-middleware v0.0.0-20190630114857-3c69e9a326a4
