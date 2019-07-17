@@ -28,12 +28,7 @@ func (t *todoCommand) Create(ctx context.Context, payload data.PayloadCreateTodo
 		Id:   id,
 		Text: payload.Text,
 	}
-	savedEvent, err := t.repository.Save(ctx, data.EVENT_TODO_CREATED, eventData)
-	if err != nil {
-		return nil, err
-	}
-
-	err = t.repository.Publish(ctx, savedEvent)
+	_, err := t.repository.Post(ctx, data.EVENT_TODO_CREATED, eventData)
 	if err != nil {
 		return nil, err
 	}
@@ -43,41 +38,33 @@ func (t *todoCommand) Create(ctx context.Context, payload data.PayloadCreateTodo
 
 // Update is a command for Update Todo
 func (t *todoCommand) Update(ctx context.Context, payload data.PayloadUpdateTodo) error {
-	todoExists, err := t.repository.IsExists(ctx, payload.Id)
+	todo, err := t.repository.Get(ctx, payload.Id)
 	if err != nil {
 		return err
 	}
-	if !todoExists {
+
+	if todo == nil || todo.DeletedAt != nil {
 		return errors.New("todo not found")
 	}
 
 	eventData := data.TodoUpdated(payload)
-	savedEvent, err := t.repository.Save(ctx, data.EVENT_TODO_UPDATED, eventData)
-	if err != nil {
-		return err
-	}
-
-	err = t.repository.Publish(ctx, savedEvent)
+	_, err = t.repository.Post(ctx, data.EVENT_TODO_UPDATED, eventData)
 	return err
 }
 
 // Delete is a command for Delete Todo
 func (t *todoCommand) Delete(ctx context.Context, id string) error {
-	todoExists, err := t.repository.IsExists(ctx, id)
+	todo, err := t.repository.Get(ctx, id)
 	if err != nil {
 		return err
 	}
-	if !todoExists {
+
+	if todo == nil || todo.DeletedAt != nil {
 		return errors.New("todo not found")
 	}
 
 	eventData := data.TodoDeleted{Id: id}
-	savedEvent, err := t.repository.Save(ctx, data.EVENT_TODO_DELETED, eventData)
-	if err != nil {
-		return err
-	}
-
-	err = t.repository.Publish(ctx, savedEvent)
+	_, err = t.repository.Post(ctx, data.EVENT_TODO_DELETED, eventData)
 	return err
 }
 

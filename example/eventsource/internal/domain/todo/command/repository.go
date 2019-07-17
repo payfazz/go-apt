@@ -7,22 +7,39 @@ import (
 
 // TodoWriteRepository is repository for todo event
 type TodoWriteRepository interface {
-	fazzeventsource.EventStore
-	fazzeventsource.EventPublisher
+	Post(ctx context.Context, eventType string, eventData interface{}) (*fazzeventsource.Event, error)
 	Get(ctx context.Context, id string) (*Todo, error)
 	IsExists(ctx context.Context, id string) (bool, error)
 }
 
 type todoWriteRepository struct {
-	fazzeventsource.EventStore
-	fazzeventsource.EventPublisher
+	store     fazzeventsource.EventStore
+	publisher fazzeventsource.EventPublisher
+}
+
+// Post do save and post for event
+func (t *todoWriteRepository) Post(ctx context.Context, eventType string, eventData interface{}) (*fazzeventsource.Event, error) {
+	savedEvent, err := t.store.Save(ctx, eventType, eventData)
+	if err != nil {
+		return nil, err
+	}
+
+	err = t.publisher.Publish(ctx, savedEvent)
+
+	if err != nil {
+		return nil, err
+	}
+	return savedEvent, nil
 }
 
 // Get return Todo aggregates if exists
 func (t *todoWriteRepository) Get(ctx context.Context, id string) (*Todo, error) {
-	evs, err := t.FindByInstanceId(ctx, id)
+	evs, err := t.store.FindByInstanceId(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+	if len(evs) == 0 {
+		return nil, nil
 	}
 
 	todo := &Todo{Id: id}
@@ -43,9 +60,12 @@ func (t *todoWriteRepository) IsExists(ctx context.Context, id string) (bool, er
 }
 
 // NewTodoEventRepository is constructor for Todo Event Repository
-func NewTodoEventRepository(store fazzeventsource.EventStore, publisher fazzeventsource.EventPublisher) TodoWriteRepository {
+func NewTodoEventRepository(
+	store fazzeventsource.EventStore,
+	publisher fazzeventsource.EventPublisher,
+) TodoWriteRepository {
 	return &todoWriteRepository{
-		EventStore:     store,
-		EventPublisher: publisher,
+		store:     store,
+		publisher: publisher,
 	}
 }
