@@ -2,13 +2,14 @@ package fazzeventsource
 
 import (
 	"github.com/gofrs/uuid"
+	_ "github.com/lib/pq"
 	"github.com/payfazz/go-apt/example/eventsource/test"
 	"testing"
 )
 
 func TestEventRepository_Save(t *testing.T) {
 	ctx := test.PrepareTestContext()
-	store := NewPostgresEventStore("events")
+	store := NewPostgresEventStore("todo_events")
 
 	_, err := store.Save(ctx, "test.event", map[string]string{"id": "123", "test": "234"})
 	if err != nil {
@@ -18,7 +19,7 @@ func TestEventRepository_Save(t *testing.T) {
 
 func TestEventRepository_AggregateById(t *testing.T) {
 	ctx := test.PrepareTestContext()
-	store := NewPostgresEventStore("events")
+	store := NewPostgresEventStore("todo_events")
 
 	uuidV4, _ := uuid.NewV4()
 	id := uuidV4.String()

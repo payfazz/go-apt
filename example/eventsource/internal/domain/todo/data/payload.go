@@ -7,7 +7,7 @@ type PayloadCreateTodo struct {
 
 // PayloadUpdateTodo is a struct for payload when updating todo
 type PayloadUpdateTodo struct {
-	Id        string `json:"id"`
-	Text      string `json:"text"`
-	Completed bool   `json:"completed"`
+	Id        string  `json:"id"`
+	Text      *string `json:"text"`
+	Completed *bool   `json:"completed"`
 }

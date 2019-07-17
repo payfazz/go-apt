@@ -5,32 +5,46 @@ import (
 	"github.com/payfazz/go-apt/pkg/fazzeventsource"
 )
 
-// TodoEventRepository is repository for todo event
-type TodoEventRepository interface {
+// TodoWriteRepository is repository for todo event
+type TodoWriteRepository interface {
 	fazzeventsource.EventStore
 	fazzeventsource.EventPublisher
+	Get(ctx context.Context, id string) (*Todo, error)
 	IsExists(ctx context.Context, id string) (bool, error)
 }
 
-type todoEventRepository struct {
+type todoWriteRepository struct {
 	fazzeventsource.EventStore
 	fazzeventsource.EventPublisher
 }
 
-// IsExists check if todo exists and not deleted
-func (t *todoEventRepository) IsExists(ctx context.Context, id string) (bool, error) {
+// Get return Todo aggregates if exists
+func (t *todoWriteRepository) Get(ctx context.Context, id string) (*Todo, error) {
 	evs, err := t.FindByInstanceId(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	todo := &Todo{Id: id}
+	err = todo.ApplyAll(evs...)
+	if err != nil {
+		return nil, err
+	}
+	return todo, nil
+}
+
+// IsExists check if todo exists and not deleted
+func (t *todoWriteRepository) IsExists(ctx context.Context, id string) (bool, error) {
+	todo, err := t.Get(ctx, id)
 	if err != nil {
 		return false, err
 	}
-
-	exists := len(evs) > 0 && evs[len(evs)-1].Type != "todo_deleted"
-	return exists, nil
+	return todo.DeletedAt == nil, nil
 }
 
 // NewTodoEventRepository is constructor for Todo Event Repository
-func NewTodoEventRepository(store fazzeventsource.EventStore, publisher fazzeventsource.EventPublisher) TodoEventRepository {
-	return &todoEventRepository{
+func NewTodoEventRepository(store fazzeventsource.EventStore, publisher fazzeventsource.EventPublisher) TodoWriteRepository {
+	return &todoWriteRepository{
 		EventStore:     store,
 		EventPublisher: publisher,
 	}

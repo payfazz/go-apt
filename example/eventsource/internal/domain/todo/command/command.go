@@ -15,7 +15,7 @@ type TodoCommand interface {
 }
 
 type todoCommand struct {
-	repository TodoEventRepository
+	repository TodoWriteRepository
 }
 
 // Create is a command for Create Todo
@@ -82,7 +82,7 @@ func (t *todoCommand) Delete(ctx context.Context, id string) error {
 }
 
 // NewTodoCommand is a constructor for todo command handler
-func NewTodoCommand(repository TodoEventRepository) TodoCommand {
+func NewTodoCommand(repository TodoWriteRepository) TodoCommand {
 	return &todoCommand{
 		repository: repository,
 	}

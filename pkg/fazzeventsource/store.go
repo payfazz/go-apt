@@ -47,7 +47,7 @@ func (e *postgresEventStore) FindByInstanceId(ctx context.Context, id string) ([
 	}
 
 	var ev = &Event{}
-	querySelect := `SELECT * FROM events WHERE data ->> 'id' = $1 ORDER BY id DESC`
+	querySelect := fmt.Sprintf(`SELECT * FROM %s WHERE data ->> 'id' = $1 ORDER BY id ASC`, e.tableName)
 	results, err := query.RawAllCtx(ctx, ev, querySelect, id)
 	evs := results.([]*Event)
 	return evs, err

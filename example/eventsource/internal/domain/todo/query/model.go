@@ -29,7 +29,7 @@ func (m *Todo) Payload() map[string]interface{} {
 func TodoReadModel() *Todo {
 	return &Todo{
 		Model: fazzdb.UuidModel(
-			"todos_read",
+			"todo_read",
 			[]fazzdb.Column{
 				fazzdb.Col("id"),
 				fazzdb.Col("text"),

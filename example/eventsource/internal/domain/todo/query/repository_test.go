@@ -2,6 +2,7 @@ package query
 
 import (
 	"github.com/gofrs/uuid"
+	_ "github.com/lib/pq"
 	"github.com/payfazz/go-apt/example/eventsource/test"
 	"testing"
 )

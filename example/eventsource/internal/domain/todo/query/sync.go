@@ -28,8 +28,8 @@ func (t *todoSyncHandler) HandleTodoCreated(ctx context.Context, data data.TodoC
 func (t *todoSyncHandler) HandleTodoUpdated(ctx context.Context, data data.TodoUpdated) error {
 	todo := TodoReadModel()
 	todo.Id = data.Id
-	todo.Text = data.Text
-	todo.Completed = data.Completed
+	todo.Text = *data.Text
+	todo.Completed = *data.Completed
 	err := t.repository.Update(ctx, todo)
 	return err
 }

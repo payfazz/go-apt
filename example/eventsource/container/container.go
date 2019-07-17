@@ -2,10 +2,10 @@ package container
 
 import (
 	"context"
-	"github.com/payfazz/go-apt/example/eventsource/config"
+	"github.com/payfazz/go-apt/config"
 	"github.com/payfazz/go-apt/example/eventsource/internal/domain/todo"
-	todocommand "github.com/payfazz/go-apt/example/eventsource/internal/domain/todo/command"
-	todoquery "github.com/payfazz/go-apt/example/eventsource/internal/domain/todo/query"
+	todoc "github.com/payfazz/go-apt/example/eventsource/internal/domain/todo/command"
+	todoq "github.com/payfazz/go-apt/example/eventsource/internal/domain/todo/query"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"github.com/payfazz/go-apt/pkg/fazzeventsource"
 	"github.com/payfazz/go-apt/pkg/fazzpubsub"
@@ -23,14 +23,14 @@ func BuildServiceContainer() *ServiceContainer {
 }
 
 func ProvideTodoService(pubsub fazzpubsub.PubSub) todo.ServiceInterface {
-	eventStore := fazzeventsource.NewPostgresEventStore("events")
+	eventStore := fazzeventsource.NewPostgresEventStore("todo_events")
 	eventPublisher := fazzeventsource.NewEventPublisher(pubsub, "todo")
-	eventRepo := todocommand.NewTodoEventRepository(eventStore, eventPublisher)
-	command := todocommand.NewTodoCommand(eventRepo)
+	eventRepo := todoc.NewTodoEventRepository(eventStore, eventPublisher)
+	command := todoc.NewTodoCommand(eventRepo)
 
-	readModel := todoquery.TodoReadModel()
-	readRepo := todoquery.NewTodoReadRepository(readModel)
-	query := todoquery.NewTodoQuery(readRepo)
+	readModel := todoq.TodoReadModel()
+	readRepo := todoq.NewTodoReadRepository(readModel)
+	query := todoq.NewTodoQuery(readRepo)
 
 	service := todo.NewTodoService(command, query)
 	return service

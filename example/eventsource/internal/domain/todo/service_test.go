@@ -1,6 +1,7 @@
 package todo
 
 import (
+	_ "github.com/lib/pq"
 	"github.com/payfazz/go-apt/example/eventsource/internal/domain/todo/command"
 	"github.com/payfazz/go-apt/example/eventsource/internal/domain/todo/data"
 	"github.com/payfazz/go-apt/example/eventsource/internal/domain/todo/query"
@@ -35,10 +36,11 @@ func TestService(t *testing.T) {
 	})
 
 	t.Run("Update", func(t *testing.T) {
+		completed, text := true, "test"
 		payload := data.PayloadUpdateTodo{
 			Id:        *todoId,
-			Completed: true,
-			Text:      "test",
+			Completed: &completed,
+			Text:      &text,
 		}
 		err = todoService.Update(ctx, payload)
 		if err != nil {
@@ -57,7 +59,7 @@ func TestService(t *testing.T) {
 
 func provideTodoService() ServiceInterface {
 	pubsub := fazzpubsub.NewInternalPubSub()
-	eventStore := fazzeventsource.NewPostgresEventStore("events")
+	eventStore := fazzeventsource.NewPostgresEventStore("todo_events")
 	eventPublisher := fazzeventsource.NewEventPublisher(pubsub, "todo")
 
 	eventRepo := command.NewTodoEventRepository(eventStore, eventPublisher)
