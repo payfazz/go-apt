@@ -7,9 +7,9 @@ import (
 	"testing"
 )
 
-func TestEventRepository_Save(t *testing.T) {
+func TestEventStore_Save(t *testing.T) {
 	ctx := test.PrepareTestContext()
-	store := NewPostgresEventStore("todo_events")
+	store := PostgresEventStore("todo_events")
 
 	_, err := store.Save(ctx, "test.event", map[string]string{"id": "123", "test": "234"})
 	if err != nil {
@@ -17,9 +17,9 @@ func TestEventRepository_Save(t *testing.T) {
 	}
 }
 
-func TestEventRepository_AggregateById(t *testing.T) {
+func TestEventStore_FindByKey(t *testing.T) {
 	ctx := test.PrepareTestContext()
-	store := NewPostgresEventStore("todo_events")
+	store := PostgresEventStore("todo_events")
 
 	uuidV4, _ := uuid.NewV4()
 	id := uuidV4.String()
@@ -28,7 +28,7 @@ func TestEventRepository_AggregateById(t *testing.T) {
 	_, _ = store.Save(ctx, "test.event", map[string]string{"id": id, "test": "345"})
 	_, _ = store.Save(ctx, "test.event", map[string]string{"id": id, "test": "456"})
 
-	evs, err := store.FindByInstanceId(ctx, id)
+	evs, err := store.FindAllByKey(ctx, "id", id, 0)
 	if err != nil {
 		t.Errorf("error getting data: %s", err)
 	}

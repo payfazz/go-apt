@@ -5,12 +5,16 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/payfazz/go-apt/config"
 	"github.com/payfazz/go-apt/example/eventsource/container"
-	"github.com/payfazz/go-apt/example/eventsource/database/migration"
+	"github.com/payfazz/go-apt/example/eventsource/migration"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
 func main() {
-	fazzdb.Migrate(config.GetDB(), "es-example", true, true,
+	fazzdb.Migrate(
+		config.GetDB(),
+		"es-example",
+		true,
+		true,
 		migration.Version1,
 	)
 

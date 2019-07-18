@@ -2,7 +2,7 @@ package query
 
 import (
 	"context"
-	"github.com/payfazz/go-apt/example/eventsource/internal/domain/todo/data"
+	"github.com/payfazz/go-apt/example/eventsource/domain/todo/data"
 )
 
 // TodoSyncHandler is event handler interface for todo event

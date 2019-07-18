@@ -8,6 +8,7 @@ import (
 var Version1 = fazzdb.MigrationVersion{
 	Tables: []*fazzdb.MigrationTable{
 		fazzeventsource.CreateEventsTable("todo_events"),
+		fazzeventsource.CreateSnapshotsTable("todo_snapshots"),
 		fazzdb.CreateTable("todo_read", func(table *fazzdb.MigrationTable) {
 			table.Field(fazzdb.CreateUuid("id").Primary())
 			table.Field(fazzdb.CreateString("text"))

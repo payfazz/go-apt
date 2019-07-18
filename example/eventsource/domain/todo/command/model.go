@@ -2,7 +2,7 @@ package command
 
 import (
 	"encoding/json"
-	"github.com/payfazz/go-apt/example/eventsource/internal/domain/todo/data"
+	"github.com/payfazz/go-apt/example/eventsource/domain/todo/data"
 	"github.com/payfazz/go-apt/pkg/fazzeventsource"
 	"time"
 )
