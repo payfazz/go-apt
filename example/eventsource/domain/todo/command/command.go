@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/gofrs/uuid"
 	"github.com/payfazz/go-apt/example/eventsource/domain/todo/data"
+	"github.com/payfazz/go-apt/pkg/fazzeventsource"
 )
 
 // TodoCommand is a interface for todo commands
@@ -24,11 +25,16 @@ func (t *todoCommand) Create(ctx context.Context, payload data.PayloadCreateTodo
 	uuidV4, _ := uuid.NewV4()
 	id := uuidV4.String()
 
-	eventData := data.TodoCreated{
-		Id:   id,
-		Text: payload.Text,
+	ev := fazzeventsource.EventPayload{
+		AggregateId:      id,
+		AggregateVersion: 0,
+		Type:             data.EVENT_TODO_CREATED,
+		Data: data.TodoCreated{
+			Text: payload.Text,
+		},
 	}
-	_, err := t.repository.Post(ctx, id, data.EVENT_TODO_CREATED, eventData)
+
+	_, err := t.repository.Save(ctx, ev)
 	if err != nil {
 		return nil, err
 	}
@@ -47,8 +53,17 @@ func (t *todoCommand) Update(ctx context.Context, payload data.PayloadUpdateTodo
 		return errors.New("todo not found")
 	}
 
-	eventData := data.TodoUpdated(payload)
-	_, err = t.repository.Post(ctx, todo.Id, data.EVENT_TODO_UPDATED, eventData)
+	ev := fazzeventsource.EventPayload{
+		AggregateId:      todo.Id,
+		AggregateVersion: todo.Version,
+		Type:             data.EVENT_TODO_UPDATED,
+		Data: data.TodoUpdated{
+			Text:      payload.Text,
+			Completed: payload.Completed,
+		},
+	}
+
+	_, err = t.repository.Save(ctx, ev)
 	return err
 }
 
@@ -63,8 +78,13 @@ func (t *todoCommand) Delete(ctx context.Context, id string) error {
 		return errors.New("todo not found")
 	}
 
-	eventData := data.TodoDeleted{Id: id}
-	_, err = t.repository.Post(ctx, todo.Id, data.EVENT_TODO_DELETED, eventData)
+	ev := fazzeventsource.EventPayload{
+		AggregateId:      todo.Id,
+		AggregateVersion: todo.Version,
+		Type:             data.EVENT_TODO_DELETED,
+	}
+
+	_, err = t.repository.Save(ctx, ev)
 	return err
 }
 

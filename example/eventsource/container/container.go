@@ -8,7 +8,6 @@ import (
 	todoq "github.com/payfazz/go-apt/example/eventsource/domain/todo/query"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"github.com/payfazz/go-apt/pkg/fazzeventsource"
-	"github.com/payfazz/go-apt/pkg/fazzpubsub"
 )
 
 type ServiceContainer struct {
@@ -16,17 +15,15 @@ type ServiceContainer struct {
 }
 
 func BuildServiceContainer() *ServiceContainer {
-	pubsub := fazzpubsub.NewInternalPubSub()
 	return &ServiceContainer{
-		TodoService: ProvideTodoService(pubsub),
+		TodoService: ProvideTodoService(),
 	}
 }
 
-func ProvideTodoService(pubsub fazzpubsub.PubSub) todo.ServiceInterface {
+func ProvideTodoService() todo.ServiceInterface {
 	eventStore := fazzeventsource.PostgresEventStore("todo_events")
 	snapshotStore := fazzeventsource.PostgresSnapshotStore("todo_snapshots")
-	eventPublisher := fazzeventsource.NewEventPublisher(pubsub, "todo")
-	eventRepo := todoc.NewTodoEventRepository(eventStore, snapshotStore, eventPublisher)
+	eventRepo := todoc.NewTodoEventRepository(eventStore, snapshotStore)
 	command := todoc.NewTodoCommand(eventRepo)
 
 	readModel := todoq.TodoReadModel()

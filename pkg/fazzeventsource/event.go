@@ -5,22 +5,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jmoiron/sqlx/types"
-	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"time"
 )
 
-// Event is a struct for event
-type Event struct {
-	Id        int64           `json:"id" db:"id"`
-	Type      string          `json:"type" db:"type"`
-	Data      json.RawMessage `json:"data" db:"data"`
-	CreatedAt *time.Time      `json:"created_at" db:"created_at"`
+// EventLog is a struct for event
+type EventLog struct {
+	EventId          int64           `json:"event_id" db:"event_id"`
+	EventType        string          `json:"event_type" db:"event_type"`
+	AggregateId      string          `json:"aggregate_id" db:"aggregate_id"`
+	AggregateVersion int             `json:"aggregate_version" db:"aggregate_version"`
+	Data             json.RawMessage `json:"data" db:"data"`
+	CreatedAt        *time.Time      `json:"created_at" db:"created_at"`
+}
+
+type EventPayload struct {
+	Type             string
+	AggregateId      string
+	AggregateVersion int
+	Data             interface{}
 }
 
 // EventStore is an interface used for event store
 type EventStore interface {
-	Save(ctx context.Context, eventType string, eventData interface{}) (*Event, error)
-	FindAllByKey(ctx context.Context, name string, value string, after int64) ([]*Event, error)
+	Save(ctx context.Context, ev EventPayload) (*EventLog, error)
+	FindAllBy(ctx context.Context, aggregateId string, firstVersion int) ([]*EventLog, error)
 }
 
 type postgresEventStore struct {
@@ -28,40 +36,42 @@ type postgresEventStore struct {
 }
 
 // Save is a function to save event to event store
-func (e *postgresEventStore) Save(ctx context.Context, evType string, evData interface{}) (*Event, error) {
+func (e *postgresEventStore) Save(ctx context.Context, ev EventPayload) (*EventLog, error) {
 
-	dataJsonByte, err := json.Marshal(evData)
+	dataJsonByte, err := json.Marshal(ev.Data)
 	if err != nil {
 		return nil, err
 	}
 	dataJsonText := types.JSONText(dataJsonByte)
 
-	query, err := fazzdb.GetQueryContext(ctx)
+	query, err := getContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var ev = &Event{}
-	queryGet := fmt.Sprintf(`INSERT INTO %s (type,data,created_at) VALUES ($1,$2,$3) RETURNING *`, e.tableName)
-	result, err := query.RawFirstCtx(ctx, ev, queryGet, evType, dataJsonText, time.Now())
+	el := &EventLog{}
+	queryGet := fmt.Sprintf(`INSERT INTO %s (event_type, aggregate_id, aggregate_version, data, created_at) 
+									VALUES ($1,$2,$3,$4,$5) RETURNING *`, e.tableName)
+	result, err := query.RawFirstCtx(
+		ctx, el, queryGet, ev.Type, ev.AggregateId, ev.AggregateVersion, dataJsonText, time.Now())
 	if err != nil {
 		return nil, err
 	}
-	return result.(*Event), err
+	return result.(*EventLog), err
 }
 
-func (e *postgresEventStore) FindAllByKey(ctx context.Context, name string, value string, after int64) ([]*Event, error) {
-	query, err := fazzdb.GetQueryContext(ctx)
+func (e *postgresEventStore) FindAllBy(ctx context.Context, aggregateId string, firstVersion int) ([]*EventLog, error) {
+	query, err := getContext(ctx)
 	if err != nil {
 		return nil, err
 	}
-	ev := &Event{}
-	querySelect := fmt.Sprintf(`SELECT * FROM %s WHERE data ->> '%s' = $1  AND id > $2 ORDER BY id ASC`, e.tableName, name)
-	results, err := query.RawAllCtx(ctx, ev, querySelect, value, after)
+	el := &EventLog{}
+	querySelect := fmt.Sprintf(`SELECT * FROM %s WHERE aggregate_id = $1 AND aggregate_version >= $2 ORDER BY event_id ASC`, e.tableName)
+	results, err := query.RawAllCtx(ctx, el, querySelect, aggregateId, firstVersion)
 	if err != nil {
 		return nil, err
 	}
-	return results.([]*Event), err
+	return results.([]*EventLog), err
 }
 
 // PostgresEventStore is a function to create new EventStore
