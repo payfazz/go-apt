@@ -24,7 +24,7 @@ func (kv *fazzRedis) Set(key string, value interface{}) error {
 	return kv.client.Set(key, value, 0).Err()
 }
 
-// Get accept key (string)  and return error if it's failed to get the data,
+// Find accept key (string)  and return error if it's failed to get the data,
 // this method allow user to get the data from redis with K-V mechanism.
 func (kv *fazzRedis) Get(key string) (string, error) {
 	return kv.client.Get(key).Result()

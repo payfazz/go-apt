@@ -1,4 +1,4 @@
-package fazzeventsource
+package esfazz
 
 import (
 	"context"
@@ -14,7 +14,7 @@ type Snapshot struct {
 }
 
 type SnapshotStore interface {
-	Save(ctx context.Context, event *EventLog, data interface{}) (*Snapshot, error)
+	Save(ctx context.Context, id string, version int, data interface{}) (*Snapshot, error)
 	FindBy(ctx context.Context, aggregateId string) (*Snapshot, error)
 }
 
@@ -22,7 +22,7 @@ type postgresSnapshotStore struct {
 	tableName string
 }
 
-func (s *postgresSnapshotStore) Save(ctx context.Context, event *EventLog, data interface{}) (*Snapshot, error) {
+func (s *postgresSnapshotStore) Save(ctx context.Context, id string, version int, data interface{}) (*Snapshot, error) {
 	dataJsonByte, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -35,10 +35,10 @@ func (s *postgresSnapshotStore) Save(ctx context.Context, event *EventLog, data 
 	}
 
 	var ev = &Snapshot{}
-	queryString := `INSERT INTO %s (id,version,data) VALUES ($1,$2,$3) ON CONFLICT (id) 
+	queryText := `INSERT INTO %s (id,version,data) VALUES ($1,$2,$3) ON CONFLICT (id) 
 					DO UPDATE SET version = excluded.version, data = excluded.data RETURNING *`
-	queryString = fmt.Sprintf(queryString, s.tableName)
-	result, err := query.RawFirstCtx(ctx, ev, queryString, event.AggregateId, event.AggregateVersion, dataJsonText)
+	queryText = fmt.Sprintf(queryText, s.tableName)
+	result, err := query.RawFirstCtx(ctx, ev, queryText, id, version, dataJsonText)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,22 @@ func (s *postgresSnapshotStore) Save(ctx context.Context, event *EventLog, data 
 }
 
 func (s *postgresSnapshotStore) FindBy(ctx context.Context, aggregateId string) (*Snapshot, error) {
-	return nil, nil
+	query, err := getContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	snap := &Snapshot{}
+	queryText := fmt.Sprintf(`SELECT * FROM %s WHERE id = $1`, s.tableName)
+	results, err := query.RawAllCtx(ctx, snap, queryText, aggregateId)
+	if err != nil {
+		return nil, err
+	}
+	snaps := results.([]*Snapshot)
+	if len(snaps) == 0 {
+		return nil, nil
+	}
+	return snaps[0], err
 }
 
 func PostgresSnapshotStore(tableName string) SnapshotStore {

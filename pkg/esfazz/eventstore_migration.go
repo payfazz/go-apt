@@ -1,4 +1,4 @@
-package fazzeventsource
+package esfazz
 
 import "github.com/payfazz/go-apt/pkg/fazzdb"
 

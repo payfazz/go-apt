@@ -1,19 +1,19 @@
 package migration
 
 import (
+	"github.com/payfazz/go-apt/pkg/esfazz"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
-	"github.com/payfazz/go-apt/pkg/fazzeventsource"
 )
 
 var Version1 = fazzdb.MigrationVersion{
 	Tables: []*fazzdb.MigrationTable{
-		fazzeventsource.CreateEventsTable("todo_events"),
-		fazzeventsource.CreateSnapshotsTable("todo_snapshots"),
-		fazzdb.CreateTable("todo_read", func(table *fazzdb.MigrationTable) {
+		esfazz.CreateEventsTable("account_event"),
+		esfazz.CreateSnapshotsTable("account_snapshot"),
+		fazzdb.CreateTable("account_read", func(table *fazzdb.MigrationTable) {
 			table.Field(fazzdb.CreateUuid("id").Primary())
-			table.Field(fazzdb.CreateString("text"))
-			table.Field(fazzdb.CreateBoolean("completed"))
-			table.SoftDeleteTz(0)
+			table.Field(fazzdb.CreateInteger("version"))
+			table.Field(fazzdb.CreateString("name"))
+			table.Field(fazzdb.CreateBigInteger("balance"))
 		}),
 	},
 }
