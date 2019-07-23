@@ -29,8 +29,8 @@ func main() {
 		Name:    "Test Account",
 		Balance: 100,
 	})
-	account, _ := cmd.DirectGet(ctx, *accountId)
-	_ = qr.DirectUpdate(ctx, account)
+	SendUpdateToQuery(ctx, cmd, qr, *accountId)
+
 	accountModel, _ := qr.Get(ctx, *accountId)
 	fmt.Printf("Name: %s, Balance: %d\n", accountModel.Name, accountModel.Balance)
 
@@ -38,8 +38,8 @@ func main() {
 		AccountId: *accountId,
 		Name:      "New Test Account",
 	})
-	account, _ = cmd.DirectGet(ctx, *accountId)
-	_ = qr.DirectUpdate(ctx, account)
+	SendUpdateToQuery(ctx, cmd, qr, *accountId)
+
 	accountModel, _ = qr.Get(ctx, *accountId)
 	fmt.Printf("Name: %s, Balance: %d\n", accountModel.Name, accountModel.Balance)
 
@@ -47,8 +47,8 @@ func main() {
 		AccountId: *accountId,
 		Amount:    100,
 	})
-	account, _ = cmd.DirectGet(ctx, *accountId)
-	_ = qr.DirectUpdate(ctx, account)
+	SendUpdateToQuery(ctx, cmd, qr, *accountId)
+
 	accountModel, _ = qr.Get(ctx, *accountId)
 	fmt.Printf("Name: %s, Balance: %d\n", accountModel.Name, accountModel.Balance)
 
@@ -56,13 +56,20 @@ func main() {
 		AccountId: *accountId,
 		Amount:    200,
 	})
-	account, _ = cmd.DirectGet(ctx, *accountId)
-	_ = qr.DirectUpdate(ctx, account)
+	SendUpdateToQuery(ctx, cmd, qr, *accountId)
+
 	accountModel, _ = qr.Get(ctx, *accountId)
 	fmt.Printf("Name: %s, Balance: %d\n", accountModel.Name, accountModel.Balance)
 
 	_ = cmd.Delete(ctx, *accountId)
-	account, _ = cmd.DirectGet(ctx, *accountId)
+	SendUpdateToQuery(ctx, cmd, qr, *accountId)
+
+	accountList, _ := qr.All(ctx)
+	fmt.Printf("Account Count: %d\n", len(accountList))
+}
+
+func SendUpdateToQuery(ctx context.Context, cmd command.AccountCommand, qr query.AccountQuery, id string) {
+	account, _ := cmd.DirectGet(ctx, id)
 	_ = qr.DirectUpdate(ctx, account)
 }
 
