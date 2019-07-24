@@ -8,7 +8,7 @@ import (
 )
 
 type AccountEventRepository interface {
-	Save(ctx context.Context, payload esfazz.EventPayload) (*esfazz.EventLog, error)
+	Save(ctx context.Context, payload esfazz.EventPayload) (*aggregate.Account, error)
 	Find(ctx context.Context, id string) (*aggregate.Account, error)
 }
 
@@ -17,19 +17,19 @@ type accountEventRepository struct {
 	snapStore  esfazz.SnapshotStore
 }
 
-func (a *accountEventRepository) Save(ctx context.Context, payload esfazz.EventPayload) (*esfazz.EventLog, error) {
+func (a *accountEventRepository) Save(ctx context.Context, payload esfazz.EventPayload) (*aggregate.Account, error) {
 	// save to event store
 	savedEvent, err := a.eventStore.Save(ctx, payload)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = a.saveSnapshot(ctx, savedEvent.AggregateId)
+	account, err := a.saveSnapshot(ctx, savedEvent.AggregateId)
 	if err != nil {
 		return nil, err
 	}
 
-	return savedEvent, nil
+	return account, nil
 }
 
 func (a *accountEventRepository) Find(ctx context.Context, id string) (*aggregate.Account, error) {
@@ -65,17 +65,17 @@ func (a *accountEventRepository) Find(ctx context.Context, id string) (*aggregat
 	return account, nil
 }
 
-func (a *accountEventRepository) saveSnapshot(ctx context.Context, id string) (*esfazz.Snapshot, error) {
+func (a *accountEventRepository) saveSnapshot(ctx context.Context, id string) (*aggregate.Account, error) {
 	// save snapshot
 	account, err := a.Find(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	snap, err := a.snapStore.Save(ctx, account.Id, account.Version, account)
+	_, err = a.snapStore.Save(ctx, account.Id, account.Version, account)
 	if err != nil {
 		return nil, err
 	}
-	return snap, nil
+	return account, nil
 }
 
 func NewAccountEventRepository() AccountEventRepository {
