@@ -7,22 +7,22 @@ import (
 	"github.com/jmoiron/sqlx/types"
 )
 
-type Snapshot struct {
+type AggregateRow struct {
 	Id      string          `json:"id" db:"id"`
 	Version int             `json:"version" db:"version"`
 	Data    json.RawMessage `json:"data" db:"data"`
 }
 
-type SnapshotStore interface {
-	Save(ctx context.Context, data Aggregate) (*Snapshot, error)
-	FindBy(ctx context.Context, id string) (*Snapshot, error)
+type AggregateStore interface {
+	Save(ctx context.Context, data Aggregate) (*AggregateRow, error)
+	FindBy(ctx context.Context, id string) (*AggregateRow, error)
 }
 
-type postgresSnapshotStore struct {
+type postgresAggregateStore struct {
 	tableName string
 }
 
-func (s *postgresSnapshotStore) Save(ctx context.Context, data Aggregate) (*Snapshot, error) {
+func (s *postgresAggregateStore) Save(ctx context.Context, data Aggregate) (*AggregateRow, error) {
 	dataJsonByte, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func (s *postgresSnapshotStore) Save(ctx context.Context, data Aggregate) (*Snap
 		return nil, err
 	}
 
-	var ev = &Snapshot{}
+	var ev = &AggregateRow{}
 	queryText := `INSERT INTO %s (id,version,data) VALUES ($1,$2,$3) ON CONFLICT (id) 
 					DO UPDATE SET version = excluded.version, data = excluded.data RETURNING *`
 	queryText = fmt.Sprintf(queryText, s.tableName)
@@ -42,28 +42,28 @@ func (s *postgresSnapshotStore) Save(ctx context.Context, data Aggregate) (*Snap
 	if err != nil {
 		return nil, err
 	}
-	return result.(*Snapshot), err
+	return result.(*AggregateRow), err
 }
 
-func (s *postgresSnapshotStore) FindBy(ctx context.Context, aggregateId string) (*Snapshot, error) {
+func (s *postgresAggregateStore) FindBy(ctx context.Context, aggregateId string) (*AggregateRow, error) {
 	query, err := getContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	snap := &Snapshot{}
+	snap := &AggregateRow{}
 	queryText := fmt.Sprintf(`SELECT * FROM %s WHERE id = $1`, s.tableName)
 	results, err := query.RawAllCtx(ctx, snap, queryText, aggregateId)
 	if err != nil {
 		return nil, err
 	}
-	snaps := results.([]*Snapshot)
+	snaps := results.([]*AggregateRow)
 	if len(snaps) == 0 {
 		return nil, nil
 	}
 	return snaps[0], err
 }
 
-func PostgresSnapshotStore(tableName string) SnapshotStore {
-	return &postgresSnapshotStore{tableName: tableName}
+func PostgresAggregateStore(tableName string) AggregateStore {
+	return &postgresAggregateStore{tableName: tableName}
 }

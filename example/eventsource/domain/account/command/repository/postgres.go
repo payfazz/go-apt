@@ -14,7 +14,7 @@ type AccountEventRepository interface {
 
 type accountEventRepository struct {
 	eventStore esfazz.EventStore
-	snapStore  esfazz.SnapshotStore
+	aggStore   esfazz.AggregateStore
 }
 
 func (a *accountEventRepository) Save(ctx context.Context, payload esfazz.EventPayload) (*aggregate.Account, error) {
@@ -24,7 +24,7 @@ func (a *accountEventRepository) Save(ctx context.Context, payload esfazz.EventP
 		return nil, err
 	}
 
-	account, err := a.saveSnapshot(ctx, savedEvent.AggregateId)
+	account, err := a.saveAggregate(ctx, savedEvent.AggregateId)
 	if err != nil {
 		return nil, err
 	}
@@ -35,13 +35,13 @@ func (a *accountEventRepository) Save(ctx context.Context, payload esfazz.EventP
 func (a *accountEventRepository) Find(ctx context.Context, id string) (*aggregate.Account, error) {
 	account := &aggregate.Account{}
 
-	// load data from snapshot
-	snap, err := a.snapStore.FindBy(ctx, id)
+	// load data from saved aggregate
+	agg, err := a.aggStore.FindBy(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	if snap != nil {
-		err = json.Unmarshal(snap.Data, account)
+	if agg != nil {
+		err = json.Unmarshal(agg.Data, account)
 		if err != nil {
 			return nil, err
 		}
@@ -65,13 +65,13 @@ func (a *accountEventRepository) Find(ctx context.Context, id string) (*aggregat
 	return account, nil
 }
 
-func (a *accountEventRepository) saveSnapshot(ctx context.Context, id string) (*aggregate.Account, error) {
+func (a *accountEventRepository) saveAggregate(ctx context.Context, id string) (*aggregate.Account, error) {
 	// save snapshot
 	account, err := a.Find(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	_, err = a.snapStore.Save(ctx, account)
+	_, err = a.aggStore.Save(ctx, account)
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +81,6 @@ func (a *accountEventRepository) saveSnapshot(ctx context.Context, id string) (*
 func NewAccountEventRepository() AccountEventRepository {
 	return &accountEventRepository{
 		eventStore: esfazz.PostgresEventStore("account_event"),
-		snapStore:  esfazz.PostgresSnapshotStore("account_snapshot"),
+		aggStore:   esfazz.PostgresAggregateStore("account_aggregate"),
 	}
 }

@@ -8,7 +8,7 @@ import (
 var Version1 = fazzdb.MigrationVersion{
 	Tables: []*fazzdb.MigrationTable{
 		esfazz.CreateEventsTable("account_event"),
-		esfazz.CreateSnapshotsTable("account_snapshot"),
+		esfazz.CreateAggregateTable("account_aggregate"),
 		fazzdb.CreateTable("account_read", func(table *fazzdb.MigrationTable) {
 			table.Field(fazzdb.CreateUuid("id").Primary())
 			table.Field(fazzdb.CreateInteger("version"))
