@@ -71,7 +71,7 @@ func (a *accountEventRepository) saveSnapshot(ctx context.Context, id string) (*
 	if err != nil {
 		return nil, err
 	}
-	_, err = a.snapStore.Save(ctx, account.Id, account.Version, account)
+	_, err = a.snapStore.Save(ctx, account)
 	if err != nil {
 		return nil, err
 	}

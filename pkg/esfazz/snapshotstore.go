@@ -14,15 +14,15 @@ type Snapshot struct {
 }
 
 type SnapshotStore interface {
-	Save(ctx context.Context, id string, version int, data interface{}) (*Snapshot, error)
-	FindBy(ctx context.Context, aggregateId string) (*Snapshot, error)
+	Save(ctx context.Context, data Aggregate) (*Snapshot, error)
+	FindBy(ctx context.Context, id string) (*Snapshot, error)
 }
 
 type postgresSnapshotStore struct {
 	tableName string
 }
 
-func (s *postgresSnapshotStore) Save(ctx context.Context, id string, version int, data interface{}) (*Snapshot, error) {
+func (s *postgresSnapshotStore) Save(ctx context.Context, data Aggregate) (*Snapshot, error) {
 	dataJsonByte, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (s *postgresSnapshotStore) Save(ctx context.Context, id string, version int
 	queryText := `INSERT INTO %s (id,version,data) VALUES ($1,$2,$3) ON CONFLICT (id) 
 					DO UPDATE SET version = excluded.version, data = excluded.data RETURNING *`
 	queryText = fmt.Sprintf(queryText, s.tableName)
-	result, err := query.RawFirstCtx(ctx, ev, queryText, id, version, dataJsonText)
+	result, err := query.RawFirstCtx(ctx, ev, queryText, data.GetId(), data.GetVersion(), dataJsonText)
 	if err != nil {
 		return nil, err
 	}
