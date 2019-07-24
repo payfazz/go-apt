@@ -6,8 +6,8 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/payfazz/go-apt/config"
-	"github.com/payfazz/go-apt/example/db/fazzdb_sample"
-	"github.com/payfazz/go-apt/example/db/fazzdb_sample/migration"
+	"github.com/payfazz/go-apt/example/fazzdb/fazzdb_sample"
+	"github.com/payfazz/go-apt/example/fazzdb/fazzdb_sample/migration"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 

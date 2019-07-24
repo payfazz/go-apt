@@ -2,9 +2,9 @@ package query
 
 import (
 	"context"
-	"github.com/payfazz/go-apt/example/eventsource/domain/account/command/aggregate"
-	"github.com/payfazz/go-apt/example/eventsource/domain/account/query/model"
-	"github.com/payfazz/go-apt/example/eventsource/domain/account/query/repository"
+	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/aggregate"
+	"github.com/payfazz/go-apt/example/esfazz/domain/account/query/model"
+	"github.com/payfazz/go-apt/example/esfazz/domain/account/query/repository"
 )
 
 type AccountQuery interface {

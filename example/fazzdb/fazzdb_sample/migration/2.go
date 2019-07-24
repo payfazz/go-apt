@@ -1,7 +1,7 @@
 package migration
 
 import (
-	seed2 "github.com/payfazz/go-apt/example/db/fazzdb_sample/seed"
+	seed2 "github.com/payfazz/go-apt/example/fazzdb/fazzdb_sample/seed"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 

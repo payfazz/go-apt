@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"github.com/payfazz/go-apt/example/eventsource/domain/account/query/model"
+	"github.com/payfazz/go-apt/example/esfazz/domain/account/query/model"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )

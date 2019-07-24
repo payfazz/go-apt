@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
-	"github.com/payfazz/go-apt/example/eventsource/domain/account/command/aggregate"
+	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/aggregate"
 	"github.com/payfazz/go-apt/pkg/esfazz"
 )
 

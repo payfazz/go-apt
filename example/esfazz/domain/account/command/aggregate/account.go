@@ -2,7 +2,7 @@ package aggregate
 
 import (
 	"encoding/json"
-	"github.com/payfazz/go-apt/example/eventsource/domain/account/command/event"
+	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/event"
 	"github.com/payfazz/go-apt/pkg/esfazz"
 	"time"
 )

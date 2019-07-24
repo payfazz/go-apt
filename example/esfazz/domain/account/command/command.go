@@ -3,10 +3,10 @@ package command
 import (
 	"context"
 	"errors"
-	"github.com/payfazz/go-apt/example/eventsource/domain/account/command/aggregate"
-	"github.com/payfazz/go-apt/example/eventsource/domain/account/command/data"
-	"github.com/payfazz/go-apt/example/eventsource/domain/account/command/event"
-	"github.com/payfazz/go-apt/example/eventsource/domain/account/command/repository"
+	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/aggregate"
+	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/data"
+	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/event"
+	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/repository"
 	"github.com/payfazz/go-apt/pkg/esfazz"
 )
 

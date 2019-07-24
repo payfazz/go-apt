@@ -1,7 +1,7 @@
 package seed
 
 import (
-	model2 "github.com/payfazz/go-apt/example/db/fazzdb_sample/model"
+	model2 "github.com/payfazz/go-apt/example/fazzdb/fazzdb_sample/model"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
