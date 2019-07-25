@@ -4,18 +4,18 @@ import (
 	"context"
 )
 
-type internalPubSub struct {
+type localPubSub struct {
 	subs map[string]map[string]subscription
 }
 
 type subscription struct {
-	pubsub internalPubSub
+	pubsub localPubSub
 	name   string
 	topic  string
 	cb     MsgHandler
 }
 
-func (p *internalPubSub) Publish(ctx context.Context, topic string, data []byte) error {
+func (p *localPubSub) Publish(ctx context.Context, topic string, data []byte) error {
 	for _, subs := range p.subs[topic] {
 		_ = subs.cb(&Msg{
 			Topic: topic,
@@ -25,7 +25,7 @@ func (p *internalPubSub) Publish(ctx context.Context, topic string, data []byte)
 	return nil
 }
 
-func (p *internalPubSub) Subscribe(ctx context.Context, name string, topic string, cb MsgHandler) (Subscription, error) {
+func (p *localPubSub) Subscribe(ctx context.Context, name string, topic string, cb MsgHandler) (Subscription, error) {
 	subs := subscription{
 		name:  name,
 		topic: topic,
@@ -45,9 +45,9 @@ func (s *subscription) Unsubscribe() error {
 	return nil
 }
 
-// NewInternalPubSub create internal pub sub, use only for test
-func NewInternalPubSub() PubSub {
-	return &internalPubSub{
+// LocalPubSub create internal pub sub, use only for test
+func LocalPubSub() PubSub {
+	return &localPubSub{
 		subs: make(map[string]map[string]subscription),
 	}
 }

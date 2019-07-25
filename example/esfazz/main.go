@@ -45,7 +45,7 @@ func main() {
 func Query(wg *sync.WaitGroup, rc *redis.Client) {
 	ctx := BuildContext()
 	qr := query.NewAccountQuery()
-	pubsub := fazzpubsub.NewRedisPubSub(rc)
+	pubsub := fazzpubsub.RedisPubSub(rc)
 
 	var msgWg sync.WaitGroup
 	msgWg.Add(6)
@@ -93,7 +93,7 @@ func Command(wg *sync.WaitGroup, rc *redis.Client) {
 	ctx := BuildContext()
 	cmd := command.NewAccountCommand()
 
-	pubsub := fazzpubsub.NewRedisPubSub(rc)
+	pubsub := fazzpubsub.RedisPubSub(rc)
 
 	// Create account
 	account, _ := cmd.Create(ctx, data.CreatePayload{

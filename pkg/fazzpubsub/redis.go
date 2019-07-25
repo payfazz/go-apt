@@ -38,6 +38,6 @@ func (r *redisSubscription) Unsubscribe() error {
 	return err
 }
 
-func NewRedisPubSub(rc *redis.Client) PubSub {
+func RedisPubSub(rc *redis.Client) PubSub {
 	return &redisPubSub{rc: rc}
 }

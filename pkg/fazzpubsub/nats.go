@@ -22,7 +22,7 @@ func (p *natsPubSub) Subscribe(ctx context.Context, name string, topic string, c
 	})
 }
 
-func NewNatsPubSub(nc *nats.Conn) PubSub {
+func NatsPubSub(nc *nats.Conn) PubSub {
 	return &natsPubSub{
 		nc: nc,
 	}
