@@ -2,34 +2,59 @@ package formatter
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
+func TestReplaceStrings(t *testing.T) {
+	source := "this is a fox jumping over a crude board inside the room"
+	olds := []string{"is", "de "}
+	news := []string{"on", " de"}
+	result := ReplaceStrings(source, olds, news)
+	require.Equal(t, "thon on a fox jumping over a cru deboard insi dethe room", result)
+
+	olds = []string{"is", "de "}
+	news = []string{"on"}
+	result = ReplaceStrings(source, olds, news)
+	require.Equal(t, "this is a fox jumping over a crude board inside the room", result)
+}
+
 func TestToLowerFirst(t *testing.T) {
-	ToLowerFirst("testing")
+	result := ToLowerFirst("TESTING")
+	require.Equal(t, "tESTING", result)
 }
 
 func TestEmptyToLowerFirst(t *testing.T) {
-	ToLowerFirst("")
+	result := ToLowerFirst("")
+	require.Equal(t, "", result)
 }
 
 func TestLeftPad2Len(t *testing.T) {
-	LeftPad2Len("1", "0", 4)
+	result := LeftPad2Len("1", "0", 4)
+	require.Equal(t, "0001", result)
+
+	result = LeftPad2Len("12", "x", 5)
+	require.Equal(t, "xxx12", result)
 }
 
 func TestStringToInteger(t *testing.T) {
-	StringToInteger("10")
+	result := StringToInteger("10")
+	require.Equal(t, 10, result)
 }
 
 func TestStringToFloat(t *testing.T) {
-	StringToFloat("10")
+	result := StringToFloat("10")
+	require.Equal(t, float64(10), result)
 }
 
 func TestFloatToString(t *testing.T) {
-	FloatToString(10.5)
+	result := FloatToString(10.5)
+	require.Equal(t, "10.50000", result)
 }
 
 func TestIntegerToString(t *testing.T) {
-	IntegerToString(10)
+	result := IntegerToString(10)
+	require.Equal(t, "10", result)
 }
 
 func TestSanitizePhone(t *testing.T) {
@@ -45,7 +70,8 @@ func TestSliceUint8ToString(t *testing.T) {
 }
 
 func TestStringToInt64(t *testing.T) {
-	StringToInt64("10")
+	result := StringToInt64("10")
+	require.Equal(t, int64(10), result)
 }
 
 func TestConvertMapToString(t *testing.T) {
