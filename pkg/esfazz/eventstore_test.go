@@ -9,11 +9,22 @@ import (
 )
 
 func TestEventStore_Save(t *testing.T) {
+	fazzdb.Migrate(
+		config.GetDB(),
+		"test-esfazz",
+		true,
+		true,
+		fazzdb.MigrationVersion{
+			Tables: []*fazzdb.MigrationTable{
+				CreateEventsTable("event"),
+			},
+		},
+	)
 	queryDb := fazzdb.QueryDb(config.GetDB(), config.Parameter)
 	ctx := context.Background()
 	ctx = fazzdb.NewQueryContext(ctx, queryDb)
-	store := PostgresEventStore("todo_events")
 
+	store := PostgresEventStore("event")
 	_, err := store.Save(ctx, EventPayload{
 		Type: "test.event",
 		Data: map[string]interface{}{"test": "234"},
