@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/payfazz/fazzcard-backend/lib/fazzcommon/value/pagination"
-	"github.com/payfazz/fazzcard-backend/lib/fazzcommon/value/timestamp"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
+	"github.com/payfazz/go-apt/pkg/fazzcommon/value/pagination"
+	"github.com/payfazz/go-apt/pkg/fazzcommon/value/timestamp"
 	"github.com/pkg/errors"
 )
 
