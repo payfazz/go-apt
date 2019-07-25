@@ -12,6 +12,17 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 )
 
+// ReplaceStrings is a function to replace old string to new string
+func ReplaceStrings(s string, old []string, new []string) string {
+	if len(old) != len(new) {
+		return s
+	}
+	for i := 0; i < len(old); i++ {
+		s = strings.ReplaceAll(s, old[i], new[i])
+	}
+	return s
+}
+
 // ToLowerFirst is a function that will change the first character of a string into a lowercase letter.
 func ToLowerFirst(str string) string {
 	for i, v := range str {
