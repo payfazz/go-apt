@@ -18,7 +18,6 @@ func (b *BookObjectSeed) Table() fazzdb.TableMeta {
 		"books",
 		"id",
 		fazzdb.PK_UUID,
-		true,
 		[]string{
 			"title",
 			"year",

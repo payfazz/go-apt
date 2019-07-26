@@ -42,12 +42,11 @@ type TableMeta struct {
 	Name       string
 	PrimaryKey string
 	Type       PKType
-	CreatedAt  bool
 	Columns    []string
 }
 
 // NewTableMeta is a constructor to create table meta
-func NewTableMeta(name string, primaryKey string, pkType PKType, createdAt bool, columns []string) TableMeta {
+func NewTableMeta(name string, primaryKey string, pkType PKType, columns []string) TableMeta {
 	pkExist := false
 	createdAtExist := false
 	for _, v := range columns {
@@ -71,7 +70,6 @@ func NewTableMeta(name string, primaryKey string, pkType PKType, createdAt bool,
 		Name:       name,
 		PrimaryKey: primaryKey,
 		Type:       pkType,
-		CreatedAt:  createdAt,
 		Columns:    columns,
 	}
 }
