@@ -10,22 +10,6 @@ import (
 	"time"
 )
 
-// EventLog is a struct for event
-type EventLog struct {
-	EventId          int64           `json:"event_id" db:"event_id"`
-	EventType        string          `json:"event_type" db:"event_type"`
-	AggregateId      string          `json:"aggregate_id" db:"aggregate_id"`
-	AggregateVersion int             `json:"aggregate_version" db:"aggregate_version"`
-	Data             json.RawMessage `json:"data" db:"data"`
-	CreatedAt        *time.Time      `json:"created_at" db:"created_at"`
-}
-
-type EventPayload struct {
-	Type      string
-	Aggregate Aggregate
-	Data      interface{}
-}
-
 // EventStore is an interface used for event store
 type EventStore interface {
 	Save(ctx context.Context, ev EventPayload) (*EventLog, error)
@@ -39,6 +23,7 @@ type postgresEventStore struct {
 // Save is a function to save event to event store
 func (e *postgresEventStore) Save(ctx context.Context, ev EventPayload) (*EventLog, error) {
 
+	// if no aggregate, event will be related to new aggregate object
 	if ev.Aggregate == nil {
 		uuidV4, _ := uuid.NewV4()
 		ev.Aggregate = &BaseAggregate{
@@ -77,6 +62,7 @@ func (e *postgresEventStore) Save(ctx context.Context, ev EventPayload) (*EventL
 	return result.(*EventLog), err
 }
 
+// FindAllBy return all event filtered by aggregateId and version
 func (e *postgresEventStore) FindAllBy(ctx context.Context, aggregateId string, firstVersion int) ([]*EventLog, error) {
 	query, err := getContext(ctx)
 	if err != nil {

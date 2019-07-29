@@ -7,6 +7,7 @@ import (
 	"github.com/payfazz/go-apt/pkg/esfazz"
 )
 
+// AccountEventRepository is repository for account event
 type AccountEventRepository interface {
 	Save(ctx context.Context, payload esfazz.EventPayload) (*aggregate.Account, error)
 	Find(ctx context.Context, id string) (*aggregate.Account, error)
@@ -17,6 +18,7 @@ type accountEventRepository struct {
 	aggStore   esfazz.AggregateStore
 }
 
+// Save save account event and aggregate snapshot to storage
 func (a *accountEventRepository) Save(ctx context.Context, payload esfazz.EventPayload) (*aggregate.Account, error) {
 	// save to event store
 	savedEvent, err := a.eventStore.Save(ctx, payload)
@@ -32,8 +34,10 @@ func (a *accountEventRepository) Save(ctx context.Context, payload esfazz.EventP
 	return account, nil
 }
 
+// Find return account aggregate by id
 func (a *accountEventRepository) Find(ctx context.Context, id string) (*aggregate.Account, error) {
 	account := &aggregate.Account{}
+	account.Id = id
 
 	// load data from saved aggregate
 	agg, err := a.aggStore.FindBy(ctx, id)
@@ -48,13 +52,16 @@ func (a *accountEventRepository) Find(ctx context.Context, id string) (*aggregat
 	}
 
 	// load new event and apply
-	evs, err := a.eventStore.FindAllBy(ctx, id, account.Version)
+	evs, err := a.eventStore.FindAllBy(ctx, account.Id, account.Version)
 	if err != nil {
 		return nil, err
 	}
-	err = account.ApplyAll(evs...)
-	if err != nil {
-		return nil, err
+
+	for _, ev := range evs {
+		err := account.Apply(ev)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// return nil if no event applied
@@ -78,6 +85,7 @@ func (a *accountEventRepository) saveAggregate(ctx context.Context, id string) (
 	return account, nil
 }
 
+// NewAccountEventRepository create new account event repository
 func NewAccountEventRepository() AccountEventRepository {
 	return &accountEventRepository{
 		eventStore: esfazz.PostgresEventStore("account_event"),

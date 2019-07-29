@@ -7,12 +7,7 @@ import (
 	"github.com/jmoiron/sqlx/types"
 )
 
-type AggregateRow struct {
-	Id      string          `json:"id" db:"id"`
-	Version int             `json:"version" db:"version"`
-	Data    json.RawMessage `json:"data" db:"data"`
-}
-
+// AggregateStore is interface for aggregate storage
 type AggregateStore interface {
 	Save(ctx context.Context, data Aggregate) (*AggregateRow, error)
 	FindBy(ctx context.Context, id string) (*AggregateRow, error)
@@ -22,6 +17,7 @@ type postgresAggregateStore struct {
 	tableName string
 }
 
+// Save is a function to save aggregate to database
 func (s *postgresAggregateStore) Save(ctx context.Context, data Aggregate) (*AggregateRow, error) {
 	dataJsonByte, err := json.Marshal(data)
 	if err != nil {
@@ -45,7 +41,8 @@ func (s *postgresAggregateStore) Save(ctx context.Context, data Aggregate) (*Agg
 	return result.(*AggregateRow), err
 }
 
-func (s *postgresAggregateStore) FindBy(ctx context.Context, aggregateId string) (*AggregateRow, error) {
+// FindBy find aggregate in database based on id
+func (s *postgresAggregateStore) FindBy(ctx context.Context, id string) (*AggregateRow, error) {
 	query, err := getContext(ctx)
 	if err != nil {
 		return nil, err
@@ -53,7 +50,7 @@ func (s *postgresAggregateStore) FindBy(ctx context.Context, aggregateId string)
 
 	snap := &AggregateRow{}
 	queryText := fmt.Sprintf(`SELECT * FROM %s WHERE id = $1`, s.tableName)
-	results, err := query.RawAllCtx(ctx, snap, queryText, aggregateId)
+	results, err := query.RawAllCtx(ctx, snap, queryText, id)
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +61,7 @@ func (s *postgresAggregateStore) FindBy(ctx context.Context, aggregateId string)
 	return snaps[0], err
 }
 
+// PostgresAggregateStore is a constructor for PostgreSQL based aggregate store
 func PostgresAggregateStore(tableName string) AggregateStore {
 	return &postgresAggregateStore{tableName: tableName}
 }

@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// Account is aggregate object for account
 type Account struct {
 	esfazz.BaseAggregate
 	Name      string     `json:"name"`
@@ -16,16 +17,7 @@ type Account struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 }
 
-func (a *Account) ApplyAll(events ...*esfazz.EventLog) error {
-	for _, ev := range events {
-		err := a.Apply(ev)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
+// Apply apply event to aggregate
 func (a *Account) Apply(eventLog *esfazz.EventLog) error {
 	a.Version = a.Version + 1
 	a.UpdatedAt = eventLog.CreatedAt

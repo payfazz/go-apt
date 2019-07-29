@@ -10,6 +10,7 @@ import (
 	"github.com/payfazz/go-apt/pkg/esfazz"
 )
 
+// AccountCommand is an interface for account command
 type AccountCommand interface {
 	Create(ctx context.Context, payload data.CreatePayload) (*aggregate.Account, error)
 	ChangeName(ctx context.Context, payload data.ChangeNamePayload) (*aggregate.Account, error)
@@ -22,6 +23,7 @@ type accountCommand struct {
 	repository repository.AccountEventRepository
 }
 
+// Create is command to create account
 func (a *accountCommand) Create(ctx context.Context, payload data.CreatePayload) (*aggregate.Account, error) {
 	ev := esfazz.EventPayload{
 		Type: event.ACCOUNT_CREATED,
@@ -39,6 +41,7 @@ func (a *accountCommand) Create(ctx context.Context, payload data.CreatePayload)
 	return account, nil
 }
 
+// ChangeName is command to change account name
 func (a *accountCommand) ChangeName(ctx context.Context, payload data.ChangeNamePayload) (*aggregate.Account, error) {
 	account, err := a.repository.Find(ctx, payload.AccountId)
 	if err != nil {
@@ -67,6 +70,7 @@ func (a *accountCommand) ChangeName(ctx context.Context, payload data.ChangeName
 	return account, nil
 }
 
+// Deposit is command to create account deposit
 func (a *accountCommand) Deposit(ctx context.Context, payload data.DepositPayload) (*aggregate.Account, error) {
 	account, err := a.repository.Find(ctx, payload.AccountId)
 	if err != nil {
@@ -95,6 +99,7 @@ func (a *accountCommand) Deposit(ctx context.Context, payload data.DepositPayloa
 	return account, nil
 }
 
+// Withdraw is command to create account withdraw
 func (a *accountCommand) Withdraw(ctx context.Context, payload data.WithdrawPayload) (*aggregate.Account, error) {
 	account, err := a.repository.Find(ctx, payload.AccountId)
 	if err != nil {
@@ -126,6 +131,7 @@ func (a *accountCommand) Withdraw(ctx context.Context, payload data.WithdrawPayl
 	return account, nil
 }
 
+// Delete is command to delete account
 func (a *accountCommand) Delete(ctx context.Context, accountId string) (*aggregate.Account, error) {
 	account, err := a.repository.Find(ctx, accountId)
 	if err != nil {
@@ -155,6 +161,7 @@ func (a *accountCommand) Delete(ctx context.Context, accountId string) (*aggrega
 	return account, nil
 }
 
+// NewAccountCommand create new account command service
 func NewAccountCommand() AccountCommand {
 	return &accountCommand{
 		repository: repository.NewAccountEventRepository(),
