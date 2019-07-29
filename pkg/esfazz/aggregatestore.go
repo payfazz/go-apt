@@ -10,8 +10,8 @@ import (
 
 // AggregateStore is interface for aggregate storage
 type AggregateStore interface {
-	Save(ctx context.Context, data Aggregate) (*AggregateRow, error)
-	FindBy(ctx context.Context, id string) (*AggregateRow, error)
+	Save(ctx context.Context, agg Aggregate) (*AggregateRow, error)
+	Find(ctx context.Context, id string) (*AggregateRow, error)
 }
 
 type postgresAggregateStore struct {
@@ -19,31 +19,31 @@ type postgresAggregateStore struct {
 }
 
 // Save is a function to save aggregate to database
-func (s *postgresAggregateStore) Save(ctx context.Context, data Aggregate) (*AggregateRow, error) {
-	dataJsonByte, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-	dataJsonText := types.JSONText(dataJsonByte)
-
+func (s *postgresAggregateStore) Save(ctx context.Context, agg Aggregate) (*AggregateRow, error) {
 	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	dataJsonByte, err := json.Marshal(agg)
+	if err != nil {
+		return nil, err
+	}
+	data := types.JSONText(dataJsonByte)
+
 	var ev = &AggregateRow{}
 	queryText := `INSERT INTO %s (id,version,data) VALUES ($1,$2,$3) ON CONFLICT (id) 
 					DO UPDATE SET version = excluded.version, data = excluded.data RETURNING *`
 	queryText = fmt.Sprintf(queryText, s.tableName)
-	result, err := query.RawFirstCtx(ctx, ev, queryText, data.GetId(), data.GetVersion(), dataJsonText)
+	result, err := query.RawFirstCtx(ctx, ev, queryText, agg.GetId(), agg.GetVersion(), data)
 	if err != nil {
 		return nil, err
 	}
 	return result.(*AggregateRow), err
 }
 
-// FindBy find aggregate in database based on id
-func (s *postgresAggregateStore) FindBy(ctx context.Context, id string) (*AggregateRow, error) {
+// Find find aggregate in database based on id
+func (s *postgresAggregateStore) Find(ctx context.Context, id string) (*AggregateRow, error) {
 	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return nil, err

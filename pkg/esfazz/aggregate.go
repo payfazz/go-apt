@@ -15,7 +15,6 @@ type AggregateRow struct {
 type Aggregate interface {
 	GetId() string
 	GetVersion() int
-	Apply(eventLog *EventLog) error
 }
 
 // BaseAggregate is a struct to be used composed with aggregate object
@@ -32,9 +31,4 @@ func (a *BaseAggregate) GetId() string {
 // GetVersion return aggregate version of aggregate object
 func (a *BaseAggregate) GetVersion() int {
 	return a.Version
-}
-
-// Apply apply event to aggregate
-func (a *BaseAggregate) Apply(eventLog *EventLog) error {
-	return nil
 }

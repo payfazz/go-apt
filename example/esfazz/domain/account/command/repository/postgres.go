@@ -26,7 +26,7 @@ func (a *accountEventRepository) Save(ctx context.Context, payload esfazz.EventP
 		return nil, err
 	}
 
-	account, err := a.saveAggregate(ctx, savedEvent.AggregateId)
+	account, err := a.saveSnapshot(ctx, savedEvent.AggregateId)
 	if err != nil {
 		return nil, err
 	}
@@ -40,19 +40,21 @@ func (a *accountEventRepository) Find(ctx context.Context, id string) (*aggregat
 	account.Id = id
 
 	// load data from saved aggregate
-	agg, err := a.aggStore.FindBy(ctx, id)
+	agg, err := a.aggStore.Find(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	if agg != nil {
 		err = json.Unmarshal(agg.Data, account)
+		account.Id = agg.Id
+		account.Version = agg.Version
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	// load new event and apply
-	evs, err := a.eventStore.FindAllBy(ctx, account.Id, account.Version)
+	evs, err := a.eventStore.FindAfterAggregate(ctx, account)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +74,7 @@ func (a *accountEventRepository) Find(ctx context.Context, id string) (*aggregat
 	return account, nil
 }
 
-func (a *accountEventRepository) saveAggregate(ctx context.Context, id string) (*aggregate.Account, error) {
-	// save snapshot
+func (a *accountEventRepository) saveSnapshot(ctx context.Context, id string) (*aggregate.Account, error) {
 	account, err := a.Find(ctx, id)
 	if err != nil {
 		return nil, err

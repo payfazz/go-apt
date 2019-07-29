@@ -13,7 +13,7 @@ import (
 // EventStore is an interface used for event store
 type EventStore interface {
 	Save(ctx context.Context, ev EventPayload) (*EventLog, error)
-	FindAllBy(ctx context.Context, aggregateId string, firstVersion int) ([]*EventLog, error)
+	FindAfterAggregate(ctx context.Context, agg Aggregate) ([]*EventLog, error)
 }
 
 type postgresEventStore struct {
@@ -53,8 +53,8 @@ func (e *postgresEventStore) Save(ctx context.Context, ev EventPayload) (*EventL
 	return result.(*EventLog), err
 }
 
-// FindAllBy return all event filtered by aggregateId and version
-func (e *postgresEventStore) FindAllBy(ctx context.Context, aggregateId string, firstVersion int) ([]*EventLog, error) {
+// FindAfterAggregate return all event that is not applied to the aggregate object
+func (e *postgresEventStore) FindAfterAggregate(ctx context.Context, agg Aggregate) ([]*EventLog, error) {
 	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (e *postgresEventStore) FindAllBy(ctx context.Context, aggregateId string, 
 	el := &EventLog{}
 	queryText := fmt.Sprintf(`SELECT * FROM %s WHERE aggregate_id = $1 AND aggregate_version >= $2 
 									ORDER BY event_id ASC`, e.tableName)
-	results, err := query.RawAllCtx(ctx, el, queryText, aggregateId, firstVersion)
+	results, err := query.RawAllCtx(ctx, el, queryText, agg.GetId(), agg.GetVersion())
 	if err != nil {
 		return nil, err
 	}
