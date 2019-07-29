@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jmoiron/sqlx/types"
+	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
 // AggregateStore is interface for aggregate storage
@@ -25,7 +26,7 @@ func (s *postgresAggregateStore) Save(ctx context.Context, data Aggregate) (*Agg
 	}
 	dataJsonText := types.JSONText(dataJsonByte)
 
-	query, err := getContext(ctx)
+	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,7 @@ func (s *postgresAggregateStore) Save(ctx context.Context, data Aggregate) (*Agg
 
 // FindBy find aggregate in database based on id
 func (s *postgresAggregateStore) FindBy(ctx context.Context, id string) (*AggregateRow, error) {
-	query, err := getContext(ctx)
+	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}

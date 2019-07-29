@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx/types"
+	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"time"
 )
 
@@ -46,7 +47,7 @@ func (e *postgresEventStore) Save(ctx context.Context, ev EventPayload) (*EventL
 	}
 	dataJsonText := types.JSONText(dataJsonByte)
 
-	query, err := getContext(ctx)
+	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,7 @@ func (e *postgresEventStore) Save(ctx context.Context, ev EventPayload) (*EventL
 
 // FindAllBy return all event filtered by aggregateId and version
 func (e *postgresEventStore) FindAllBy(ctx context.Context, aggregateId string, firstVersion int) ([]*EventLog, error) {
-	query, err := getContext(ctx)
+	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +80,7 @@ func (e *postgresEventStore) FindAllBy(ctx context.Context, aggregateId string, 
 }
 
 func (e *postgresEventStore) findLatestVersion(ctx context.Context, aggregateId string) (int, error) {
-	query, err := getContext(ctx)
+	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return 0, err
 	}
