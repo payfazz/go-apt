@@ -3,8 +3,6 @@ package esfazz
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"github.com/jmoiron/sqlx/types"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
@@ -16,6 +14,7 @@ type AggregateStore interface {
 
 type postgresAggregateStore struct {
 	tableName string
+	model     *AggregateRow
 }
 
 // Save is a function to save aggregate to database
@@ -29,17 +28,31 @@ func (s *postgresAggregateStore) Save(ctx context.Context, agg Aggregate) (*Aggr
 	if err != nil {
 		return nil, err
 	}
-	data := types.JSONText(dataJsonByte)
+	data := json.RawMessage(dataJsonByte)
 
-	var ev = &AggregateRow{}
-	queryText := `INSERT INTO %s (id,version,data) VALUES ($1,$2,$3) ON CONFLICT (id) 
-					DO UPDATE SET version = excluded.version, data = excluded.data RETURNING *`
-	queryText = fmt.Sprintf(queryText, s.tableName)
-	result, err := query.RawFirstCtx(ctx, ev, queryText, agg.GetId(), agg.GetVersion(), data)
+	updateRow := AggregateRowModel(s.tableName)
+	updateRow.Id = agg.GetId()
+	updateRow.Version = agg.GetVersion()
+	updateRow.Data = data
+
+	count, err := query.Use(s.model).
+		Where("id", agg.GetId()).
+		WithLimit(0).
+		Count()
 	if err != nil {
 		return nil, err
 	}
-	return result.(*AggregateRow), err
+
+	if *count == 0 {
+		_, err = query.Use(updateRow).InsertCtx(ctx, false)
+	} else {
+		_, err = query.Use(updateRow).UpdateCtx(ctx)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return updateRow, err
 }
 
 // Find find aggregate in database based on id
@@ -48,21 +61,27 @@ func (s *postgresAggregateStore) Find(ctx context.Context, id string) (*Aggregat
 	if err != nil {
 		return nil, err
 	}
+	row, err := query.Use(s.model).
+		Where("id", id).
+		WithLimit(1).
+		AllCtx(ctx)
 
-	snap := &AggregateRow{}
-	queryText := fmt.Sprintf(`SELECT * FROM %s WHERE id = $1`, s.tableName)
-	results, err := query.RawAllCtx(ctx, snap, queryText, id)
 	if err != nil {
 		return nil, err
 	}
-	snaps := results.([]*AggregateRow)
-	if len(snaps) == 0 {
+
+	results := row.([]*AggregateRow)
+	if len(results) == 0 {
 		return nil, nil
 	}
-	return snaps[0], err
+
+	return results[0], nil
 }
 
 // PostgresAggregateStore is a constructor for PostgreSQL based aggregate store
 func PostgresAggregateStore(tableName string) AggregateStore {
-	return &postgresAggregateStore{tableName: tableName}
+	return &postgresAggregateStore{
+		tableName: tableName,
+		model:     AggregateRowModel(tableName),
+	}
 }
