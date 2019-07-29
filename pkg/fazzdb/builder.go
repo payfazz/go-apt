@@ -3,6 +3,7 @@ package fazzdb
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
@@ -120,13 +121,18 @@ func (b *Builder) BuildCreateTable(table *MigrationTable) string {
 
 // BuildAlterTable is a function that will return alter query from given table
 func (b *Builder) BuildAlterTable(table *MigrationTable) string {
-	query := fmt.Sprintf(`ALTER TABLE "%s"`, table.name)
-	for i, column := range table.columns {
-		first := i == 0
-		query = fmt.Sprintf(`%s %s`, query, b.generateColumnQuery(column, first))
+	query := ""
+
+	if len(table.columns) > 0 {
+		query = fmt.Sprintf(`ALTER TABLE "%s"`, table.name)
+		for i, column := range table.columns {
+			first := i == 0
+			query = fmt.Sprintf(`%s %s`, query, b.generateColumnQuery(column, first))
+		}
+
+		query = fmt.Sprintf(`%s;`, query)
 	}
 
-	query = fmt.Sprintf(`%s;`, query)
 	query = b.generateCreateIndex(query, table)
 
 	return query
@@ -473,8 +479,10 @@ func (b *Builder) generateReferenceQuery(reference *MigrationReference, first bo
 // generateCreateIndex is a function that will generate create index query from given indexes
 func (b *Builder) generateCreateIndex(query string, table *MigrationTable) string {
 	if len(table.indexes) > 0 {
+		indexName := fmt.Sprintf("%s_%s_indexes", table.name, strings.Join(table.indexes, "_"))
+
 		query = b.generateDropIndex(query, table)
-		query = fmt.Sprintf(`%s CREATE INDEX "%s_indexes" ON "%s" (`, query, table.name, table.name)
+		query = fmt.Sprintf(`%s CREATE INDEX "%s" ON "%s" (`, query, indexName, table.name)
 		for i, index := range table.indexes {
 			if i != 0 {
 				query = fmt.Sprintf(`%s, `, query)
