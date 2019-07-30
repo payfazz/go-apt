@@ -10,7 +10,7 @@ func CreateEventsTable(name string) *fazzdb.MigrationTable {
 		table.Field(fazzdb.CreateUuid("aggregate_id"))
 		table.Field(fazzdb.CreateInteger("aggregate_version"))
 		table.Field(fazzdb.CreateJsonB("data"))
-		table.Field(fazzdb.CreateTimestampTz("created_at", 0))
+		table.TimestampsTz(0)
 		table.Uniques("aggregate_id", "aggregate_version")
 	})
 }

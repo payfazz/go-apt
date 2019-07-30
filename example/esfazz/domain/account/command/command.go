@@ -25,7 +25,7 @@ type accountCommand struct {
 
 // Create is command to create account
 func (a *accountCommand) Create(ctx context.Context, payload data.CreatePayload) (*aggregate.Account, error) {
-	ev := esfazz.EventPayload{
+	ev := &esfazz.EventPayload{
 		Type: event.ACCOUNT_CREATED,
 		Data: event.AccountCreatedData{
 			Name:    payload.Name,
@@ -55,7 +55,7 @@ func (a *accountCommand) ChangeName(ctx context.Context, payload data.ChangeName
 		return nil, errors.New("account deleted")
 	}
 
-	ev := esfazz.EventPayload{
+	ev := &esfazz.EventPayload{
 		Aggregate: account,
 		Type:      event.ACCOUNT_NAME_CHANGED,
 		Data: event.AccountNameChangedData{
@@ -84,7 +84,7 @@ func (a *accountCommand) Deposit(ctx context.Context, payload data.DepositPayloa
 		return nil, errors.New("account deleted")
 	}
 
-	ev := esfazz.EventPayload{
+	ev := &esfazz.EventPayload{
 		Aggregate: account,
 		Type:      event.ACCOUNT_DEPOSITED,
 		Data: event.AccountDepositedData{
@@ -116,7 +116,7 @@ func (a *accountCommand) Withdraw(ctx context.Context, payload data.WithdrawPayl
 		return nil, errors.New("account balance is smaller than withdraw ammount")
 	}
 
-	ev := esfazz.EventPayload{
+	ev := &esfazz.EventPayload{
 		Aggregate: account,
 		Type:      event.ACCOUNT_WITHDRAWN,
 		Data: event.AccountWithdrawnData{
@@ -149,7 +149,7 @@ func (a *accountCommand) Delete(ctx context.Context, accountId string) (*aggrega
 		return nil, errors.New("account balance must be zero before deleted")
 	}
 
-	ev := esfazz.EventPayload{
+	ev := &esfazz.EventPayload{
 		Aggregate: account,
 		Type:      event.ACCOUNT_DELETED,
 	}

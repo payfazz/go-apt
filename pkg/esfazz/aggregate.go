@@ -47,7 +47,9 @@ func AggregateRowModel(table string) *AggregateRow {
 // Aggregate is interface for aggregate object
 type Aggregate interface {
 	GetId() string
+	SetId(id string)
 	GetVersion() int
+	Apply(log *EventLog) error
 }
 
 // BaseAggregate is a struct to be used composed with aggregate object
@@ -61,7 +63,17 @@ func (a *BaseAggregate) GetId() string {
 	return a.Id
 }
 
+// SetId set id of aggregate object
+func (a *BaseAggregate) SetId(id string) {
+	a.Id = id
+}
+
 // GetVersion return aggregate version of aggregate object
 func (a *BaseAggregate) GetVersion() int {
 	return a.Version
+}
+
+// Apply is a function to apply event to aggregate object
+func (a *BaseAggregate) Apply(log *EventLog) error {
+	return nil
 }

@@ -3,7 +3,6 @@ package esfazz
 import (
 	"encoding/json"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
-	"time"
 )
 
 // EventLog is a struct for event
@@ -14,7 +13,6 @@ type EventLog struct {
 	AggregateId      string          `json:"aggregate_id" db:"aggregate_id"`
 	AggregateVersion int             `json:"aggregate_version" db:"aggregate_version"`
 	Data             json.RawMessage `json:"data" db:"data"`
-	CreatedAt        *time.Time      `db:"created_at"`
 }
 
 // Get is a function that used to get the data from table
@@ -37,10 +35,9 @@ func EventLogModel(table string) *EventLog {
 				fazzdb.Col("aggregate_id"),
 				fazzdb.Col("aggregate_version"),
 				fazzdb.Col("data"),
-				fazzdb.Col("created_at"),
 			},
 			"event_id",
-			false,
+			true,
 			false,
 		),
 	}

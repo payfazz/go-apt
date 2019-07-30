@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"github.com/gofrs/uuid"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
-	"time"
 )
 
 // EventStore is an interface used for event store
 type EventStore interface {
-	Save(ctx context.Context, ev EventPayload) (*EventLog, error)
+	Save(ctx context.Context, ev *EventPayload) (*EventLog, error)
 	FindAfterAggregate(ctx context.Context, agg Aggregate) ([]*EventLog, error)
 }
 
@@ -20,7 +19,7 @@ type postgresEventStore struct {
 }
 
 // Save is a function to save event to event store
-func (e *postgresEventStore) Save(ctx context.Context, ev EventPayload) (*EventLog, error) {
+func (e *postgresEventStore) Save(ctx context.Context, ev *EventPayload) (*EventLog, error) {
 	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return nil, err
@@ -46,8 +45,6 @@ func (e *postgresEventStore) Save(ctx context.Context, ev EventPayload) (*EventL
 	el.AggregateId = ev.Aggregate.GetId()
 	el.AggregateVersion = ev.Aggregate.GetVersion()
 	el.Data = data
-	now := time.Now()
-	el.CreatedAt = &now
 
 	id, err := query.Use(el).InsertCtx(ctx, false)
 	if err != nil {
