@@ -12,7 +12,7 @@ func TestPostgresEventStore_Save(t *testing.T) {
 	ctx := prepareContext()
 
 	store := PostgresEventStore("event")
-	_, err := store.Save(ctx, EventPayload{
+	_, err := store.Save(ctx, &EventPayload{
 		Type: "test.event",
 		Data: map[string]interface{}{"test": "234"},
 	})
@@ -25,7 +25,7 @@ func TestPostgresEventStore_FindAfterAggregate(t *testing.T) {
 	ctx := prepareContext()
 
 	store := PostgresEventStore("event")
-	ev, err := store.Save(ctx, EventPayload{
+	ev, err := store.Save(ctx, &EventPayload{
 		Type: "test.event",
 		Data: map[string]interface{}{"test": "234"},
 	})
@@ -33,7 +33,7 @@ func TestPostgresEventStore_FindAfterAggregate(t *testing.T) {
 		t.Errorf("error saving data: %s", err)
 	}
 
-	ev, err = store.Save(ctx, EventPayload{
+	ev, err = store.Save(ctx, &EventPayload{
 		Type: "test.event",
 		Aggregate: &BaseAggregate{
 			Id:      ev.AggregateId,
@@ -45,7 +45,7 @@ func TestPostgresEventStore_FindAfterAggregate(t *testing.T) {
 		t.Errorf("error saving data: %s", err)
 	}
 
-	ev, err = store.Save(ctx, EventPayload{
+	ev, err = store.Save(ctx, &EventPayload{
 		Type: "test.event",
 		Aggregate: &BaseAggregate{
 			Id:      ev.AggregateId,
