@@ -3,9 +3,7 @@ package esfazz
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx/types"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"time"
 )
@@ -18,6 +16,7 @@ type EventStore interface {
 
 type postgresEventStore struct {
 	tableName string
+	model     *EventLog
 }
 
 // Save is a function to save event to event store
@@ -40,17 +39,23 @@ func (e *postgresEventStore) Save(ctx context.Context, ev EventPayload) (*EventL
 	if err != nil {
 		return nil, err
 	}
-	dataJsonText := types.JSONText(dataJsonByte)
+	data := json.RawMessage(dataJsonByte)
 
-	el := &EventLog{}
-	queryText := fmt.Sprintf(`INSERT INTO %s (event_type, aggregate_id, aggregate_version, data, created_at) 
-									VALUES ($1,$2,$3,$4,$5) RETURNING *`, e.tableName)
-	result, err := query.RawFirstCtx(ctx, el, queryText, ev.Type,
-		ev.Aggregate.GetId(), ev.Aggregate.GetVersion(), dataJsonText, time.Now())
+	el := EventLogModel(e.tableName)
+	el.EventType = ev.Type
+	el.AggregateId = ev.Aggregate.GetId()
+	el.AggregateVersion = ev.Aggregate.GetVersion()
+	el.Data = data
+	now := time.Now()
+	el.CreatedAt = &now
+
+	id, err := query.Use(el).InsertCtx(ctx, false)
 	if err != nil {
 		return nil, err
 	}
-	return result.(*EventLog), err
+	el.EventId = id.(int64)
+
+	return el, nil
 }
 
 // FindAfterAggregate return all event that is not applied to the aggregate object
@@ -60,10 +65,14 @@ func (e *postgresEventStore) FindAfterAggregate(ctx context.Context, agg Aggrega
 		return nil, err
 	}
 
-	el := &EventLog{}
-	queryText := fmt.Sprintf(`SELECT * FROM %s WHERE aggregate_id = $1 AND aggregate_version >= $2 
-									ORDER BY event_id ASC`, e.tableName)
-	results, err := query.RawAllCtx(ctx, el, queryText, agg.GetId(), agg.GetVersion())
+	conditions := []fazzdb.SliceCondition{
+		{Connector: fazzdb.CO_NONE, Field: "aggregate_id", Operator: fazzdb.OP_EQUALS, Value: agg.GetId()},
+		{Connector: fazzdb.CO_AND, Field: "aggregate_version", Operator: fazzdb.OP_MORE_THAN_EQUALS, Value: agg.GetVersion()},
+	}
+	results, err := query.Use(e.model).
+		WhereMany(conditions...).
+		AllCtx(ctx)
+
 	if err != nil {
 		return nil, err
 	}
@@ -74,5 +83,6 @@ func (e *postgresEventStore) FindAfterAggregate(ctx context.Context, agg Aggrega
 func PostgresEventStore(tableName string) EventStore {
 	return &postgresEventStore{
 		tableName: tableName,
+		model:     EventLogModel(tableName),
 	}
 }

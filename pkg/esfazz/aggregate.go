@@ -28,6 +28,7 @@ func (m *AggregateRow) Payload() map[string]interface{} {
 	return m.MapPayload(m)
 }
 
+// AggregateRowModel is the constructor for aggregate row model
 func AggregateRowModel(table string) *AggregateRow {
 	return &AggregateRow{
 		Model: fazzdb.UuidModel(table,
