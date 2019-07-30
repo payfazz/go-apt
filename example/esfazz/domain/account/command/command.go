@@ -26,7 +26,7 @@ type accountCommand struct {
 // Create is command to create account
 func (a *accountCommand) Create(ctx context.Context, payload data.CreatePayload) (*aggregate.Account, error) {
 	ev := &esfazz.EventPayload{
-		Type: event.ACCOUNT_CREATED,
+		Type: event.AccountCreatedType,
 		Data: event.AccountCreatedData{
 			Name:    payload.Name,
 			Balance: payload.Balance,
@@ -57,7 +57,7 @@ func (a *accountCommand) ChangeName(ctx context.Context, payload data.ChangeName
 
 	ev := &esfazz.EventPayload{
 		Aggregate: account,
-		Type:      event.ACCOUNT_NAME_CHANGED,
+		Type:      event.AccountNameChangedType,
 		Data: event.AccountNameChangedData{
 			Name: payload.Name,
 		},
@@ -86,7 +86,7 @@ func (a *accountCommand) Deposit(ctx context.Context, payload data.DepositPayloa
 
 	ev := &esfazz.EventPayload{
 		Aggregate: account,
-		Type:      event.ACCOUNT_DEPOSITED,
+		Type:      event.AccountDepositedType,
 		Data: event.AccountDepositedData{
 			Amount: payload.Amount,
 		},
@@ -118,7 +118,7 @@ func (a *accountCommand) Withdraw(ctx context.Context, payload data.WithdrawPayl
 
 	ev := &esfazz.EventPayload{
 		Aggregate: account,
-		Type:      event.ACCOUNT_WITHDRAWN,
+		Type:      event.AccountWithdrawnType,
 		Data: event.AccountWithdrawnData{
 			Amount: payload.Amount,
 		},
@@ -151,7 +151,7 @@ func (a *accountCommand) Delete(ctx context.Context, accountId string) (*aggrega
 
 	ev := &esfazz.EventPayload{
 		Aggregate: account,
-		Type:      event.ACCOUNT_DELETED,
+		Type:      event.AccountDeletedType,
 	}
 
 	account, err = a.repository.Save(ctx, ev)

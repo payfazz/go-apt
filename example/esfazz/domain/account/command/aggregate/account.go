@@ -23,15 +23,15 @@ func (a *Account) Apply(eventLog *esfazz.EventLog) error {
 	a.UpdatedAt = eventLog.CreatedAt
 
 	switch eventLog.EventType {
-	case event.ACCOUNT_CREATED:
+	case event.AccountCreatedType:
 		return a.applyAccountCreated(eventLog)
-	case event.ACCOUNT_NAME_CHANGED:
+	case event.AccountNameChangedType:
 		return a.applyAccountNameChanged(eventLog)
-	case event.ACCOUNT_DEPOSITED:
+	case event.AccountDepositedType:
 		return a.applyAccountDeposited(eventLog)
-	case event.ACCOUNT_WITHDRAWN:
+	case event.AccountWithdrawnType:
 		return a.applyAccountWithdrawn(eventLog)
-	case event.ACCOUNT_DELETED:
+	case event.AccountDeletedType:
 		return a.applyAccountDeleted(eventLog)
 	}
 

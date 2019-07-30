@@ -1,11 +1,16 @@
 package event
 
 const (
-	ACCOUNT_CREATED      = "account.created"
-	ACCOUNT_NAME_CHANGED = "account.name.changed"
-	ACCOUNT_DEPOSITED    = "account.deposited"
-	ACCOUNT_WITHDRAWN    = "account.withdrawn"
-	ACCOUNT_DELETED      = "account.deleted"
+	// AccountCreatedType is string type for account created
+	AccountCreatedType = "account.created"
+	// AccountNameChangedType is string type for account name changed
+	AccountNameChangedType = "account.name.changed"
+	// AccountDepositedType is string type for account deposited
+	AccountDepositedType = "account.deposited"
+	// AccountWithdrawnType is string type for account withdrawn
+	AccountWithdrawnType = "account.withdrawn"
+	// AccountDeletedType is string type for account deleted
+	AccountDeletedType = "account.deleted"
 )
 
 // AccountCreatedData is account event created data
