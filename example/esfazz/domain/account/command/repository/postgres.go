@@ -4,26 +4,29 @@ import (
 	"context"
 	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/aggregate"
 	"github.com/payfazz/go-apt/pkg/esfazz"
+	"github.com/payfazz/go-apt/pkg/esfazz/esrepo"
+	"github.com/payfazz/go-apt/pkg/esfazz/eventstore/espostgres"
+	"github.com/payfazz/go-apt/pkg/esfazz/snapstore/snappostgres"
 )
 
 // AccountEventRepository is repository for account event
 type AccountEventRepository interface {
-	Save(ctx context.Context, payload *esfazz.EventPayload) (*aggregate.Account, error)
+	Save(ctx context.Context, payload *esfazz.Event) (*aggregate.Account, error)
 	Find(ctx context.Context, id string) (*aggregate.Account, error)
 }
 
 type accountEventRepository struct {
-	repository esfazz.EventRepository
+	repository esrepo.EventSourceRepository
 }
 
 // Save save account event and aggregate snapshot to storage
-func (a *accountEventRepository) Save(ctx context.Context, payload *esfazz.EventPayload) (*aggregate.Account, error) {
+func (a *accountEventRepository) Save(ctx context.Context, payload *esfazz.Event) (*aggregate.Account, error) {
 	// save to event store
-	result, err := a.repository.Save(ctx, payload)
+	err := a.repository.Save(ctx, payload)
 	if err != nil {
 		return nil, err
 	}
-	return result.(*aggregate.Account), nil
+	return a.Find(ctx, payload.Aggregate.GetId())
 }
 
 // Find return account aggregate by id
@@ -38,6 +41,10 @@ func (a *accountEventRepository) Find(ctx context.Context, id string) (*aggregat
 // NewAccountEventRepository create new account event repository
 func NewAccountEventRepository() AccountEventRepository {
 	return &accountEventRepository{
-		repository: esfazz.NewEventRepository(&aggregate.Account{}, "account_event", "account_aggregate"),
+		repository: esrepo.SnapshotEventSourceRepository(
+			espostgres.EventStore("account_event"),
+			snappostgres.SnapshotStore("account_snap"),
+			aggregate.AccountAggregate,
+		),
 	}
 }

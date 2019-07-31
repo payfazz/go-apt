@@ -1,4 +1,4 @@
-package esfazz
+package espostgres
 
 import "github.com/payfazz/go-apt/pkg/fazzdb"
 
@@ -12,14 +12,5 @@ func CreateEventsTable(name string) *fazzdb.MigrationTable {
 		table.Field(fazzdb.CreateJsonB("data"))
 		table.TimestampsTz(0)
 		table.Uniques("aggregate_id", "aggregate_version")
-	})
-}
-
-// CreateAggregateTable return migration table for aggregate
-func CreateAggregateTable(name string) *fazzdb.MigrationTable {
-	return fazzdb.CreateTable(name, func(table *fazzdb.MigrationTable) {
-		table.Field(fazzdb.CreateUuid("id").Primary())
-		table.Field(fazzdb.CreateInteger("version"))
-		table.Field(fazzdb.CreateJsonB("data"))
 	})
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/data"
 	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/event"
 	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/repository"
-	"github.com/payfazz/go-apt/pkg/esfazz"
 )
 
 // AccountCommand is an interface for account command
@@ -25,12 +24,9 @@ type accountCommand struct {
 
 // Create is command to create account
 func (a *accountCommand) Create(ctx context.Context, payload data.CreatePayload) (*aggregate.Account, error) {
-	ev := &esfazz.EventPayload{
-		Type: event.AccountCreatedType,
-		Data: event.AccountCreatedData{
-			Name:    payload.Name,
-			Balance: payload.Balance,
-		},
+	ev, err := event.AccountCreated(payload.Name, payload.Balance)
+	if err != nil {
+		return nil, err
 	}
 
 	account, err := a.repository.Save(ctx, ev)
@@ -47,7 +43,6 @@ func (a *accountCommand) ChangeName(ctx context.Context, payload data.ChangeName
 	if err != nil {
 		return nil, err
 	}
-
 	if account == nil {
 		return nil, errors.New("account not found")
 	}
@@ -55,12 +50,9 @@ func (a *accountCommand) ChangeName(ctx context.Context, payload data.ChangeName
 		return nil, errors.New("account deleted")
 	}
 
-	ev := &esfazz.EventPayload{
-		Aggregate: account,
-		Type:      event.AccountNameChangedType,
-		Data: event.AccountNameChangedData{
-			Name: payload.Name,
-		},
+	ev, err := event.AccountNameChanged(account, payload.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	account, err = a.repository.Save(ctx, ev)
@@ -76,7 +68,6 @@ func (a *accountCommand) Deposit(ctx context.Context, payload data.DepositPayloa
 	if err != nil {
 		return nil, err
 	}
-
 	if account == nil {
 		return nil, errors.New("account not found")
 	}
@@ -84,12 +75,9 @@ func (a *accountCommand) Deposit(ctx context.Context, payload data.DepositPayloa
 		return nil, errors.New("account deleted")
 	}
 
-	ev := &esfazz.EventPayload{
-		Aggregate: account,
-		Type:      event.AccountDepositedType,
-		Data: event.AccountDepositedData{
-			Amount: payload.Amount,
-		},
+	ev, err := event.AccountDeposited(account, payload.Amount)
+	if err != nil {
+		return nil, err
 	}
 
 	account, err = a.repository.Save(ctx, ev)
@@ -105,7 +93,6 @@ func (a *accountCommand) Withdraw(ctx context.Context, payload data.WithdrawPayl
 	if err != nil {
 		return nil, err
 	}
-
 	if account == nil {
 		return nil, errors.New("account not found")
 	}
@@ -116,12 +103,9 @@ func (a *accountCommand) Withdraw(ctx context.Context, payload data.WithdrawPayl
 		return nil, errors.New("account balance is smaller than withdraw ammount")
 	}
 
-	ev := &esfazz.EventPayload{
-		Aggregate: account,
-		Type:      event.AccountWithdrawnType,
-		Data: event.AccountWithdrawnData{
-			Amount: payload.Amount,
-		},
+	ev, err := event.AccountWithdrawn(account, payload.Amount)
+	if err != nil {
+		return nil, err
 	}
 
 	account, err = a.repository.Save(ctx, ev)
@@ -137,21 +121,16 @@ func (a *accountCommand) Delete(ctx context.Context, accountId string) (*aggrega
 	if err != nil {
 		return nil, err
 	}
-
-	if account == nil {
+	if account == nil && account.DeletedAt != nil {
 		return nil, errors.New("account not found")
-	}
-	if account.DeletedAt != nil {
-		// account already deleted
-		return nil, nil
 	}
 	if account.Balance != 0 {
 		return nil, errors.New("account balance must be zero before deleted")
 	}
 
-	ev := &esfazz.EventPayload{
-		Aggregate: account,
-		Type:      event.AccountDeletedType,
+	ev, err := event.AccountDeleted(account)
+	if err != nil {
+		return nil, err
 	}
 
 	account, err = a.repository.Save(ctx, ev)

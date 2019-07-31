@@ -1,9 +1,10 @@
-package esfazz
+package espostgres
 
 import (
 	"context"
 	_ "github.com/lib/pq"
 	"github.com/payfazz/go-apt/config"
+	"github.com/payfazz/go-apt/pkg/esfazz"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"testing"
 )
@@ -11,56 +12,68 @@ import (
 func TestPostgresEventStore_Save(t *testing.T) {
 	ctx := prepareContext()
 
-	store := PostgresEventStore("event")
-	_, err := store.Save(ctx, &EventPayload{
+	store := EventStore("event")
+
+	err := store.Save(ctx, &esfazz.Event{
 		Type: "test.event",
-		Data: map[string]interface{}{"test": "234"},
+		Aggregate: &esfazz.BaseAggregate{
+			Id:      "01234567-89ab-cdef-0123-456789abcdef",
+			Version: 0,
+		},
+		Data: []byte("{\"test\": \"234\"}"),
 	})
+
 	if err != nil {
 		t.Errorf("error saving data: %s", err)
 	}
 }
 
-func TestPostgresEventStore_FindAfterAggregate(t *testing.T) {
+func TestPostgresEventStore_FindNotApplied(t *testing.T) {
 	ctx := prepareContext()
 
-	store := PostgresEventStore("event")
-	ev, err := store.Save(ctx, &EventPayload{
+	store := EventStore("event")
+	err := store.Save(ctx, &esfazz.Event{
 		Type: "test.event",
-		Data: map[string]interface{}{"test": "234"},
-	})
-	if err != nil {
-		t.Errorf("error saving data: %s", err)
-	}
-
-	ev, err = store.Save(ctx, &EventPayload{
-		Type: "test.event",
-		Aggregate: &BaseAggregate{
-			Id:      ev.AggregateId,
-			Version: ev.AggregateVersion + 1,
+		Aggregate: &esfazz.BaseAggregate{
+			Id:      "01234567-89ab-cdef-0123-456789abcdef",
+			Version: 0,
 		},
-		Data: map[string]interface{}{"test": "345"},
+		Data: []byte("{\"test\": \"234\"}"),
 	})
 	if err != nil {
 		t.Errorf("error saving data: %s", err)
 	}
 
-	ev, err = store.Save(ctx, &EventPayload{
+	err = store.Save(ctx, &esfazz.Event{
 		Type: "test.event",
-		Aggregate: &BaseAggregate{
-			Id:      ev.AggregateId,
-			Version: ev.AggregateVersion + 1,
+		Aggregate: &esfazz.BaseAggregate{
+			Id:      "01234567-89ab-cdef-0123-456789abcdef",
+			Version: 1,
 		},
-		Data: map[string]interface{}{"test": "456"},
+		Data: []byte("{\"test\": \"345\"}"),
 	})
 	if err != nil {
 		t.Errorf("error saving data: %s", err)
 	}
 
-	evs, err := store.FindAfterAggregate(ctx, &BaseAggregate{
-		Id:      ev.AggregateId,
-		Version: 0,
+	err = store.Save(ctx, &esfazz.Event{
+		Type: "test.event",
+		Aggregate: &esfazz.BaseAggregate{
+			Id:      "01234567-89ab-cdef-0123-456789abcdef",
+			Version: 2,
+		},
+		Data: []byte("{\"test\": \"456\"}"),
 	})
+	if err != nil {
+		t.Errorf("error saving data: %s", err)
+	}
+
+	evs, err := store.FindNotApplied(ctx,
+		&esfazz.BaseAggregate{
+			Id:      "01234567-89ab-cdef-0123-456789abcdef",
+			Version: 2,
+		},
+	)
 	if err != nil {
 		t.Errorf("error saving data: %s", err)
 	}
