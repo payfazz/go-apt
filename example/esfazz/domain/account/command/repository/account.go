@@ -7,7 +7,7 @@ import (
 	"github.com/payfazz/go-apt/pkg/esfazz"
 	"github.com/payfazz/go-apt/pkg/esfazz/esrepo"
 	"github.com/payfazz/go-apt/pkg/esfazz/eventstore/eventmongo"
-	"github.com/payfazz/go-apt/pkg/esfazz/snapstore/snappostgres"
+	"github.com/payfazz/go-apt/pkg/esfazz/snapstore/snapmongo"
 )
 
 // AccountEventRepository is repository for account event
@@ -41,14 +41,17 @@ func (a *accountEventRepository) Find(ctx context.Context, id string) (*aggregat
 
 // NewAccountEventRepository create new account event repository
 func NewAccountEventRepository() AccountEventRepository {
+	db := config.GetMongoClient().Database("command")
 
-	eventCollection := config.GetMongoClient().Database("command").Collection("events")
+	eventCollection := db.Collection("events")
 	_ = eventmongo.CreateAggregateUniqueIndex(eventCollection)
+	snapCollection := db.Collection("snapshots")
+	_ = snapmongo.CreateIdUniqueIndex(snapCollection)
 
 	return &accountEventRepository{
 		repository: esrepo.SnapshotEventSourceRepository(
 			eventmongo.EventStore(eventCollection),
-			snappostgres.SnapshotStore("account_snap"),
+			snapmongo.SnapshotStore(snapCollection),
 			aggregate.AccountAggregate,
 		),
 	}
