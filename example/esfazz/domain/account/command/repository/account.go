@@ -2,10 +2,11 @@ package repository
 
 import (
 	"context"
+	"github.com/payfazz/go-apt/example/esfazz/config"
 	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/aggregate"
 	"github.com/payfazz/go-apt/pkg/esfazz"
 	"github.com/payfazz/go-apt/pkg/esfazz/esrepo"
-	"github.com/payfazz/go-apt/pkg/esfazz/eventstore/espostgres"
+	"github.com/payfazz/go-apt/pkg/esfazz/eventstore/eventmongo"
 	"github.com/payfazz/go-apt/pkg/esfazz/snapstore/snappostgres"
 )
 
@@ -40,9 +41,13 @@ func (a *accountEventRepository) Find(ctx context.Context, id string) (*aggregat
 
 // NewAccountEventRepository create new account event repository
 func NewAccountEventRepository() AccountEventRepository {
+
+	eventCollection := config.GetMongoClient().Database("command").Collection("events")
+	_ = eventmongo.CreateAggregateUniqueIndex(eventCollection)
+
 	return &accountEventRepository{
 		repository: esrepo.SnapshotEventSourceRepository(
-			espostgres.EventStore("account_event"),
+			eventmongo.EventStore(eventCollection),
 			snappostgres.SnapshotStore("account_snap"),
 			aggregate.AccountAggregate,
 		),

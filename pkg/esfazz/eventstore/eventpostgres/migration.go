@@ -1,4 +1,4 @@
-package espostgres
+package eventpostgres
 
 import "github.com/payfazz/go-apt/pkg/fazzdb"
 

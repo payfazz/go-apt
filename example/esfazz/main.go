@@ -14,6 +14,7 @@ import (
 	"github.com/payfazz/go-apt/example/esfazz/migration"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"github.com/payfazz/go-apt/pkg/fazzpubsub"
+	"log"
 	"sync"
 )
 
@@ -96,42 +97,60 @@ func Command(wg *sync.WaitGroup, rc *redis.Client) {
 	pubsub := fazzpubsub.RedisPubSub(rc)
 
 	// Create account
-	account, _ := cmd.Create(ctx, data.CreatePayload{
+	account, err := cmd.Create(ctx, data.CreatePayload{
 		Name:    "Test Account 1",
 		Balance: 150,
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	sendUpdate(ctx, pubsub, account)
 
 	// Create second account
-	account, _ = cmd.Create(ctx, data.CreatePayload{
+	account, err = cmd.Create(ctx, data.CreatePayload{
 		Name:    "Test Account 2",
 		Balance: 100,
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	sendUpdate(ctx, pubsub, account)
 
 	// Change name
-	account, _ = cmd.ChangeName(ctx, data.ChangeNamePayload{
+	account, err = cmd.ChangeName(ctx, data.ChangeNamePayload{
 		AccountId: account.Id,
 		Name:      "New Test Account",
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	sendUpdate(ctx, pubsub, account)
 
 	// Deposit
-	account, _ = cmd.Deposit(ctx, data.DepositPayload{
+	account, err = cmd.Deposit(ctx, data.DepositPayload{
 		AccountId: account.Id,
 		Amount:    100,
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	sendUpdate(ctx, pubsub, account)
 
 	// Withdraw
-	account, _ = cmd.Withdraw(ctx, data.WithdrawPayload{
+	account, err = cmd.Withdraw(ctx, data.WithdrawPayload{
 		AccountId: account.Id,
 		Amount:    200,
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	sendUpdate(ctx, pubsub, account)
 
 	// Delete
-	account, _ = cmd.Delete(ctx, account.Id)
+	account, err = cmd.Delete(ctx, account.Id)
+	if err != nil {
+		log.Fatal(err)
+	}
 	sendUpdate(ctx, pubsub, account)
 
 	wg.Done()

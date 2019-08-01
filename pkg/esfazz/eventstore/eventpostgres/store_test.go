@@ -1,4 +1,4 @@
-package espostgres
+package eventpostgres
 
 import (
 	"context"
@@ -71,7 +71,7 @@ func TestPostgresEventStore_FindNotApplied(t *testing.T) {
 	evs, err := store.FindNotApplied(ctx,
 		&esfazz.BaseAggregate{
 			Id:      "01234567-89ab-cdef-0123-456789abcdef",
-			Version: 2,
+			Version: 0,
 		},
 	)
 	if err != nil {

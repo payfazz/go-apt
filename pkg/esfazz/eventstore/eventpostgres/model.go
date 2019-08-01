@@ -1,12 +1,12 @@
-package espostgres
+package eventpostgres
 
 import (
 	"github.com/jmoiron/sqlx/types"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
-// EventLog is struct for model in database
-type EventLog struct {
+// eventLog is struct for model in database
+type eventLog struct {
 	fazzdb.Model
 	EventId          int64          `db:"event_id"`
 	EventType        string         `db:"event_type"`
@@ -16,18 +16,18 @@ type EventLog struct {
 }
 
 // Get is a function that used to get the data from table
-func (m *EventLog) Get(key string) interface{} {
+func (m *eventLog) Get(key string) interface{} {
 	return m.Payload()[key]
 }
 
 // Payload is a function that used to get the payload data
-func (m *EventLog) Payload() map[string]interface{} {
+func (m *eventLog) Payload() map[string]interface{} {
 	return m.MapPayload(m)
 }
 
 // EventLogModel create
-func EventLogModel(tableName string) *EventLog {
-	return &EventLog{
+func EventLogModel(tableName string) *eventLog {
+	return &eventLog{
 		Model: fazzdb.AutoIncrementModel(tableName,
 			[]fazzdb.Column{
 				fazzdb.Col("event_id"),

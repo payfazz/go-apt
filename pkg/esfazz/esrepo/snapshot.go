@@ -69,7 +69,11 @@ func (s *snapshotESRepository) saveSnapshot(ctx context.Context, id string) erro
 }
 
 // SnapshotEventSourceRepository is simple event source repository without snapshot
-func SnapshotEventSourceRepository(eStore eventstore.EventStore, sStore snapstore.SnapshotStore, newAgg esfazz.AggregateFactory) EventSourceRepository {
+func SnapshotEventSourceRepository(
+	eStore eventstore.EventStore,
+	sStore snapstore.SnapshotStore,
+	newAgg esfazz.AggregateFactory,
+) EventSourceRepository {
 	return &snapshotESRepository{
 		eStore: eStore,
 		sStore: sStore,

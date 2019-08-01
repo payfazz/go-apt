@@ -1,4 +1,4 @@
-package espostgres
+package eventpostgres
 
 import (
 	"context"
@@ -54,7 +54,7 @@ func (p *postgresEventStore) FindNotApplied(ctx context.Context, agg esfazz.Aggr
 		return nil, err
 	}
 
-	logs := queryRes.([]*EventLog)
+	logs := queryRes.([]*eventLog)
 	results := make([]*esfazz.Event, len(logs))
 	for i, v := range logs {
 		results[i] = &esfazz.Event{
