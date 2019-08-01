@@ -9,8 +9,7 @@ import (
 
 // Account is aggregate object for account
 type Account struct {
-	Id        string     `json:"id"`
-	Version   int        `json:"version"`
+	esfazz.BaseAggregate
 	Name      string     `json:"name"`
 	Balance   int64      `json:"balance"`
 	CreatedAt *time.Time `json:"created_at"`
@@ -18,33 +17,27 @@ type Account struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 }
 
-// GetId return id of account
-func (a *Account) GetId() string {
-	return a.Id
-}
-
-// GetVersion return version of account
-func (a *Account) GetVersion() int {
-	return a.Version
-}
-
 // Apply apply event to aggregate
-func (a *Account) Apply(ev *esfazz.Event) error {
-	a.Version = a.Version + 1
-
-	switch ev.Type {
-	case event.AccountCreatedType:
-		return a.applyAccountCreated(ev)
-	case event.AccountNameChangedType:
-		return a.applyAccountNameChanged(ev)
-	case event.AccountDepositedType:
-		return a.applyAccountDeposited(ev)
-	case event.AccountWithdrawnType:
-		return a.applyAccountWithdrawn(ev)
-	case event.AccountDeletedType:
-		return a.applyAccountDeleted(ev)
+func (a *Account) Apply(evs ...*esfazz.Event) error {
+	for _, ev := range evs {
+		a.Version = a.Version + 1
+		var err error
+		switch ev.Type {
+		case event.AccountCreatedType:
+			err = a.applyAccountCreated(ev)
+		case event.AccountNameChangedType:
+			err = a.applyAccountNameChanged(ev)
+		case event.AccountDepositedType:
+			err = a.applyAccountDeposited(ev)
+		case event.AccountWithdrawnType:
+			err = a.applyAccountWithdrawn(ev)
+		case event.AccountDeletedType:
+			err = a.applyAccountDeleted(ev)
+		}
+		if err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
 
@@ -113,7 +106,7 @@ func (a *Account) applyAccountDeleted(ev *esfazz.Event) error {
 
 // AccountAggregate is constructor for account aggregate
 func AccountAggregate(id string) esfazz.Aggregate {
-	return &Account{
-		Id: id,
-	}
+	acc := &Account{}
+	acc.Id = id
+	return acc
 }

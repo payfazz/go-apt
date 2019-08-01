@@ -9,9 +9,10 @@ import (
 )
 
 type snapshotESRepository struct {
-	eStore eventstore.EventStore
-	sStore snapstore.SnapshotStore
-	newAgg esfazz.AggregateFactory
+	eStore     eventstore.EventStore
+	sStore     snapstore.SnapshotStore
+	newAgg     esfazz.AggregateFactory
+	eventCount int
 }
 
 // Save save event to event and snapshot store
@@ -26,7 +27,26 @@ func (s *snapshotESRepository) Save(ctx context.Context, event *esfazz.Event) er
 }
 
 // Find find aggregate from snapshot and apply new event to this aggregate
-func (s *snapshotESRepository) Find(ctx context.Context, id string) (interface{}, error) {
+func (s *snapshotESRepository) Find(ctx context.Context, id string) (esfazz.Aggregate, error) {
+	agg, err := s.findSnapshot(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	evs, err := s.eStore.FindNotApplied(ctx, agg)
+	if err != nil {
+		return nil, err
+	}
+
+	err = agg.Apply(evs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return agg, nil
+}
+
+func (s *snapshotESRepository) findSnapshot(ctx context.Context, id string) (esfazz.Aggregate, error) {
 	agg := s.newAgg(id)
 	rawData, err := s.sStore.Find(ctx, id)
 	if err != nil {
@@ -39,27 +59,30 @@ func (s *snapshotESRepository) Find(ctx context.Context, id string) (interface{}
 			return nil, err
 		}
 	}
-
-	evs, err := s.eStore.FindNotApplied(ctx, agg)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, ev := range evs {
-		err := agg.Apply(ev)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return agg, nil
 }
 
 func (s *snapshotESRepository) saveSnapshot(ctx context.Context, id string) error {
-	agg, err := s.Find(ctx, id)
+	agg, err := s.findSnapshot(ctx, id)
 	if err != nil {
 		return err
 	}
+
+	evs, err := s.eStore.FindNotApplied(ctx, agg)
+	if err != nil {
+		return err
+	}
+
+	// don't save snapshot if below maximum not applied event count
+	if len(evs) <= s.eventCount {
+		return nil
+	}
+
+	err = agg.Apply(evs...)
+	if err != nil {
+		return err
+	}
+
 	data, err := json.Marshal(agg)
 	if err != nil {
 		return err
@@ -68,15 +91,16 @@ func (s *snapshotESRepository) saveSnapshot(ctx context.Context, id string) erro
 	return err
 }
 
-// SnapshotEventSourceRepository is simple event source repository without snapshot
+// SnapshotEventSourceRepository is event source repository which save snapshot every event saved
 func SnapshotEventSourceRepository(
 	eStore eventstore.EventStore,
 	sStore snapstore.SnapshotStore,
 	newAgg esfazz.AggregateFactory,
 ) EventSourceRepository {
 	return &snapshotESRepository{
-		eStore: eStore,
-		sStore: sStore,
-		newAgg: newAgg,
+		eStore:     eStore,
+		sStore:     sStore,
+		newAgg:     newAgg,
+		eventCount: 0,
 	}
 }

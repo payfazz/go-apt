@@ -8,5 +8,5 @@ import (
 // EventSourceRepository is interface for event repository
 type EventSourceRepository interface {
 	Save(ctx context.Context, event *esfazz.Event) error
-	Find(ctx context.Context, id string) (interface{}, error)
+	Find(ctx context.Context, id string) (esfazz.Aggregate, error)
 }
