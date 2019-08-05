@@ -10,8 +10,11 @@ import (
 	"github.com/payfazz/go-apt/example/esfazz/domain/account/command"
 	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/aggregate"
 	"github.com/payfazz/go-apt/example/esfazz/domain/account/command/data"
+	repocommand "github.com/payfazz/go-apt/example/esfazz/domain/account/command/repository"
 	"github.com/payfazz/go-apt/example/esfazz/domain/account/query"
 	"github.com/payfazz/go-apt/example/esfazz/migration"
+	"github.com/payfazz/go-apt/pkg/esfazz/eventstore/eventmongo"
+	"github.com/payfazz/go-apt/pkg/esfazz/snapstore/snapmongo"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 	"github.com/payfazz/go-apt/pkg/fazzpubsub"
 	"log"
@@ -37,14 +40,14 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	go Query(&wg, rc)
-	go Command(&wg, rc)
+	go queryServer(&wg, rc)
+	go commandServer(&wg, rc)
 
 	wg.Wait()
 }
 
-func Query(wg *sync.WaitGroup, rc *redis.Client) {
-	ctx := BuildContext()
+func queryServer(wg *sync.WaitGroup, rc *redis.Client) {
+	ctx := buildContext()
 	qr := query.NewAccountQuery()
 	pubsub := fazzpubsub.RedisPubSub(rc)
 
@@ -90,10 +93,9 @@ func printState(ctx context.Context, qr query.AccountQuery) {
 	fmt.Print("]\n\n")
 }
 
-func Command(wg *sync.WaitGroup, rc *redis.Client) {
-	ctx := BuildContext()
-	cmd := command.NewAccountCommand()
-
+func commandServer(wg *sync.WaitGroup, rc *redis.Client) {
+	ctx := buildContext()
+	cmd := createCommand()
 	pubsub := fazzpubsub.RedisPubSub(rc)
 
 	// Create account
@@ -156,12 +158,28 @@ func Command(wg *sync.WaitGroup, rc *redis.Client) {
 	wg.Done()
 }
 
+func createCommand() command.AccountCommand {
+	db := GetMongoClient().Database("command")
+
+	eventCollection := db.Collection("events")
+	_ = eventmongo.CreateAggregateUniqueIndex(eventCollection)
+	snapCollection := db.Collection("snapshots")
+	_ = snapmongo.CreateIdUniqueIndex(snapCollection)
+
+	eventStore := eventmongo.EventStore(eventCollection)
+	snapStore := snapmongo.SnapshotStore(snapCollection)
+
+	repo := repocommand.NewAccountEventRepository(eventStore, snapStore)
+
+	return command.NewAccountCommand(repo)
+}
+
 func sendUpdate(ctx context.Context, pubsub fazzpubsub.PubSub, account *aggregate.Account) {
 	accountJson, _ := json.Marshal(account)
 	_ = pubsub.Publish(ctx, "account.update", accountJson)
 }
 
-func BuildContext() context.Context {
+func buildContext() context.Context {
 	queryDb := fazzdb.QueryDb(config.GetDB(),
 		fazzdb.Config{
 			Limit:           20,

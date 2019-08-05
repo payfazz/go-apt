@@ -141,8 +141,8 @@ func (a *accountCommand) Delete(ctx context.Context, accountId string) (*aggrega
 }
 
 // NewAccountCommand create new account command service
-func NewAccountCommand() AccountCommand {
+func NewAccountCommand(eventRepository repository.AccountEventRepository) AccountCommand {
 	return &accountCommand{
-		repository: repository.NewAccountEventRepository(),
+		repository: eventRepository,
 	}
 }
