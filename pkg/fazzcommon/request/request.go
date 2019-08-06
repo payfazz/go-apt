@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -12,6 +13,16 @@ import (
 func ParseJson(r *http.Request, i interface{}) error {
 	defer r.Body.Close()
 	return json.NewDecoder(r.Body).Decode(i)
+}
+
+// ParseJsonWithRaw is a function to decode json into assigned variable i and return all payload as string
+func ParseJsonWithRaw(r *http.Request, i interface{}) (string, error) {
+	return parseJsonWithRaw(r, i)
+}
+
+// ParseRaw is a function to decode json into string
+func ParseRaw(r *http.Request) (string, error) {
+	return parseJsonWithRaw(r, nil)
 }
 
 // ParseQueryParam is a function to parse url query and validate required
@@ -41,4 +52,23 @@ func ParseQueryParam(r *http.Request, param map[string]string) (map[string]strin
 func QueryParamToJson(r *http.Request) string {
 	result, _ := json.Marshal(r.URL.Query())
 	return string(result)
+}
+
+func parseJsonWithRaw(r *http.Request, i interface{}) (string, error) {
+	defer r.Body.Close()
+	b, err := ioutil.ReadAll(r.Body)
+	if nil != err {
+		return "", err
+	}
+
+	if nil == i {
+		return string(b), err
+	}
+
+	err = json.Unmarshal(b, i)
+	if nil != err {
+		return "", err
+	}
+
+	return string(b), nil
 }
