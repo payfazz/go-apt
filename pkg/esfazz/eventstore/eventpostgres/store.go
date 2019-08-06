@@ -49,6 +49,7 @@ func (p *postgresEventStore) FindNotApplied(ctx context.Context, agg esfazz.Aggr
 
 	queryRes, err := query.Use(EventLogModel(p.tableName)).
 		WhereMany(conditions...).
+		OrderBy("aggregate_version", fazzdb.DIR_ASC).
 		AllCtx(ctx)
 	if err != nil {
 		return nil, err

@@ -8,6 +8,7 @@ import (
 	"github.com/payfazz/go-apt/pkg/esfazz/eventstore"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"sync"
 )
 
@@ -44,10 +45,12 @@ func (m *mongoEventStore) Save(ctx context.Context, event *esfazz.Event) error {
 // FindNotApplied return function not applied to the aggregate
 func (m *mongoEventStore) FindNotApplied(ctx context.Context, agg esfazz.Aggregate) ([]*esfazz.Event, error) {
 	var results []*esfazz.Event
-	cur, err := m.collection.Find(ctx, bson.D{
+	filter := bson.D{
 		{"aggregate.id", agg.GetId()},
 		{"aggregate.version", bson.D{{"$gte", agg.GetVersion()}}},
-	})
+	}
+	opt := options.Find().SetSort(bson.D{{"aggregate.version", 1}})
+	cur, err := m.collection.Find(ctx, filter, opt)
 
 	if err != nil {
 		return nil, err
