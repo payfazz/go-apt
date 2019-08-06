@@ -12,7 +12,6 @@ import (
 
 func TestMongoEventStore_Save(t *testing.T) {
 	ctx, collection := prepareContextAndCollection()
-
 	store := EventStore(collection)
 
 	err := store.Save(ctx, &esfazz.Event{
@@ -31,55 +30,60 @@ func TestMongoEventStore_Save(t *testing.T) {
 
 func TestMongoEventStore_FindNotApplied(t *testing.T) {
 	ctx, collection := prepareContextAndCollection()
-
 	store := EventStore(collection)
-	err := store.Save(ctx, &esfazz.Event{
-		Type: "test.event",
-		Aggregate: &esfazz.BaseAggregate{
-			Id:      "01234567-89ab-cdef-0123-456789abcdef",
-			Version: 0,
+
+	events := []*esfazz.Event{
+		{
+			Type: "test.event",
+			Aggregate: &esfazz.BaseAggregate{
+				Id:      "01234567-89ab-cdef-0123-456789abcdef",
+				Version: 0,
+			},
+			Data: []byte("{\"test\": \"234\"}"),
 		},
-		Data: []byte("{\"test\": \"234\"}"),
-	})
-	if err != nil {
-		t.Errorf("error saving data: %s", err)
+		{
+			Type: "test.event",
+			Aggregate: &esfazz.BaseAggregate{
+				Id:      "01234567-89ab-cdef-0123-456789abcdef",
+				Version: 1,
+			},
+			Data: []byte("{\"test\": \"345\"}"),
+		},
+		{
+			Type: "test.event",
+			Aggregate: &esfazz.BaseAggregate{
+				Id:      "01234567-89ab-cdef-0123-456789abcdef",
+				Version: 2,
+			},
+			Data: []byte("{\"test\": \"456\"}"),
+		},
 	}
 
-	err = store.Save(ctx, &esfazz.Event{
-		Type: "test.event",
-		Aggregate: &esfazz.BaseAggregate{
-			Id:      "01234567-89ab-cdef-0123-456789abcdef",
-			Version: 1,
-		},
-		Data: []byte("{\"test\": \"345\"}"),
-	})
-	if err != nil {
-		t.Errorf("error saving data: %s", err)
+	for _, ev := range events {
+		err := store.Save(ctx, ev)
+		if err != nil {
+			t.Errorf("error saving data: %s", err)
+		}
 	}
 
-	err = store.Save(ctx, &esfazz.Event{
-		Type: "test.event",
-		Aggregate: &esfazz.BaseAggregate{
-			Id:      "01234567-89ab-cdef-0123-456789abcdef",
-			Version: 2,
-		},
-		Data: []byte("{\"test\": \"456\"}"),
-	})
-	if err != nil {
-		t.Errorf("error saving data: %s", err)
-	}
-
-	evs, err := store.FindNotApplied(ctx,
+	evResults, err := store.FindNotApplied(ctx,
 		&esfazz.BaseAggregate{
 			Id:      "01234567-89ab-cdef-0123-456789abcdef",
 			Version: 0,
 		},
 	)
+
 	if err != nil {
 		t.Errorf("error saving data: %s", err)
 	}
-	if len(evs) != 3 {
-		t.Errorf("existing data not list not on the same length, expected: 3, result: %d", len(evs))
+	if len(evResults) != 3 {
+		t.Errorf("data in list not on the same length as existing data, expected: 3, result: %d", len(evResults))
+	}
+
+	for idx := range events {
+		if events[idx].Aggregate.GetVersion() != evResults[idx].Aggregate.GetVersion() {
+			t.Errorf("event in index %d is not in expected order", idx)
+		}
 	}
 }
 
