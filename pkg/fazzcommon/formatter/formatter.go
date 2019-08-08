@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	uuid "github.com/gofrs/uuid"
@@ -152,6 +153,11 @@ func ConvertMapToString(value map[string]string) string {
 func ToStringPtr(param interface{}) *string {
 	result := fmt.Sprint(param)
 	return &result
+}
+
+// ToTimePtr used to return time pointer from param
+func ToTimePtr(param time.Time) *time.Time {
+	return &param
 }
 
 // ToFloat32Ptr used to return float32 pointer from param
