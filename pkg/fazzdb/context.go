@@ -40,3 +40,19 @@ func GetQueryContext(ctx context.Context) (*Query, error) {
 	}
 	return query.(*Query), nil
 }
+
+// GetTransactionOrQueryContext is a function to get transaction or db query object from context.
+// Must be used after NewTransactionContext or NewQueryContext
+func GetTransactionOrQueryContext(ctx context.Context) (*Query, error) {
+	q, _ := GetTransactionContext(ctx)
+	if q != nil {
+		return q, nil
+	}
+
+	qb, _ := GetQueryContext(ctx)
+	if qb != nil {
+		return qb, nil
+	}
+
+	return nil, errors.New("no db or transaction query instance found in context, must call NewQueryContext or NewTransactionContext before calling")
+}
