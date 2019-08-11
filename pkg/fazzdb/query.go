@@ -727,7 +727,7 @@ func (q *Query) Count() (*float64, error) {
 
 // CountCtx is a function that will return count of a column using Context
 func (q *Query) CountCtx(ctx context.Context) (*float64, error) {
-	return q.aggregate(ctx, AG_COUNT, "*", NO_TRASH)
+	return q.aggregate(ctx, AG_COUNT, "1", NO_TRASH)
 }
 
 // CountWithTrash is a function that will return count of a column with soft deleted row
@@ -737,7 +737,7 @@ func (q *Query) CountWithTrash() (*float64, error) {
 
 // CountWithTrashCtx is a function that will return count of a column with soft deleted row using Context
 func (q *Query) CountWithTrashCtx(ctx context.Context) (*float64, error) {
-	return q.aggregate(ctx, AG_COUNT, "*", WITH_TRASH)
+	return q.aggregate(ctx, AG_COUNT, "1", WITH_TRASH)
 }
 
 // Use is a function that will set Model instance that will be used for query
