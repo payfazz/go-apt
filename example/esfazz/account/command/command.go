@@ -4,17 +4,17 @@ import (
 	"context"
 	"errors"
 	"github.com/gofrs/uuid"
-	"github.com/payfazz/go-apt/example/esfazz/account/command/event"
+	"github.com/payfazz/go-apt/example/esfazz/account/model"
 	"github.com/payfazz/go-apt/pkg/esfazz/esrepo"
 )
 
 // AccountCommand is an interface for account command
 type AccountCommand interface {
-	Create(ctx context.Context, payload CreatePayload) (*event.Account, error)
-	ChangeName(ctx context.Context, payload ChangeNamePayload) (*event.Account, error)
-	Deposit(ctx context.Context, payload DepositPayload) (*event.Account, error)
-	Withdraw(ctx context.Context, payload WithdrawPayload) (*event.Account, error)
-	Delete(ctx context.Context, accountId string) (*event.Account, error)
+	Create(ctx context.Context, payload CreatePayload) (*string, error)
+	ChangeName(ctx context.Context, payload ChangeNamePayload) error
+	Deposit(ctx context.Context, payload DepositPayload) error
+	Withdraw(ctx context.Context, payload WithdrawPayload) error
+	Delete(ctx context.Context, accountId string) error
 }
 
 type accountCommand struct {
@@ -22,127 +22,92 @@ type accountCommand struct {
 }
 
 // Create is command to create account
-func (a *accountCommand) Create(ctx context.Context, payload CreatePayload) (*event.Account, error) {
+func (a *accountCommand) Create(ctx context.Context, payload CreatePayload) (*string, error) {
 	uuidV4, _ := uuid.NewV4()
+	id := uuidV4.String()
+	account := model.NewAccount(id).(*model.Account)
 
-	ev := event.AccountCreated(uuidV4.String(), payload.Name, payload.Balance)
-	err := a.repository.Save(ctx, ev)
+	event := account.Created(payload.Name, payload.Balance)
+	err := a.repository.Save(ctx, event)
 	if err != nil {
 		return nil, err
 	}
 
-	agg, err := a.repository.Find(ctx, ev.Aggregate.GetId())
-	account := agg.(*event.Account)
-	return account, nil
+	return &id, nil
 }
 
 // ChangeName is command to change account name
-func (a *accountCommand) ChangeName(ctx context.Context, payload ChangeNamePayload) (*event.Account, error) {
+func (a *accountCommand) ChangeName(ctx context.Context, payload ChangeNamePayload) error {
 	agg, err := a.repository.Find(ctx, payload.AccountId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	account := agg.(*event.Account)
-	if account == nil || account.DeletedAt != nil {
-		return nil, errors.New("account not found or deleted")
+	account := agg.(*model.Account)
+	if account == nil || account.DeletedTime != nil {
+		return errors.New("account not found or deleted")
 	}
 
-	ev := event.AccountNameChanged(account, payload.Name)
-	err = a.repository.Save(ctx, ev)
-	if err != nil {
-		return nil, err
-	}
-
-	agg, err = a.repository.Find(ctx, ev.Aggregate.GetId())
-	if err != nil {
-		return nil, err
-	}
-	account = agg.(*event.Account)
-	return account, nil
+	event := account.NameChanged(payload.Name)
+	err = a.repository.Save(ctx, event)
+	return err
 }
 
 // Deposit is command to create account deposit
-func (a *accountCommand) Deposit(ctx context.Context, payload DepositPayload) (*event.Account, error) {
+func (a *accountCommand) Deposit(ctx context.Context, payload DepositPayload) error {
 	agg, err := a.repository.Find(ctx, payload.AccountId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	account := agg.(*event.Account)
-	if account == nil || account.DeletedAt != nil {
-		return nil, errors.New("account not found or deleted")
+	account := agg.(*model.Account)
+	if account == nil || account.DeletedTime != nil {
+		return errors.New("account not found or deleted")
 	}
 
-	ev := event.AccountDeposited(account, payload.Amount)
-	err = a.repository.Save(ctx, ev)
-	if err != nil {
-		return nil, err
-	}
-
-	agg, err = a.repository.Find(ctx, ev.Aggregate.GetId())
-	if err != nil {
-		return nil, err
-	}
-	account = agg.(*event.Account)
-	return account, nil
+	event := account.Deposited(payload.Amount)
+	err = a.repository.Save(ctx, event)
+	return err
 }
 
 // Withdraw is command to create account withdraw
-func (a *accountCommand) Withdraw(ctx context.Context, payload WithdrawPayload) (*event.Account, error) {
+func (a *accountCommand) Withdraw(ctx context.Context, payload WithdrawPayload) error {
 	agg, err := a.repository.Find(ctx, payload.AccountId)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	account := agg.(*event.Account)
-	if account == nil || account.DeletedAt != nil {
-		return nil, errors.New("account not found or deleted")
+	account := agg.(*model.Account)
+	if account == nil || account.DeletedTime != nil {
+		return errors.New("account not found or deleted")
 	}
 	if account.Balance < payload.Amount {
-		return nil, errors.New("account balance is smaller than withdraw amount")
+		return errors.New("account balance is smaller than withdraw amount")
 	}
 
-	ev := event.AccountWithdrawn(account, payload.Amount)
-	err = a.repository.Save(ctx, ev)
-	if err != nil {
-		return nil, err
-	}
+	event := account.Withdrawn(payload.Amount)
+	err = a.repository.Save(ctx, event)
+	return err
 
-	agg, err = a.repository.Find(ctx, ev.Aggregate.GetId())
-	if err != nil {
-		return nil, err
-	}
-	account = agg.(*event.Account)
-	return account, nil
 }
 
 // Delete is command to delete account
-func (a *accountCommand) Delete(ctx context.Context, accountId string) (*event.Account, error) {
+func (a *accountCommand) Delete(ctx context.Context, accountId string) error {
 	agg, err := a.repository.Find(ctx, accountId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	account := agg.(*event.Account)
-	if account == nil || account.DeletedAt != nil {
-		return nil, errors.New("account not found")
+	account := agg.(*model.Account)
+	if account == nil || account.DeletedTime != nil {
+		return errors.New("account not found")
 	}
 	if account.Balance != 0 {
-		return nil, errors.New("account balance must be zero before deleted")
+		return errors.New("account balance must be zero before deleted")
 	}
 
-	ev := event.AccountDeleted(account)
+	ev := account.Deleted()
 	err = a.repository.Save(ctx, ev)
-	if err != nil {
-		return nil, err
-	}
-
-	agg, err = a.repository.Find(ctx, ev.Aggregate.GetId())
-	if err != nil {
-		return nil, err
-	}
-	account = agg.(*event.Account)
-	return account, nil
+	return err
 }
 
 // NewAccountCommand create new account command service

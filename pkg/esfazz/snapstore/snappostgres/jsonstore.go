@@ -8,13 +8,13 @@ import (
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
-type postgresSnapshotStore struct {
+type jsonSnapshotStore struct {
 	tableName string
 	model     *AggregateRow
 }
 
 // Save is a function to save aggregate to database
-func (s *postgresSnapshotStore) Save(ctx context.Context, id string, data json.RawMessage) error {
+func (s *jsonSnapshotStore) Save(ctx context.Context, id string, data json.RawMessage) error {
 	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return err
@@ -42,7 +42,7 @@ func (s *postgresSnapshotStore) Save(ctx context.Context, id string, data json.R
 }
 
 // Find find aggregate in database based on id
-func (s *postgresSnapshotStore) Find(ctx context.Context, id string) (json.RawMessage, error) {
+func (s *jsonSnapshotStore) Find(ctx context.Context, id string) (json.RawMessage, error) {
 	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return nil, err
@@ -64,9 +64,9 @@ func (s *postgresSnapshotStore) Find(ctx context.Context, id string) (json.RawMe
 	return json.RawMessage(results[0].Data), nil
 }
 
-// SnapshotStore is a constructor for PostgreSQL based snapshot store
-func SnapshotStore(tableName string) snapstore.SnapshotStore {
-	return &postgresSnapshotStore{
+// JSONSnapshotStore is a constructor for PostgreSQL JSON based snapshot store
+func JSONSnapshotStore(tableName string) snapstore.SnapshotStore {
+	return &jsonSnapshotStore{
 		tableName: tableName,
 		model:     AggregateRowModel(tableName),
 	}

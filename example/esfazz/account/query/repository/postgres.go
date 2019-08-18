@@ -2,30 +2,30 @@ package repository
 
 import (
 	"context"
-	"github.com/payfazz/go-apt/example/esfazz/account/query/model"
-	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
+	"github.com/payfazz/go-apt/example/esfazz/account/model"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
+// AccountRepository is repository interface for account
 type AccountRepository interface {
 	All(ctx context.Context) ([]*model.Account, error)
 	Find(ctx context.Context, id string) (*model.Account, error)
-	Create(ctx context.Context, todo *model.Account) (*string, error)
-	Update(ctx context.Context, todo *model.Account) error
-	Delete(ctx context.Context, todo *model.Account) error
 }
 
 type accountRepository struct {
 	account *model.Account
 }
 
+// All return all account
 func (a *accountRepository) All(ctx context.Context) ([]*model.Account, error) {
 	q, err := fazzdb.GetQueryContext(ctx)
 	if nil != err {
 		return nil, err
 	}
 
-	rows, err := q.Use(a.account).AllCtx(ctx)
+	rows, err := q.Use(a.account).
+		WhereNil("deleted_time").
+		AllCtx(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -35,6 +35,7 @@ func (a *accountRepository) All(ctx context.Context) ([]*model.Account, error) {
 	return results, nil
 }
 
+// Find return account by id
 func (a *accountRepository) Find(ctx context.Context, id string) (*model.Account, error) {
 	q, err := fazzdb.GetQueryContext(ctx)
 	if nil != err {
@@ -43,6 +44,7 @@ func (a *accountRepository) Find(ctx context.Context, id string) (*model.Account
 
 	rows, err := q.Use(a.account).
 		Where("id", id).
+		WhereNil("deleted_time").
 		WithLimit(1).
 		AllCtx(ctx)
 
@@ -58,44 +60,7 @@ func (a *accountRepository) Find(ctx context.Context, id string) (*model.Account
 	return results[0], nil
 }
 
-func (a *accountRepository) Create(ctx context.Context, account *model.Account) (*string, error) {
-	q, err := fazzdb.GetQueryContext(ctx)
-	if nil != err {
-		return nil, err
-	}
-
-	result, err := q.Use(account).InsertCtx(ctx, false)
-
-	if nil != err {
-		return nil, err
-	}
-
-	id := formatter.SliceUint8ToString(result.([]uint8))
-	return &id, nil
-}
-
-func (a *accountRepository) Update(ctx context.Context, account *model.Account) error {
-	q, err := fazzdb.GetQueryContext(ctx)
-	if err != nil {
-		return err
-	}
-
-	_, err = q.Use(account).UpdateCtx(ctx)
-
-	return err
-}
-
-func (a *accountRepository) Delete(ctx context.Context, account *model.Account) error {
-	q, err := fazzdb.GetQueryContext(ctx)
-	if nil != err {
-		return err
-	}
-
-	_, err = q.Use(account).DeleteCtx(ctx)
-
-	return err
-}
-
+// NewAccountRepository is constructor for AccountRepository
 func NewAccountRepository() AccountRepository {
 	return &accountRepository{account: model.AccountModel()}
 }

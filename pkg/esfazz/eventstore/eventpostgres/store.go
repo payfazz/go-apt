@@ -3,7 +3,6 @@ package eventpostgres
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"github.com/payfazz/go-apt/pkg/esfazz"
 	"github.com/payfazz/go-apt/pkg/esfazz/eventstore"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
@@ -14,28 +13,38 @@ type postgresEventStore struct {
 }
 
 // Save is function to save event to database
-func (p *postgresEventStore) Save(ctx context.Context, event *esfazz.EventPayload) error {
-	if event.Aggregate.GetId() == "" {
-		return errors.New("aggregate id for event must not be empty")
-	}
+func (p *postgresEventStore) Save(ctx context.Context, events ...*esfazz.EventPayload) ([]*esfazz.Event, error) {
 	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	dataRaw, err := json.Marshal(event.Data)
+	models := make([]*eventLog, len(events))
+	for i, ev := range events {
+		dataRaw, err := json.Marshal(ev.Data)
+		if err != nil {
+			return nil, err
+		}
+
+		el := EventLogModel(p.tableName)
+		el.EventType = ev.Type
+		el.AggregateId = ev.Aggregate.GetId()
+		el.AggregateVersion = ev.Aggregate.GetVersion()
+		el.Data = dataRaw
+
+		models[i] = el
+	}
+	_, err = query.Use(EventLogModel(p.tableName)).BulkInsertCtx(ctx, models)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	el := EventLogModel(p.tableName)
-	el.EventType = event.Type
-	el.AggregateId = event.Aggregate.GetId()
-	el.AggregateVersion = event.Aggregate.GetVersion()
-	el.Data = dataRaw
+	results := make([]*esfazz.Event, len(models))
+	for i, ev := range models {
+		results[i] = ev.ToEvent()
+	}
 
-	_, err = query.Use(el).InsertCtx(ctx, false)
-	return err
+	return results, nil
 }
 
 // FindNotApplied return function not applied to the aggregate
@@ -60,15 +69,8 @@ func (p *postgresEventStore) FindNotApplied(ctx context.Context, agg esfazz.Aggr
 
 	logs := queryRes.([]*eventLog)
 	results := make([]*esfazz.Event, len(logs))
-	for i, v := range logs {
-		results[i] = &esfazz.Event{
-			Type: v.EventType,
-			Aggregate: &esfazz.BaseAggregate{
-				Id:      v.AggregateId,
-				Version: v.AggregateVersion,
-			},
-			Data: json.RawMessage(v.Data),
-		}
+	for i, ev := range logs {
+		results[i] = ev.ToEvent()
 	}
 
 	return results, nil

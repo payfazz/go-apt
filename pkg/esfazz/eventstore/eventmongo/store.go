@@ -3,7 +3,6 @@ package eventmongo
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"github.com/payfazz/go-apt/pkg/esfazz"
 	"github.com/payfazz/go-apt/pkg/esfazz/eventstore"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,33 +17,43 @@ type mongoEventStore struct {
 }
 
 // Save is function to save event to collection
-func (m *mongoEventStore) Save(ctx context.Context, event *esfazz.EventPayload) error {
-	if event.Aggregate.GetId() == "" {
-		return errors.New("aggregate id for event must not be empty")
-	}
+func (m *mongoEventStore) Save(ctx context.Context, events ...*esfazz.EventPayload) ([]*esfazz.Event, error) {
+	els := make([]interface{}, len(events))
+	results := make([]*esfazz.Event, len(events))
+	for i, event := range events {
 
-	jsonRaw, err := json.Marshal(event.Data)
-	if err != nil {
-		return err
-	}
+		jsonRaw, err := json.Marshal(event.Data)
+		if err != nil {
+			return nil, err
+		}
 
-	data := make(map[string]interface{})
-	err = json.Unmarshal(jsonRaw, &data)
-	if err != nil {
-		return err
-	}
-
-	el := eventLog{
-		Type: event.Type,
-		Aggregate: esfazz.BaseAggregate{
+		data := make(map[string]interface{})
+		err = json.Unmarshal(jsonRaw, &data)
+		if err != nil {
+			return nil, err
+		}
+		agg := esfazz.BaseAggregate{
 			Id:      event.Aggregate.GetId(),
 			Version: event.Aggregate.GetVersion(),
-		},
-		Data: data,
+		}
+
+		els[i] = eventLog{
+			Type:      event.Type,
+			Aggregate: agg,
+			Data:      data,
+		}
+		results[i] = &esfazz.Event{
+			Type:      event.Type,
+			Aggregate: &agg,
+			Data:      jsonRaw,
+		}
 	}
 
-	_, err = m.collection.InsertOne(ctx, el)
-	return err
+	_, err := m.collection.InsertMany(ctx, els)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
 }
 
 // FindNotApplied return function not applied to the aggregate
