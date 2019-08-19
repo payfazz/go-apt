@@ -13,12 +13,10 @@ type Account struct {
 // Apply function implement Aggregate inteface
 func (a *Account) Apply(evs ...*esfazz.Event) error {
   for _, ev := range evs {
-    a.Version = a.Version + 1
-    
     // apply base on event type
     switch ev.Type {
-    
     case "account.created":
+      a.Version = a.Version + 1
       var data *AccountCreatedData
       // .... unmarshal data from ev.Data
       a.Id = ev.Aggregate.GetId()
@@ -26,6 +24,7 @@ func (a *Account) Apply(evs ...*esfazz.Event) error {
       a.Balance = data.Balance
       
     case "account.withdrawn":
+      a.Version = a.Version + 1
       var data *AccountWithdrawnData
       // .... unmarshal data from ev.Data
       a.Balance -= data.Amount
@@ -56,11 +55,14 @@ snapCollection := db.Collection("snapshots")
 snapmongo.CreateIdUniqueIndex(snapCollection)
 
 // create repository
-repoConfig := (&esrepo.RepositoryConfig{}).
+eventStore := eventmongo.EventStore(eventCollection)
+snapStore := snapMongo.SnapshotStore(snapCollection)
+repoConfig := esrepo.Config{}.
   SetAggregateFactory(NewAccount).
-  SetMongoEventStore(eventCollection).
-  SetMongoSnapshotStore(snapCollection)
-accountRepo := esrepo.NewRepository(repoConfig)
+  SetEventStore(eventStore).
+  SetSnapshotStore(snapshotStore).
+  AddEventListener(esrepo.SnapshotSaver(snapshotStore, NewAccount))
+accountRepo := esrepo.Build(repoConfig)
 ```
 - PostgreSQL
 ```go
@@ -74,11 +76,14 @@ migrationVersion := fazzdb.MigrationVersion{
 // .... run migration to database
 
 // create repository
-repoConfig := (&esrepo.RepositoryConfig{}).
+eventStore := eventpostgres.EventStore("events")
+snapStore := snappostgres.JSONSnapshotStore("snapshots")
+repoConfig := esrepo.Config{}.
   SetAggregateFactory(NewAccount).
-  SetPostgresEventStore("events").
-  SetPostgresSnapshotStore("snapshots")
-accountRepo := esrepo.NewRepository(repoConfig)
+  SetEventStore(eventStore).
+  SetSnapshotStore(snapStore).
+  AddEventListener(esrepo.SnapshotSaver(snapshotStore, NewAccount))
+accountRepo := esrepo.Build(repoConfig)
 ```
 
 #### Save event
@@ -87,7 +92,7 @@ func CreateAccount(id string, name string, balance int){
   ev := &esfazz.EventPayload{
     Type: "account.created",
     Aggregate: NewAccount(id),
-    Data: AccountCreatedData{
+    Data: map[string]interface{}{
       Name:      name,
       Balance:   balance,
     },

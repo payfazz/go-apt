@@ -1,4 +1,4 @@
-package event
+package model
 
 import "time"
 

@@ -1,7 +1,9 @@
 package eventpostgres
 
 import (
+	"encoding/json"
 	"github.com/jmoiron/sqlx/types"
+	"github.com/payfazz/go-apt/pkg/esfazz"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
 
@@ -11,7 +13,7 @@ type eventLog struct {
 	EventId          int64          `db:"event_id"`
 	EventType        string         `db:"event_type"`
 	AggregateId      string         `db:"aggregate_id"`
-	AggregateVersion int            `db:"aggregate_version"`
+	AggregateVersion int64          `db:"aggregate_version"`
 	Data             types.JSONText `db:"data"`
 }
 
@@ -23,6 +25,18 @@ func (m *eventLog) Get(key string) interface{} {
 // Payload is a function that used to get the payload data
 func (m *eventLog) Payload() map[string]interface{} {
 	return m.MapPayload(m)
+}
+
+// ToEvent return event struct from eventlog
+func (m *eventLog) ToEvent() *esfazz.Event {
+	return &esfazz.Event{
+		Type: m.EventType,
+		Aggregate: &esfazz.BaseAggregate{
+			Id:      m.AggregateId,
+			Version: m.AggregateVersion,
+		},
+		Data: json.RawMessage(m.Data),
+	}
 }
 
 // EventLogModel create

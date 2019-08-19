@@ -7,16 +7,9 @@ import (
 
 // Repository is interface for event repository
 type Repository interface {
-	Save(ctx context.Context, event *esfazz.EventPayload) error
+	Save(ctx context.Context, events ...*esfazz.EventPayload) error
 	Find(ctx context.Context, id string) (esfazz.Aggregate, error)
 }
 
-// NewRepository is constructor for repository
-func NewRepository(config *RepositoryConfig) Repository {
-	return snapshotEventSourceRepository(
-		config.EventStore,
-		config.SnapshotStore,
-		config.AggregateFactory,
-		config.SnapshotEventMax,
-	)
-}
+// EventListener is function that listen to event
+type EventListener func(ctx context.Context, events ...*esfazz.Event) error

@@ -14,7 +14,7 @@ func TestMongoEventStore_Save(t *testing.T) {
 	ctx, collection := prepareContextAndCollection()
 	store := EventStore(collection)
 
-	err := store.Save(ctx, &esfazz.EventPayload{
+	evs, err := store.Save(ctx, &esfazz.EventPayload{
 		Type: "test.event",
 		Aggregate: &esfazz.BaseAggregate{
 			Id:      "01234567-89ab-cdef-0123-456789abcdef",
@@ -25,6 +25,10 @@ func TestMongoEventStore_Save(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("error saving data: %s", err)
+	}
+
+	if len(evs) == 0 {
+		t.Error("save result empty")
 	}
 }
 
@@ -58,11 +62,12 @@ func TestMongoEventStore_FindNotApplied(t *testing.T) {
 		},
 	}
 
-	for _, ev := range events {
-		err := store.Save(ctx, ev)
-		if err != nil {
-			t.Errorf("error saving data: %s", err)
-		}
+	evs, err := store.Save(ctx, events...)
+	if err != nil {
+		t.Errorf("error saving data: %s", err)
+	}
+	if len(evs) != 3 {
+		t.Errorf("saved event list not of same length, expected: 3, result %d", len(evs))
 	}
 
 	evResults, err := store.FindNotApplied(ctx,

@@ -7,7 +7,7 @@ import (
 // Event is struct for event
 type Event struct {
 	Type      string
-	Aggregate Aggregate
+	Aggregate *BaseAggregate
 	Data      json.RawMessage
 }
 
