@@ -17,7 +17,7 @@ type mongoEventStore struct {
 }
 
 // Save is function to save event to collection
-func (m *mongoEventStore) Save(ctx context.Context, events ...*esfazz.EventPayload) ([]*esfazz.Event, error) {
+func (m *mongoEventStore) Save(ctx context.Context, agg esfazz.Aggregate, events ...*esfazz.EventPayload) ([]*esfazz.Event, error) {
 	els := make([]interface{}, len(events))
 	results := make([]*esfazz.Event, len(events))
 	for i, event := range events {
@@ -33,8 +33,8 @@ func (m *mongoEventStore) Save(ctx context.Context, events ...*esfazz.EventPaylo
 			return nil, err
 		}
 		agg := esfazz.BaseAggregate{
-			Id:      event.Aggregate.GetId(),
-			Version: event.Aggregate.GetVersion(),
+			Id:      agg.GetId(),
+			Version: agg.GetVersion() + int64(i),
 		}
 
 		els[i] = eventLog{

@@ -13,7 +13,6 @@ type Event struct {
 
 // EventPayload is payload for creating event
 type EventPayload struct {
-	Type      string
-	Aggregate Aggregate
-	Data      interface{}
+	Type string
+	Data interface{}
 }

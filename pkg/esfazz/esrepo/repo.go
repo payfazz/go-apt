@@ -16,8 +16,8 @@ type eventSourceRepository struct {
 }
 
 // Save save event to event and snapshot store
-func (s *eventSourceRepository) Save(ctx context.Context, events ...*esfazz.EventPayload) error {
-	eventLogs, err := s.eventStore.Save(ctx, events...)
+func (s *eventSourceRepository) Save(ctx context.Context, agg esfazz.Aggregate, events ...*esfazz.EventPayload) error {
+	eventLogs, err := s.eventStore.Save(ctx, agg, events...)
 	if err != nil {
 		return err
 	}

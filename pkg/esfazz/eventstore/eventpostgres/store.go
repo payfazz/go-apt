@@ -13,7 +13,7 @@ type postgresEventStore struct {
 }
 
 // Save is function to save event to database
-func (p *postgresEventStore) Save(ctx context.Context, events ...*esfazz.EventPayload) ([]*esfazz.Event, error) {
+func (p *postgresEventStore) Save(ctx context.Context, agg esfazz.Aggregate, events ...*esfazz.EventPayload) ([]*esfazz.Event, error) {
 	query, err := fazzdb.GetTransactionOrQueryContext(ctx)
 	if err != nil {
 		return nil, err
@@ -28,8 +28,8 @@ func (p *postgresEventStore) Save(ctx context.Context, events ...*esfazz.EventPa
 
 		el := EventLogModel(p.tableName)
 		el.EventType = ev.Type
-		el.AggregateId = ev.Aggregate.GetId()
-		el.AggregateVersion = ev.Aggregate.GetVersion()
+		el.AggregateId = agg.GetId()
+		el.AggregateVersion = agg.GetVersion() + int64(i)
 		el.Data = dataRaw
 
 		models[i] = el
