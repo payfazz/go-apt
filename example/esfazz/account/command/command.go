@@ -27,8 +27,7 @@ func (a *accountCommand) Create(ctx context.Context, payload CreatePayload) (*st
 	id := uuidV4.String()
 	account := model.NewAccount(id).(*model.Account)
 
-	event := account.Created(payload.Name, payload.Balance)
-	err := a.repository.Save(ctx, event)
+	err := a.repository.Save(ctx, account, model.AccountCreated(payload.Name, payload.Balance))
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +47,7 @@ func (a *accountCommand) ChangeName(ctx context.Context, payload ChangeNamePaylo
 		return errors.New("account not found or deleted")
 	}
 
-	event := account.NameChanged(payload.Name)
-	err = a.repository.Save(ctx, event)
+	err = a.repository.Save(ctx, account, model.AccountNameChanged(payload.Name))
 	return err
 }
 
@@ -65,8 +63,7 @@ func (a *accountCommand) Deposit(ctx context.Context, payload DepositPayload) er
 		return errors.New("account not found or deleted")
 	}
 
-	event := account.Deposited(payload.Amount)
-	err = a.repository.Save(ctx, event)
+	err = a.repository.Save(ctx, account, model.AccountDeposited(payload.Amount))
 	return err
 }
 
@@ -84,8 +81,7 @@ func (a *accountCommand) Withdraw(ctx context.Context, payload WithdrawPayload) 
 		return errors.New("account balance is smaller than withdraw amount")
 	}
 
-	event := account.Withdrawn(payload.Amount)
-	err = a.repository.Save(ctx, event)
+	err = a.repository.Save(ctx, account, model.AccountWithdrawn(payload.Amount))
 	return err
 
 }
@@ -105,8 +101,7 @@ func (a *accountCommand) Delete(ctx context.Context, accountId string) error {
 		return errors.New("account balance must be zero before deleted")
 	}
 
-	ev := account.Deleted()
-	err = a.repository.Save(ctx, ev)
+	err = a.repository.Save(ctx, account, model.AccountDeleted())
 	return err
 }
 

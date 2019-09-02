@@ -7,7 +7,7 @@ import (
 
 // Repository is interface for event repository
 type Repository interface {
-	Save(ctx context.Context, events ...*esfazz.EventPayload) error
+	Save(ctx context.Context, agg esfazz.Aggregate, events ...*esfazz.EventPayload) error
 	Find(ctx context.Context, id string) (esfazz.Aggregate, error)
 }
 

@@ -14,12 +14,13 @@ func TestMongoEventStore_Save(t *testing.T) {
 	ctx, collection := prepareContextAndCollection()
 	store := EventStore(collection)
 
-	evs, err := store.Save(ctx, &esfazz.EventPayload{
+	agg := &esfazz.BaseAggregate{
+		Id:      "01234567-89ab-cdef-0123-456789abcdef",
+		Version: 0,
+	}
+
+	evs, err := store.Save(ctx, agg, &esfazz.EventPayload{
 		Type: "test.event",
-		Aggregate: &esfazz.BaseAggregate{
-			Id:      "01234567-89ab-cdef-0123-456789abcdef",
-			Version: 0,
-		},
 		Data: map[string]string{"test": "234"},
 	})
 
@@ -35,34 +36,27 @@ func TestMongoEventStore_Save(t *testing.T) {
 func TestMongoEventStore_FindNotApplied(t *testing.T) {
 	ctx, collection := prepareContextAndCollection()
 	store := EventStore(collection)
+	agg := &esfazz.BaseAggregate{
+		Id:      "01234567-89ab-cdef-0123-456789abcdef",
+		Version: 0,
+	}
+
 	events := []*esfazz.EventPayload{
 		{
 			Type: "test.event",
-			Aggregate: &esfazz.BaseAggregate{
-				Id:      "01234567-89ab-cdef-0123-456789abcdef",
-				Version: 0,
-			},
 			Data: map[string]string{"test": "234"},
 		},
 		{
 			Type: "test.event",
-			Aggregate: &esfazz.BaseAggregate{
-				Id:      "01234567-89ab-cdef-0123-456789abcdef",
-				Version: 1,
-			},
 			Data: map[string]string{"test": "345"},
 		},
 		{
 			Type: "test.event",
-			Aggregate: &esfazz.BaseAggregate{
-				Id:      "01234567-89ab-cdef-0123-456789abcdef",
-				Version: 2,
-			},
 			Data: map[string]string{"test": "456"},
 		},
 	}
 
-	evs, err := store.Save(ctx, events...)
+	evs, err := store.Save(ctx, agg, events...)
 	if err != nil {
 		t.Errorf("error saving data: %s", err)
 	}
@@ -70,12 +64,7 @@ func TestMongoEventStore_FindNotApplied(t *testing.T) {
 		t.Errorf("saved event list not of same length, expected: 3, result %d", len(evs))
 	}
 
-	evResults, err := store.FindNotApplied(ctx,
-		&esfazz.BaseAggregate{
-			Id:      "01234567-89ab-cdef-0123-456789abcdef",
-			Version: 0,
-		},
-	)
+	evResults, err := store.FindNotApplied(ctx, agg)
 
 	if err != nil {
 		t.Errorf("error saving data: %s", err)
@@ -85,7 +74,7 @@ func TestMongoEventStore_FindNotApplied(t *testing.T) {
 	}
 
 	for idx := range events {
-		if events[idx].Aggregate.GetVersion() != evResults[idx].Aggregate.GetVersion() {
+		if evResults[idx].Aggregate.GetVersion() != int64(idx) {
 			t.Errorf("event in index %d is not in expected order", idx)
 		}
 	}

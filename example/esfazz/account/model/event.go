@@ -5,11 +5,10 @@ import (
 	"time"
 )
 
-// Created create account created event
-func (a *Account) Created(name string, balance int64) *esfazz.EventPayload {
+// AccountCreated create account created event
+func AccountCreated(name string, balance int64) *esfazz.EventPayload {
 	return &esfazz.EventPayload{
-		Type:      AccountCreatedType,
-		Aggregate: a,
+		Type: AccountCreatedType,
 		Data: AccountCreatedData{
 			Name:      name,
 			Balance:   balance,
@@ -18,11 +17,10 @@ func (a *Account) Created(name string, balance int64) *esfazz.EventPayload {
 	}
 }
 
-// NameChanged create account name changed event
-func (a *Account) NameChanged(name string) *esfazz.EventPayload {
+// AccountNameChanged create account name changed event
+func AccountNameChanged(name string) *esfazz.EventPayload {
 	return &esfazz.EventPayload{
-		Type:      AccountNameChangedType,
-		Aggregate: a,
+		Type: AccountNameChangedType,
 		Data: AccountNameChangedData{
 			Name:      name,
 			UpdatedAt: time.Now(),
@@ -30,11 +28,10 @@ func (a *Account) NameChanged(name string) *esfazz.EventPayload {
 	}
 }
 
-// Deposited create account deposited event
-func (a *Account) Deposited(amount int64) *esfazz.EventPayload {
+// AccountDeposited create account deposited event
+func AccountDeposited(amount int64) *esfazz.EventPayload {
 	return &esfazz.EventPayload{
-		Type:      AccountDepositedType,
-		Aggregate: a,
+		Type: AccountDepositedType,
 		Data: AccountDepositedData{
 			Amount:    amount,
 			UpdatedAt: time.Now(),
@@ -42,11 +39,10 @@ func (a *Account) Deposited(amount int64) *esfazz.EventPayload {
 	}
 }
 
-// Withdrawn create account deposited event
-func (a *Account) Withdrawn(amount int64) *esfazz.EventPayload {
+// AccountWithdrawn create account deposited event
+func AccountWithdrawn(amount int64) *esfazz.EventPayload {
 	return &esfazz.EventPayload{
-		Type:      AccountWithdrawnType,
-		Aggregate: a,
+		Type: AccountWithdrawnType,
 		Data: AccountWithdrawnData{
 			Amount:    amount,
 			UpdatedAt: time.Now(),
@@ -54,11 +50,10 @@ func (a *Account) Withdrawn(amount int64) *esfazz.EventPayload {
 	}
 }
 
-// Deleted create account deposited event
-func (a *Account) Deleted() *esfazz.EventPayload {
+// AccountDeleted create account deposited event
+func AccountDeleted() *esfazz.EventPayload {
 	return &esfazz.EventPayload{
-		Type:      AccountDeletedType,
-		Aggregate: a,
+		Type: AccountDeletedType,
 		Data: AccountDeletedData{
 			DeletedAt: time.Now(),
 		},
