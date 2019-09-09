@@ -9,6 +9,10 @@ import (
 
 // Run is a function that used to run the service under tx
 func Run(ctx context.Context, db *sqlx.DB, config Config, fn func(ctx context.Context) error) error {
+	if nil == config.Opts {
+		config.Opts = GetTxOptions(nil)
+	}
+
 	tx, err := db.BeginTxx(ctx, config.Opts)
 	if nil != err {
 		return err
