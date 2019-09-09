@@ -118,9 +118,11 @@ const (
 )
 
 var DEFAULT_QUERY_CONFIG = Config{
-	Limit:  0,
-	Offset: 0,
-	Lock:   LO_NONE,
+	Limit:           0,
+	Offset:          0,
+	Lock:            LO_NONE,
+	DevelopmentMode: false,
+	Opts:            GetTxOptions(nil),
 }
 
 const (

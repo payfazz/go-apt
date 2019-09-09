@@ -2,6 +2,7 @@ package fazzdb
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"reflect"
@@ -20,6 +21,7 @@ func QueryDb(db *sqlx.DB, config Config) *Query {
 		Model:      nil,
 		Builder:    NewBuilder(),
 		Db:         db,
+		Opts:       GetTxOptions(config.Opts),
 		AutoCommit: true,
 	}
 }
@@ -33,6 +35,7 @@ func QueryTx(tx *sqlx.Tx, config Config) *Query {
 		Model:      nil,
 		Builder:    NewBuilder(),
 		Tx:         tx,
+		Opts:       GetTxOptions(config.Opts),
 		AutoCommit: false,
 	}
 }
@@ -45,6 +48,7 @@ type Query struct {
 	Builder    *Builder
 	Db         *sqlx.DB
 	Tx         *sqlx.Tx
+	Opts       *sql.TxOptions
 	AutoCommit bool
 }
 
@@ -66,7 +70,7 @@ func (q *Query) RawExec(query string, payload ...interface{}) (bool, error) {
 
 // RawExecCtx is a function that will run exec to a raw query with provided payload using Context
 func (q *Query) RawExecCtx(ctx context.Context, query string, payload ...interface{}) (bool, error) {
-	err := q.autoBegin()
+	err := q.autoBegin(ctx)
 	if nil != err {
 		return false, err
 	}
@@ -99,7 +103,7 @@ func (q *Query) RawFirst(sample interface{}, query string, payload ...interface{
 
 // RawFirst is a function that will run raw query that return only one result with provided payload
 func (q *Query) RawFirstCtx(ctx context.Context, sample interface{}, query string, payload ...interface{}) (interface{}, error) {
-	err := q.autoBegin()
+	err := q.autoBegin(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -152,7 +156,7 @@ func (q *Query) RawAll(sample interface{}, query string, payload ...interface{})
 
 // RawAllCtx is a function that will run raw query that return multiple result with provided payload using Context
 func (q *Query) RawAllCtx(ctx context.Context, sample interface{}, query string, payload ...interface{}) (interface{}, error) {
-	err := q.autoBegin()
+	err := q.autoBegin(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -205,7 +209,7 @@ func (q *Query) RawNamedExec(query string, payload map[string]interface{}) (bool
 
 // RawNamedExecCtx is a function that will run exec to a raw named query with provided payload using Context
 func (q *Query) RawNamedExecCtx(ctx context.Context, query string, payload map[string]interface{}) (bool, error) {
-	err := q.autoBegin()
+	err := q.autoBegin(ctx)
 	if nil != err {
 		return false, err
 	}
@@ -254,7 +258,7 @@ func (q *Query) RawNamedFirstCtx(
 	query string,
 	payload map[string]interface{},
 ) (interface{}, error) {
-	err := q.autoBegin()
+	err := q.autoBegin(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -313,7 +317,7 @@ func (q *Query) RawNamedAllCtx(
 	query string,
 	payload map[string]interface{},
 ) (interface{}, error) {
-	err := q.autoBegin()
+	err := q.autoBegin(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -413,12 +417,17 @@ func (q *Query) InsertOnConflict(doNothing bool) (interface{}, error) {
 func (q *Query) InsertCtx(ctx context.Context, doNothing bool) (interface{}, error) {
 	var id interface{}
 
-	err := q.handleNilModel()
+	err := q.handleReadOnly()
 	if nil != err {
 		return nil, err
 	}
 
-	err = q.autoBegin()
+	err = q.handleNilModel()
+	if nil != err {
+		return nil, err
+	}
+
+	err = q.autoBegin(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -466,12 +475,17 @@ func (q *Query) BulkInsert(data interface{}) (bool, error) {
 
 // BulkInsertCtx is a function that will insert multiple data in one query, receive slice of model using Context
 func (q *Query) BulkInsertCtx(ctx context.Context, data interface{}) (bool, error) {
-	err := q.handleNilModel()
+	err := q.handleReadOnly()
 	if nil != err {
 		return false, err
 	}
 
-	err = q.autoBegin()
+	err = q.handleNilModel()
+	if nil != err {
+		return false, err
+	}
+
+	err = q.autoBegin(ctx)
 	if nil != err {
 		return false, err
 	}
@@ -531,12 +545,17 @@ func (q *Query) Update() (bool, error) {
 func (q *Query) UpdateCtx(ctx context.Context) (bool, error) {
 	defer q.clearParameter()
 
-	err := q.handleNilModel()
+	err := q.handleReadOnly()
 	if nil != err {
 		return false, err
 	}
 
-	err = q.autoBegin()
+	err = q.handleNilModel()
+	if nil != err {
+		return false, err
+	}
+
+	err = q.autoBegin(ctx)
 	if nil != err {
 		return false, err
 	}
@@ -589,12 +608,17 @@ func (q *Query) Delete() (bool, error) {
 func (q *Query) DeleteCtx(ctx context.Context) (bool, error) {
 	defer q.clearParameter()
 
-	err := q.handleNilModel()
+	err := q.handleReadOnly()
 	if nil != err {
 		return false, err
 	}
 
-	err = q.autoBegin()
+	err = q.handleNilModel()
+	if nil != err {
+		return false, err
+	}
+
+	err = q.autoBegin(ctx)
 	if nil != err {
 		return false, err
 	}
@@ -979,7 +1003,7 @@ func (q *Query) first(ctx context.Context, withTrash TrashStatus) (interface{}, 
 		return nil, err
 	}
 
-	err = q.autoBegin()
+	err = q.autoBegin(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -1025,7 +1049,7 @@ func (q *Query) all(ctx context.Context, withTrash TrashStatus) (interface{}, er
 		return nil, err
 	}
 
-	err = q.autoBegin()
+	err = q.autoBegin(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -1072,7 +1096,7 @@ func (q *Query) aggregate(ctx context.Context, aggregate Aggregate, column strin
 		return nil, err
 	}
 
-	err = q.autoBegin()
+	err = q.autoBegin(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -1196,10 +1220,15 @@ func (q *Query) bulkPayload(data []interface{}) map[string]interface{} {
 
 // autoBegin is a function that will automatically begin a transaction for a query if the Query instance
 // is set using sqlx.DB not sqlx.Tx
-func (q *Query) autoBegin() error {
+func (q *Query) autoBegin(ctx context.Context) error {
 	var err error
+
+	if nil == ctx {
+		ctx = context.Background()
+	}
+
 	if q.AutoCommit && nil != q.Db {
-		q.Tx, err = q.Db.Beginx()
+		q.Tx, err = q.Db.BeginTxx(ctx, q.Opts)
 		return err
 	}
 	return nil
@@ -1231,6 +1260,13 @@ func (q *Query) errorWithQuery(prefix string, query string, err error) error {
 func (q *Query) handleNilModel() error {
 	if nil == q.Model {
 		return errors.New("please use a model before doing query")
+	}
+	return nil
+}
+
+func (q *Query) handleReadOnly() error {
+	if q.Opts.ReadOnly {
+		return errors.New("cannot do any insert/update/delete query on readonly transaction")
 	}
 	return nil
 }

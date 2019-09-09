@@ -21,6 +21,7 @@ func initQuery() *Query {
 		Offset:          0,
 		Lock:            LO_NONE,
 		DevelopmentMode: true,
+		Opts:            GetTxOptions(nil),
 	})
 }
 

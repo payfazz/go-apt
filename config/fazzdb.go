@@ -13,6 +13,7 @@ var Parameter = fazzdb.Config{
 	Offset:          0,
 	Lock:            fazzdb.LO_NONE,
 	DevelopmentMode: true,
+	Opts:            fazzdb.GetTxOptions(nil),
 }
 
 var DbConf = map[string]string{
