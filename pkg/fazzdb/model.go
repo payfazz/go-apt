@@ -102,16 +102,16 @@ func newModel(
 // Model is a struct that defines the base requirement for a model that will be made, it includes Timestamps and
 // SoftDelete field that will be available if it's needed and ignored when not needed
 type Model struct {
-	Table         string
-	Columns       []Column
-	PrimaryKey    string
-	Uuid          bool
-	AutoIncrement bool
-	Timestamps    bool
-	SoftDelete    bool
-	CreatedAt     *time.Time `db:"created_at"`
-	UpdatedAt     *time.Time `db:"updated_at"`
-	DeletedAt     *time.Time `db:"deleted_at"`
+	Table         string     `json:"-"`
+	Columns       []Column   `json:"-"`
+	PrimaryKey    string     `json:"-"`
+	Uuid          bool       `json:"-"`
+	AutoIncrement bool       `json:"-"`
+	Timestamps    bool       `json:"-"`
+	SoftDelete    bool       `json:"-"`
+	CreatedAt     *time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt     *time.Time `json:"updatedAt" db:"updated_at"`
+	DeletedAt     *time.Time `json:"deletedAt" db:"deleted_at"`
 }
 
 // GeneratePK is a function that MUST be overridden by UuidModel, if it's not overridden it will panic.
