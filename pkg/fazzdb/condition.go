@@ -27,6 +27,11 @@ func (c *Condition) QueryString(table string) string {
 	if len(c.Conditions) > 0 {
 		var query = fmt.Sprintf("%s (", c.Connector)
 		for _, cond := range c.Conditions {
+			if len(cond.Conditions) > 0 {
+				query = fmt.Sprintf("%s %s", query, cond.QueryString(table))
+				continue
+			}
+
 			query = fmt.Sprintf("%s %s", query, cond.namedString(table))
 		}
 		query = fmt.Sprintf("%s )", query)

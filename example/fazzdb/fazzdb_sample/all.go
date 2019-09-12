@@ -2,6 +2,7 @@ package fazzdb_sample
 
 import (
 	"fmt"
+
 	"github.com/payfazz/go-apt/example/fazzdb/fazzdb_sample/model"
 
 	"github.com/payfazz/go-apt/pkg/fazzdb"
@@ -71,18 +72,19 @@ func AllBooksSliceConditions(query *fazzdb.Query) {
 		{
 			Connector: fazzdb.CO_OR,
 			Conditions: []fazzdb.SliceCondition{
-				{Connector: fazzdb.CO_OR, Field: "year", Operator: fazzdb.OP_EQUALS, Value: 1989},
-				{Connector: fazzdb.CO_OR, Field: "year", Operator: fazzdb.OP_EQUALS, Value: 1990},
-				{Connector: fazzdb.CO_OR, Field: "year", Operator: fazzdb.OP_EQUALS, Value: 1988},
-				{Connector: fazzdb.CO_OR, Field: "year", Operator: fazzdb.OP_EQUALS, Value: 1987},
-				{Connector: fazzdb.CO_OR, Field: "year", Operator: fazzdb.OP_EQUALS, Value: 1986},
 				{Connector: fazzdb.CO_OR, Field: "year", Operator: fazzdb.OP_EQUALS, Value: 1985},
+				{
+					Connector: fazzdb.CO_OR,
+					Conditions: []fazzdb.SliceCondition{
+						{Connector: fazzdb.CO_AND, Field: "year", Operator: fazzdb.OP_MORE_THAN_EQUALS, Value: 1987},
+						{Connector: fazzdb.CO_AND, Field: "year", Operator: fazzdb.OP_LESS_THAN_EQUALS, Value: 1990},
+					},
+				},
 			},
 		},
 		{Connector: fazzdb.CO_OR, Field: "year", Operator: fazzdb.OP_EQUALS, Value: 1993},
 		{Connector: fazzdb.CO_OR, Field: "year", Operator: fazzdb.OP_EQUALS, Value: 1992},
 		{Connector: fazzdb.CO_OR, Field: "year", Operator: fazzdb.OP_EQUALS, Value: 1991},
-		{Connector: fazzdb.CO_OR, Field: "year", Operator: fazzdb.OP_EQUALS, Value: 1990},
 	}
 
 	rows, err := query.Use(model.BookModel()).
