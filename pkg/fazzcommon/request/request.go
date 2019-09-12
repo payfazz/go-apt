@@ -1,6 +1,7 @@
 package request
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -23,6 +24,28 @@ func ParseJsonWithRaw(r *http.Request, i interface{}) (string, error) {
 // ParseRaw is a function to decode json into string
 func ParseRaw(r *http.Request) (string, error) {
 	return parseJsonWithRaw(r, nil)
+}
+
+// ParseMiddlewareJson is a function to decode json inside middleware while still
+// keeping the request body for controller processing
+func ParseMiddlewareJson(r *http.Request, i interface{}) error {
+	b, err := ioutil.ReadAll(r.Body)
+	if nil != err {
+		return err
+	}
+
+	if 0 == len(b) {
+		return nil
+	}
+
+	err = r.Body.Close()
+	if nil != err {
+		return err
+	}
+
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+
+	return json.Unmarshal(b, i)
 }
 
 // ParseQueryParam is a function to parse url query and validate required
@@ -58,6 +81,10 @@ func parseJsonWithRaw(r *http.Request, i interface{}) (string, error) {
 	defer r.Body.Close()
 	b, err := ioutil.ReadAll(r.Body)
 	if nil != err {
+		return "", err
+	}
+
+	if 0 == len(b) {
 		return "", err
 	}
 
