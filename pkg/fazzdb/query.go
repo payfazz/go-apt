@@ -42,7 +42,7 @@ func QueryTx(tx *sqlx.Tx, config Config) *Query {
 
 // Query is a struct that will handle query building and struct mapping to the database
 type Query struct {
-	*Parameter
+	Parameter
 	Config     Config
 	Model      ModelInterface
 	Builder    *Builder
@@ -543,7 +543,7 @@ func (q *Query) Update() (bool, error) {
 
 // UpdateCtx is a function that will update data based on model attribute with primary key attribute using Context
 func (q *Query) UpdateCtx(ctx context.Context) (bool, error) {
-	defer q.clearParameter()
+	defer q.reset()
 
 	err := q.handleReadOnly()
 	if nil != err {
@@ -563,7 +563,7 @@ func (q *Query) UpdateCtx(ctx context.Context) (bool, error) {
 	q.setPKCondition()
 	q.Model.updated()
 
-	query := q.Builder.BuildUpdate(q.Model, q.Parameter)
+	query := q.Builder.BuildUpdate(q.Model, &q.Parameter)
 	query = q.bindIn(query)
 
 	info(query)
@@ -606,7 +606,7 @@ func (q *Query) Delete() (bool, error) {
 // DeleteCtx is a function that will delete data based on model attribute with primary key attribute
 // will automatically soft delete if soft delete attribute is active using Context
 func (q *Query) DeleteCtx(ctx context.Context) (bool, error) {
-	defer q.clearParameter()
+	defer q.reset()
 
 	err := q.handleReadOnly()
 	if nil != err {
@@ -630,7 +630,7 @@ func (q *Query) DeleteCtx(ctx context.Context) (bool, error) {
 		return q.Update()
 	}
 
-	query := q.Builder.BuildDelete(q.Model, q.Parameter)
+	query := q.Builder.BuildDelete(q.Model, &q.Parameter)
 	query = q.bindIn(query)
 
 	info(query)
@@ -792,7 +792,7 @@ func (q *Query) WhereMany(conditions ...SliceCondition) *Query {
 			query := QueryTx(q.Tx, q.Config).
 				Use(q.Model).
 				WhereMany(c.Conditions...)
-			q.appendGroupConditions(query.Parameter, connector)
+			q.appendGroupConditions(&query.Parameter, connector)
 		} else {
 			q.AppendCondition(connector, c.Field, c.Operator, c.Value)
 		}
@@ -865,7 +865,7 @@ func (q *Query) OrWhereNotNil(key string) *Query {
 func (q *Query) GroupWhere(conditionFunc func(query *Query) *Query) *Query {
 	query := QueryTx(q.Tx, q.Config).Use(q.Model)
 	param := conditionFunc(query).Parameter
-	q.appendGroupConditions(param, CO_AND)
+	q.appendGroupConditions(&param, CO_AND)
 	return q
 }
 
@@ -874,7 +874,7 @@ func (q *Query) GroupWhere(conditionFunc func(query *Query) *Query) *Query {
 func (q *Query) OrGroupWhere(conditionFunc func(query *Query) *Query) *Query {
 	query := QueryTx(q.Tx, q.Config).Use(q.Model)
 	param := conditionFunc(query).Parameter
-	q.appendGroupConditions(param, CO_OR)
+	q.appendGroupConditions(&param, CO_OR)
 	return q
 }
 
@@ -907,7 +907,7 @@ func (q *Query) OrHavingOp(key Column, operator Operator, value interface{}) *Qu
 func (q *Query) GroupHaving(conditionFunc func(query *Query) *Query) *Query {
 	query := QueryTx(q.Tx, q.Config).Use(q.Model)
 	param := conditionFunc(query).Parameter
-	q.appendGroupHavings(param, CO_AND)
+	q.appendGroupHavings(&param, CO_AND)
 	return q
 }
 
@@ -916,7 +916,7 @@ func (q *Query) GroupHaving(conditionFunc func(query *Query) *Query) *Query {
 func (q *Query) OrGroupHaving(conditionFunc func(query *Query) *Query) *Query {
 	query := QueryTx(q.Tx, q.Config).Use(q.Model)
 	param := conditionFunc(query).Parameter
-	q.appendGroupHavings(param, CO_OR)
+	q.appendGroupHavings(&param, CO_OR)
 	return q
 }
 
@@ -996,7 +996,7 @@ func (q *Query) AppendHaving(connector Connector, key Column, operator Operator,
 
 // first is a function that will get the one result from a query
 func (q *Query) first(ctx context.Context, withTrash TrashStatus) (interface{}, error) {
-	defer q.clearParameter()
+	defer q.reset()
 
 	err := q.handleNilModel()
 	if nil != err {
@@ -1042,7 +1042,7 @@ func (q *Query) first(ctx context.Context, withTrash TrashStatus) (interface{}, 
 
 // all is a function that will get multiple result from a query
 func (q *Query) all(ctx context.Context, withTrash TrashStatus) (interface{}, error) {
-	defer q.clearParameter()
+	defer q.reset()
 
 	err := q.handleNilModel()
 	if nil != err {
@@ -1087,7 +1087,7 @@ func (q *Query) all(ctx context.Context, withTrash TrashStatus) (interface{}, er
 
 // aggregate is a function that will return aggregate value of a column
 func (q *Query) aggregate(ctx context.Context, aggregate Aggregate, column string, withTrash TrashStatus) (*float64, error) {
-	defer q.clearParameter()
+	defer q.reset()
 
 	var result float64
 
@@ -1140,7 +1140,7 @@ func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withT
 		}
 	}
 
-	query := q.Builder.BuildSelect(q.Model, q.Parameter, aggregate, aggregateColumn)
+	query := q.Builder.BuildSelect(q.Model, &q.Parameter, aggregate, aggregateColumn)
 	query = q.bindIn(query)
 
 	info(query)
@@ -1271,9 +1271,10 @@ func (q *Query) handleReadOnly() error {
 	return nil
 }
 
-// clearParameter is a function that will clear all condition to prepare query for the next use
-func (q *Query) clearParameter() {
+// reset is a function that will reset query into empty state
+func (q *Query) reset() {
 	q.Parameter = NewParameter(q.Config)
+	q.Model = nil
 }
 
 // assignModelSlices is a function that will assign Model attribute based on current model used
