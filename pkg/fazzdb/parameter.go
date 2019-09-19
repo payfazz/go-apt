@@ -6,8 +6,8 @@ import (
 )
 
 // NewParameter is a constructor that will return Parameter instance
-func NewParameter(config Config) *Parameter {
-	return &Parameter{
+func NewParameter(config Config) Parameter {
+	return Parameter{
 		Values:          make(map[string]interface{}, 0),
 		Offset:          config.Offset,
 		Limit:           config.Limit,

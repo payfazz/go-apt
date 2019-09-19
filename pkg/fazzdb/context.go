@@ -46,13 +46,19 @@ func GetQueryContext(ctx context.Context) (*Query, error) {
 func GetTransactionOrQueryContext(ctx context.Context) (*Query, error) {
 	q, _ := GetTransactionContext(ctx)
 	if q != nil {
-		return q, nil
+		return copyQuery(q), nil
 	}
 
 	qb, _ := GetQueryContext(ctx)
 	if qb != nil {
-		return qb, nil
+		return copyQuery(qb), nil
 	}
 
 	return nil, errors.New("no db or transaction query instance found in context, must call NewQueryContext or NewTransactionContext before calling")
+}
+
+func copyQuery(q *Query) *Query {
+	newQuery := *q
+	newQuery.reset()
+	return &newQuery
 }
