@@ -256,7 +256,7 @@ func (m *Model) MapPayload(v ModelInterface) map[string]interface{} {
 
 // created is a function that will set created_at field with current time, used when inserting model with timestamp
 func (m *Model) created() {
-	if m.IsTimestamps() {
+	if m.IsTimestamps() && nil == m.CreatedAt {
 		now := time.Now()
 		m.CreatedAt = &now
 	}
