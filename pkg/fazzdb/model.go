@@ -44,7 +44,7 @@ type ModelInterface interface {
 	// Payload is a function that MUST be overridden by all model, if it's not overridden it will panic.
 	Payload() map[string]interface{}
 	// MapPayload is a function that will map all column value as a map[string]interface{} with lowered first character as key
-	MapPayload(v ModelInterface) map[string]interface{}
+	MapPayload(v interface{}) map[string]interface{}
 
 	// created is a function that will set created_at field with current time, used when inserting model with timestamp
 	created()
@@ -225,21 +225,33 @@ func (m *Model) IsAutoIncrement() bool {
 }
 
 // MapPayload is a function that will map all column value as a map[string]interface{} with lowered first character as key
-func (m *Model) MapPayload(v ModelInterface) map[string]interface{} {
+func (m *Model) MapPayload(v interface{}) map[string]interface{} {
 	var results = make(map[string]interface{})
-	classType := reflect.TypeOf(v)
 	classValue := reflect.ValueOf(v)
+	classType := reflect.TypeOf(v)
 
-	if classType.Kind() == reflect.Ptr {
+	if reflect.Ptr == classValue.Kind() {
+		classValue = classValue.Elem()
 		classType = classType.Elem()
 	}
-	if classValue.Kind() == reflect.Ptr {
-		classValue = classValue.Elem()
-	}
 
-	for i := 0; i < classType.NumField(); i++ {
-		if classType.Field(i).Name == "Model" {
-			model := classValue.Field(i).Interface().(Model)
+	for i := 0; i < classValue.Type().NumField(); i++ {
+		cValue := classValue.Field(i)
+		cType := classType.Field(i)
+		tag := formatter.ToLowerFirst(cType.Tag.Get("db"))
+
+		if reflect.Ptr == cValue.Kind() {
+			cValue = cValue.Elem()
+		}
+
+		if reflect.Invalid == cValue.Kind() && "" == tag {
+			continue
+		}
+
+		if reflect.Invalid == cValue.Kind() {
+			results[tag] = nil
+		} else if "Model" == cValue.Type().Name() {
+			model := cValue.Interface().(Model)
 			if model.IsTimestamps() {
 				results[CREATED_AT] = model.CreatedAt
 				results[UPDATED_AT] = model.UpdatedAt
@@ -247,8 +259,13 @@ func (m *Model) MapPayload(v ModelInterface) map[string]interface{} {
 			if model.IsSoftDelete() {
 				results[DELETED_AT] = model.DeletedAt
 			}
-		} else {
-			results[formatter.ToLowerFirst(classType.Field(i).Tag.Get("db"))] = classValue.Field(i).Interface()
+		} else if reflect.Struct == cValue.Kind() {
+			mapResults := m.MapPayload(cValue.Interface())
+			for mapIndex, mapValue := range mapResults {
+				results[mapIndex] = mapValue
+			}
+		} else if "" != tag {
+			results[tag] = cValue.Interface()
 		}
 	}
 	return results
