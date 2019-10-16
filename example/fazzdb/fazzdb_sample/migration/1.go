@@ -19,6 +19,10 @@ var Version1 = fazzdb.MigrationVersion{
 			table.Field(fazzdb.CreateInteger("authorId"))
 			table.Timestamps()
 
+			table.Indexes("title", "stock")
+			table.Indexes("authorId")
+			table.Indexes("title", "authorId")
+
 			table.Reference(
 				fazzdb.Foreign("authorId").
 					Reference("id").

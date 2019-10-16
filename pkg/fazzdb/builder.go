@@ -140,8 +140,7 @@ func (b *Builder) BuildAlterTable(table *MigrationTable) string {
 
 // BuildDropTable is a function that will return drop query from given table
 func (b *Builder) BuildDropTable(table *MigrationTable) string {
-	query := b.generateDropIndex("", table)
-	query = fmt.Sprintf(`%s DROP TABLE IF EXISTS "%s";`, query, table.name)
+	query := fmt.Sprintf(`DROP TABLE IF EXISTS "%s";`, table.name)
 	return query
 }
 
@@ -478,27 +477,18 @@ func (b *Builder) generateReferenceQuery(reference *MigrationReference, first bo
 
 // generateCreateIndex is a function that will generate create index query from given indexes
 func (b *Builder) generateCreateIndex(query string, table *MigrationTable) string {
-	if len(table.indexes) > 0 {
-		indexName := fmt.Sprintf("%s_%s_indexes", table.name, strings.Join(table.indexes, "_"))
+	for _, indexes := range table.indexes {
+		indexName := fmt.Sprintf("%s_%s_indexes", table.name, strings.Join(indexes, "_"))
 
-		query = b.generateDropIndex(query, table)
+		query = fmt.Sprintf(`%s DROP INDEX IF EXISTS "%s" CASCADE;`, query, indexName)
 		query = fmt.Sprintf(`%s CREATE INDEX "%s" ON "%s" (`, query, indexName, table.name)
-		for i, index := range table.indexes {
+		for i, index := range indexes {
 			if i != 0 {
 				query = fmt.Sprintf(`%s, `, query)
 			}
 			query = fmt.Sprintf(`%s "%s"`, query, index)
 		}
 		query = fmt.Sprintf(`%s);`, query)
-	}
-
-	return query
-}
-
-// generateDropIndex is a function that will generate drop index query from given indexes
-func (b *Builder) generateDropIndex(query string, table *MigrationTable) string {
-	if len(table.indexes) > 0 {
-		query = fmt.Sprintf(`%s DROP INDEX IF EXISTS "%s_indexes" CASCADE;`, query, table.name)
 	}
 
 	return query

@@ -250,7 +250,7 @@ type MigrationTable struct {
 	references  []*MigrationReference
 	primaryKeys []string
 	uniques     []string
-	indexes     []string
+	indexes     [][]string
 }
 
 // Field is a function that will append new MigrationColumn to columns
@@ -297,7 +297,7 @@ func (mt *MigrationTable) Uniques(columns ...string) {
 
 // Indexes is a function that will append index into indexes
 func (mt *MigrationTable) Indexes(indexes ...string) {
-	mt.indexes = append(mt.indexes, indexes...)
+	mt.indexes = append(mt.indexes, indexes)
 }
 
 // validate is a function that will validate if some columns action is allowed
