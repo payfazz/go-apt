@@ -2,6 +2,7 @@ package snapmongo
 
 import (
 	"context"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -11,7 +12,7 @@ import (
 func CreateIdUniqueIndex(collection *mongo.Collection) error {
 	index := mongo.IndexModel{
 		Keys: bson.D{
-			{"id", 1},
+			{Key: "id", Value: 1},
 		},
 		Options: options.Index().SetUnique(true),
 	}

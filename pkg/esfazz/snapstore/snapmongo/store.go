@@ -3,6 +3,7 @@ package snapmongo
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/payfazz/go-apt/pkg/esfazz/snapstore"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,14 +24,14 @@ func (s *mongoSnapshotStore) Save(ctx context.Context, id string, data json.RawM
 
 	dataMap["id"] = id
 	opt := options.Replace().SetUpsert(true)
-	_, err = s.collection.ReplaceOne(ctx, bson.D{{"id", id}}, dataMap, opt)
+	_, err = s.collection.ReplaceOne(ctx, bson.D{{Key: "id", Value: id}}, dataMap, opt)
 	return err
 }
 
 // Find find aggregate in database based on id
 func (s *mongoSnapshotStore) Find(ctx context.Context, id string) (json.RawMessage, error) {
 	dataMap := make(map[string]interface{})
-	err := s.collection.FindOne(ctx, bson.D{{"id", id}}).Decode(&dataMap)
+	err := s.collection.FindOne(ctx, bson.D{{Key: "id", Value: id}}).Decode(&dataMap)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil

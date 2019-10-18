@@ -701,16 +701,18 @@ func (me *MigrationEnum) GetDataType() DataType {
 // MigrationVersion is a struct that is used to store information about one version of migration
 // Notes: Raw query will be run first before others, if you need to create enums please use different MigrationVersion
 type MigrationVersion struct {
-	Tables []*MigrationTable
-	Enums  []*MigrationEnum
-	Seeds  []SeederInterface
-	Raw    string
+	Tables  []*MigrationTable
+	Enums   []*MigrationEnum
+	Seeds   []SeederInterface
+	Raw     string
+	PostRaw string
 }
 
 // Run is a function that will run all tables and enums command in a MigrationVersion
 func (mv *MigrationVersion) Run(query *Query, runSeeder bool, autoDrop bool) {
 	builder := NewBuilder()
 
+	// Pre Raw Query
 	if "" != mv.Raw {
 		_, err := query.RawExec(mv.Raw)
 		if nil != err {
@@ -719,6 +721,7 @@ func (mv *MigrationVersion) Run(query *Query, runSeeder bool, autoDrop bool) {
 		}
 	}
 
+	// Table Migration (Create, Alter, Drop and Enum)
 	queryString := ``
 	if autoDrop {
 		for i := len(mv.Tables) - 1; i >= 0; i-- {
@@ -749,6 +752,15 @@ func (mv *MigrationVersion) Run(query *Query, runSeeder bool, autoDrop bool) {
 	if nil != err {
 		_ = query.Tx.Rollback()
 		panic(err)
+	}
+
+	// Post raw query
+	if "" != mv.PostRaw {
+		_, err := query.RawExec(mv.PostRaw)
+		if nil != err {
+			_ = query.Tx.Rollback()
+			panic(err)
+		}
 	}
 
 	if runSeeder {

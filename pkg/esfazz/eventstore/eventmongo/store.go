@@ -3,12 +3,13 @@ package eventmongo
 import (
 	"context"
 	"encoding/json"
+	"sync"
+
 	"github.com/payfazz/go-apt/pkg/esfazz"
 	"github.com/payfazz/go-apt/pkg/esfazz/eventstore"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"sync"
 )
 
 type mongoEventStore struct {
@@ -60,10 +61,10 @@ func (m *mongoEventStore) Save(ctx context.Context, agg esfazz.Aggregate, events
 func (m *mongoEventStore) FindNotApplied(ctx context.Context, agg esfazz.Aggregate) ([]*esfazz.Event, error) {
 	var results []*esfazz.Event
 	filter := bson.D{
-		{"aggregate.id", agg.GetId()},
-		{"aggregate.version", bson.D{{"$gte", agg.GetVersion()}}},
+		{Key: "aggregate.id", Value: agg.GetId()},
+		{Key: "aggregate.version", Value: bson.D{{Key: "$gte", Value: agg.GetVersion()}}},
 	}
-	opt := options.Find().SetSort(bson.D{{"aggregate.version", 1}})
+	opt := options.Find().SetSort(bson.D{{Key: "aggregate.version", Value: 1}})
 	cur, err := m.collection.Find(ctx, filter, opt)
 
 	if err != nil {

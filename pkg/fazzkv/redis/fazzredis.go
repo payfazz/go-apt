@@ -1,15 +1,17 @@
 package redis
 
 import (
+	"time"
+
 	"github.com/go-redis/redis"
 	"github.com/payfazz/go-apt/pkg/fazzkv"
-	"time"
 )
 
 // RedisInterface is abstraction layer redis that wrap store interface with addition
 // for adding expire time in redis set.
 type RedisInterface interface {
 	fazzkv.Store
+	Increment(key string) error
 	SetWithExpire(key string, value interface{}, duration time.Duration) error
 }
 
