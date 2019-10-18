@@ -13,13 +13,13 @@ var client Interface
 func TestFailedAuthNewFazzVault(t *testing.T) {
 	var err error
 	url, _ := envClient.Get("V_URL")
-	client, err = NewFazzVault(url, "asdf", "asdf")
+	client, err = NewFazzVault(url, "asdf", "asdf", "test")
 	require.Error(t, err)
 }
 
 func TestFailedNewFazzVault(t *testing.T) {
 	var err error
-	client, err = NewFazzVault("https://localhost:12334", "asdf", "asdf")
+	client, err = NewFazzVault("https://localhost:12334", "asdf", "asdf", "test")
 	require.Error(t, err)
 }
 
@@ -28,7 +28,8 @@ func TestNewFazzVault(t *testing.T) {
 	url, _ := envClient.Get("V_URL")
 	username, _ := envClient.Get("V_USERNAME")
 	password, _ := envClient.Get("V_PASSWORD")
-	client, err = NewFazzVault(url, username, password)
+	path, _ := envClient.Get("V_PATH")
+	client, err = NewFazzVault(url, username, password, path)
 	require.NoError(t, err)
 }
 
@@ -37,15 +38,8 @@ func TestVault_FailedGet(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestVault_ReadPath(t *testing.T) {
-	var err error
-	path, _ := envClient.Get("V_PATH")
-	client, err = client.ReadPath(path)
-	require.NoError(t, err)
-}
-
 func TestVault_Get(t *testing.T) {
-	result, err := client.Get("key")
+	result, err := client.Get("backend")
 	require.NoError(t, err)
 	require.Equal(t, "value", result)
 }
