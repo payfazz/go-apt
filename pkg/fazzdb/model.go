@@ -9,6 +9,12 @@ import (
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
 )
 
+const (
+	MODEL_STRUCT_NAME    = "Model"
+	TIME_PTR_STRUCT_NAME = "*time.Time"
+	TIME_STRUCT_NAME     = "time.Time"
+)
+
 // ModelInterface is an interface that will be used to get model information and used in various task by Query instance
 type ModelInterface interface {
 	// GetModel is a function that will return pointer to Model instance
@@ -240,7 +246,7 @@ func (m *Model) MapPayload(v interface{}) map[string]interface{} {
 		cType := classType.Field(i)
 		tag := formatter.ToLowerFirst(cType.Tag.Get("db"))
 
-		if reflect.Ptr == cValue.Kind() {
+		if reflect.Ptr == cValue.Kind() && TIME_PTR_STRUCT_NAME != cValue.Type().String() {
 			cValue = cValue.Elem()
 		}
 
@@ -250,7 +256,9 @@ func (m *Model) MapPayload(v interface{}) map[string]interface{} {
 
 		if reflect.Invalid == cValue.Kind() {
 			results[tag] = nil
-		} else if "Model" == cValue.Type().Name() {
+		} else if TIME_PTR_STRUCT_NAME == cValue.Type().String() || TIME_STRUCT_NAME == cValue.Type().String() {
+			results[tag] = cValue.Interface()
+		} else if MODEL_STRUCT_NAME == cValue.Type().Name() {
 			model := cValue.Interface().(Model)
 			if model.IsTimestamps() {
 				results[CREATED_AT] = model.CreatedAt
