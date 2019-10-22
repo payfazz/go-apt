@@ -276,8 +276,11 @@ func (hr *HTTPClient) TraceRequest() {
 }
 
 // NewHTTPClient is a constructor function that used to http call.
-func NewHTTPClient(host string) HTTPClientInterface {
+func NewHTTPClient(host string, duration *time.Duration) HTTPClientInterface {
 	timeout := time.Duration(5 * time.Second)
+	if duration != nil {
+		timeout = time.Duration(*duration)
+	}
 	httpClient := &http.Client{
 		Timeout: timeout,
 	}
