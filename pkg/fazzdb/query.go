@@ -1031,7 +1031,7 @@ func (q *Query) first(ctx context.Context, withTrash TrashStatus) (interface{}, 
 		q.autoRollback()
 
 		if q.Config.DevelopmentMode {
-			return false, q.errorWithQuery("first[Get]", stmt.QueryString, err)
+			return nil, q.errorWithQuery("first[Get]", stmt.QueryString, err)
 		}
 		return nil, err
 	}
@@ -1076,7 +1076,7 @@ func (q *Query) all(ctx context.Context, withTrash TrashStatus) (interface{}, er
 		q.autoRollback()
 
 		if q.Config.DevelopmentMode {
-			return false, q.errorWithQuery("all[Select]", stmt.QueryString, err)
+			return nil, q.errorWithQuery("all[Select]", stmt.QueryString, err)
 		}
 		return nil, err
 	}
