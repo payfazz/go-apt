@@ -40,6 +40,15 @@ func (fm *FazzMeta) Payload() map[string]interface{} {
 	return fm.MapPayload(fm)
 }
 
+// Raw is a constructor to get raw query of selected migrations and seeder if runSeeder flag is true
+func Raw(runSeeder bool, versions ...MigrationVersion) []string {
+	m := &Migration{
+		Versions: versions,
+	}
+
+	return m.Raw(runSeeder)
+}
+
 // Migrate is a constructor of Migration struct that will run creation and seed of meta table and other migration
 func Migrate(db *sqlx.DB, appId string, forceMigrate bool, runSeeder bool, versions ...MigrationVersion) {
 	m := &Migration{
@@ -113,16 +122,29 @@ func (m *Migration) Run(query *Query, runSeeder bool) {
 	}
 }
 
+// Raw is a function that will create all migration and seeder query as separate .sql into path directory
+func (m *Migration) Raw(runSeeder bool) []string {
+	var queries []string
+
+	for _, v := range m.Versions {
+		queries = append(queries, v.BuildRaw(runSeeder, false))
+	}
+
+	return queries
+}
+
 func (m *Migration) forceMigrate(query *Query, forced bool) {
 	if forced {
-		queryString := `DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON ALL TABLES IN SCHEMA public TO public;`
-
-		_, err := query.RawExec(queryString)
+		_, err := query.RawExec(m.forceMigrateQuery())
 		if nil != err {
 			_ = query.Tx.Rollback()
 			panic(err)
 		}
 	}
+}
+
+func (m *Migration) forceMigrateQuery() string {
+	return `DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON ALL TABLES IN SCHEMA public TO public;`
 }
 
 // incrementMetaVersion is a function that will add meta version by 1
@@ -710,19 +732,39 @@ type MigrationVersion struct {
 
 // Run is a function that will run all tables and enums command in a MigrationVersion
 func (mv *MigrationVersion) Run(query *Query, runSeeder bool, autoDrop bool) {
+	_, err := query.RawExec(mv.queryString(runSeeder, autoDrop))
+	if nil != err {
+		_ = query.Tx.Rollback()
+		panic(err)
+	}
+
+	if runSeeder {
+		Seed(query, mv.Seeds...)
+	}
+}
+
+// BuildRaw is a function that will return combined query for migration and seed as string
+func (mv *MigrationVersion) BuildRaw(runSeeder bool, autoDrop bool) string {
+	queryString := fmt.Sprintf("-- TABLE MIGRATION\n\n%s", mv.queryString(runSeeder, autoDrop))
+
+	if runSeeder {
+		queryString = fmt.Sprintf("%s\n\n%s", queryString, RawSeed(mv.Seeds...))
+	}
+
+	return queryString
+}
+
+// queryString is a function that will generate migration query and return it as string
+func (mv *MigrationVersion) queryString(runSeeder bool, autoDrop bool) string {
 	builder := NewBuilder()
 
+	queryString := ""
 	// Pre Raw Query
 	if "" != mv.Raw {
-		_, err := query.RawExec(mv.Raw)
-		if nil != err {
-			_ = query.Tx.Rollback()
-			panic(err)
-		}
+		queryString = fmt.Sprintf("%s\n", mv.Raw)
 	}
 
 	// Table Migration (Create, Alter, Drop and Enum)
-	queryString := ``
 	if autoDrop {
 		for i := len(mv.Tables) - 1; i >= 0; i-- {
 			if mv.Tables[i].command == MC_CREATE {
@@ -748,22 +790,10 @@ func (mv *MigrationVersion) Run(query *Query, runSeeder bool, autoDrop bool) {
 		}
 	}
 
-	_, err := query.RawExec(queryString)
-	if nil != err {
-		_ = query.Tx.Rollback()
-		panic(err)
-	}
-
-	// Post raw query
+	// Post Raw Query
 	if "" != mv.PostRaw {
-		_, err := query.RawExec(mv.PostRaw)
-		if nil != err {
-			_ = query.Tx.Rollback()
-			panic(err)
-		}
+		queryString = fmt.Sprintf("%s\n%s", queryString, mv.PostRaw)
 	}
 
-	if runSeeder {
-		Seed(query, mv.Seeds...)
-	}
+	return queryString
 }
