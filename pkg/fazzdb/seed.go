@@ -1,6 +1,7 @@
 package fazzdb
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -129,26 +130,47 @@ func generateEmpty(meta TableMeta, values []map[string]interface{}) []map[string
 	return values
 }
 
+// RawSeed is a function for entry point for getting seeder raw query
+func RawSeed(seeders ...SeederInterface) string {
+	queryString := "-- SEED"
+	for _, seeder := range seeders {
+		if SEED_OBJECT == seeder.Type() {
+			queryString = fmt.Sprintf("%s\n%s", queryString, buildSeedObjectQuery(seeder))
+		} else if SEED_BULK == seeder.Type() {
+			fmt.Println("WARNING: unsupported SEED_BULK on RawSeed, seed will not appear in sql files")
+		} else if SEED_RAW == seeder.Type() {
+			queryString = fmt.Sprintf("%s\n%s", queryString, seeder.RawQuery())
+		}
+	}
+
+	return queryString
+}
+
 // Seed is a function for entry point for running seeder
 func Seed(query *Query, seeders ...SeederInterface) {
 	var err error
+
+	queryString := ""
 	for _, seeder := range seeders {
 		if SEED_OBJECT == seeder.Type() {
-			builder := NewBuilder()
-			meta := seeder.Table()
-			values := generateEmpty(meta, seeder.Values())
-			seedQuery := builder.BuildSeeder(meta.Name, meta.Columns, values)
-
-			_, err = query.RawExec(seedQuery)
+			queryString = buildSeedObjectQuery(seeder)
 		} else if SEED_BULK == seeder.Type() {
 			_, err = query.Use(seeder.Model()).BulkInsert(seeder.BulkModels())
 		} else if SEED_RAW == seeder.Type() {
-			_, err = query.RawExec(seeder.RawQuery())
+			queryString = seeder.RawQuery()
 		}
 
+		_, err = query.RawExec(queryString)
 		if nil != err {
 			_ = query.Tx.Rollback()
 			panic(err)
 		}
 	}
+}
+
+func buildSeedObjectQuery(seeder SeederInterface) string {
+	builder := NewBuilder()
+	meta := seeder.Table()
+	values := generateEmpty(meta, seeder.Values())
+	return builder.BuildSeeder(meta.Name, meta.Columns, values)
 }
