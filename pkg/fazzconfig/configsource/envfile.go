@@ -16,7 +16,7 @@ func FromEnvFile(filename string) ConfigSource {
 func readFile(filename string) map[string]string {
 	f, err := os.Open(filename)
 	if err != nil {
-		log.Printf("env file %s not found, config from file not loaded", f)
+		log.Printf("env file %s not found, config from file not loaded", filename)
 		return nil
 	}
 	defer f.Close()
