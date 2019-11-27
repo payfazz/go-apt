@@ -119,6 +119,11 @@ const (
 	META_TABLE   = "fazz_metas"
 )
 
+const (
+	TS_CAMEL = "CAMEL"
+	TS_SNAKE = "SNAKE"
+)
+
 var DEFAULT_QUERY_CONFIG = Config{
 	Limit:           0,
 	Offset:          0,

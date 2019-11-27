@@ -1312,6 +1312,7 @@ func (q *Query) modelWithTime(mi ModelInterface, m Model) Model {
 	if m.IsSoftDelete() {
 		m.DeletedAt = mi.GetDeletedAt()
 	}
+	m.applyTimestamps()
 
 	return m
 }

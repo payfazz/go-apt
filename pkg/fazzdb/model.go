@@ -60,6 +60,8 @@ type ModelInterface interface {
 	deleted()
 	// recovered is a function that will set deleted_at field with nil, used when recovering soft deleted model
 	recovered()
+	// applyTimestamps is a function that will copy CreatedAt/UpdatedAt/DeletedAt value into respective timestamp type
+	applyTimestamps()
 }
 
 // UuidModel is a constructor that is used to initialize a new model with uuid as primary key
@@ -76,6 +78,22 @@ func PlainModel(table string, columns []Column, primaryKey string, timestamps bo
 // AutoIncrementModel is a constructor that is used to initialize a new model with autoincrement primary key
 func AutoIncrementModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) Model {
 	return newModel(table, columns, primaryKey, timestamps, softDelete, false, true)
+}
+
+// UuidSnakeModel is a constructor that is used to initialize a new model with uuid as primary key
+func UuidSnakeModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) Model {
+	return newSnakeModel(table, columns, primaryKey, timestamps, softDelete, true, false)
+}
+
+// PlainSnakeModel is a constructor that is used to initialize a new model with primary key that is neither
+// uuid or autoincrement
+func PlainSnakeModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) Model {
+	return newSnakeModel(table, columns, primaryKey, timestamps, softDelete, false, false)
+}
+
+// AutoIncrementSnakeModel is a constructor that is used to initialize a new model with autoincrement primary key
+func AutoIncrementSnakeModel(table string, columns []Column, primaryKey string, timestamps bool, softDelete bool) Model {
+	return newSnakeModel(table, columns, primaryKey, timestamps, softDelete, false, true)
 }
 
 // newModel is a base constructor that will return Model instance that will be used by
@@ -97,6 +115,35 @@ func newModel(
 		AutoIncrement: isAutoIncrement,
 		Timestamps:    timestamps,
 		SoftDelete:    softDelete,
+		TimestampType: TS_CAMEL,
+	}
+
+	model.handleTimestamp()
+	model.handleSoftDelete()
+
+	return model
+}
+
+// newSnakeModel is a base constructor that will return Model instance that will be used by
+// uuid / plain / autoincrement model
+func newSnakeModel(
+	table string,
+	columns []Column,
+	primaryKey string,
+	timestamps bool,
+	softDelete bool,
+	isUuid bool,
+	isAutoIncrement bool,
+) Model {
+	model := Model{
+		Table:         table,
+		Columns:       columns,
+		PrimaryKey:    primaryKey,
+		Uuid:          isUuid,
+		AutoIncrement: isAutoIncrement,
+		Timestamps:    timestamps,
+		SoftDelete:    softDelete,
+		TimestampType: TS_SNAKE,
 	}
 
 	model.handleTimestamp()
@@ -115,9 +162,12 @@ type Model struct {
 	AutoIncrement bool       `json:"-"`
 	Timestamps    bool       `json:"-"`
 	SoftDelete    bool       `json:"-"`
-	CreatedAt     *time.Time `json:"createdAt" db:"created_at"`
-	UpdatedAt     *time.Time `json:"updatedAt" db:"updated_at"`
-	DeletedAt     *time.Time `json:"deletedAt" db:"deleted_at"`
+	TimestampType string     `json:"-"`
+	CreatedAt     *time.Time `json:"-" db:"created_at"`
+	UpdatedAt     *time.Time `json:"-" db:"updated_at"`
+	DeletedAt     *time.Time `json:"-" db:"deleted_at"`
+	CamelTimestamp
+	SnakeTimestamp
 }
 
 // GeneratePK is a function that MUST be overridden by UuidModel, if it's not overridden it will panic.
@@ -284,6 +334,7 @@ func (m *Model) created() {
 	if m.IsTimestamps() && nil == m.CreatedAt {
 		now := time.Now()
 		m.CreatedAt = &now
+		m.applyTimestamps()
 	}
 }
 
@@ -292,6 +343,7 @@ func (m *Model) updated() {
 	if m.IsTimestamps() {
 		now := time.Now()
 		m.UpdatedAt = &now
+		m.applyTimestamps()
 	}
 }
 
@@ -300,12 +352,16 @@ func (m *Model) deleted() {
 	if m.IsSoftDelete() {
 		now := time.Now()
 		m.DeletedAt = &now
+		m.applyTimestamps()
 	}
 }
 
 // recovered is a function that will set deleted_at field with nil, used when recovering soft deleted model
 func (m *Model) recovered() {
-	m.DeletedAt = nil
+	if m.IsSoftDelete() {
+		m.DeletedAt = nil
+		m.applyTimestamps()
+	}
 }
 
 // handleTimestamp is a function that will automatically append created_at and updated_at to
@@ -323,4 +379,41 @@ func (m *Model) handleSoftDelete() {
 	if m.IsSoftDelete() {
 		m.Columns = append(m.Columns, Col(DELETED_AT))
 	}
+}
+
+func (m *Model) applyTimestamps() {
+	switch m.TimestampType {
+	case TS_CAMEL:
+		m.CamelTimestamp.SetTimestamps(m)
+	case TS_SNAKE:
+		m.SnakeTimestamp.SetTimestamps(m)
+	}
+}
+
+// CamelTimestamp is a struct that is used to translate timestamps into camelCase json key
+type CamelTimestamp struct {
+	CamelCreatedAt *time.Time `json:"createdAt,omitempty"`
+	CamelUpdatedAt *time.Time `json:"updatedAt,omitempty"`
+	CamelDeletedAt *time.Time `json:"deletedAt,omitempty"`
+}
+
+// SetTimestamps is a function to set CamelTimestamp value from model timestamp
+func (ts *CamelTimestamp) SetTimestamps(m *Model) {
+	ts.CamelCreatedAt = m.CreatedAt
+	ts.CamelUpdatedAt = m.UpdatedAt
+	ts.CamelDeletedAt = m.DeletedAt
+}
+
+// SnakeTimestamp is a struct that is used to translate timestamps into snakeCase json key
+type SnakeTimestamp struct {
+	SnakeCreatedAt *time.Time `json:"created_at,omitempty"`
+	SnakeUpdatedAt *time.Time `json:"updated_at,omitempty"`
+	SnakeDeletedAt *time.Time `json:"deleted_at,omitempty"`
+}
+
+// SetTimestamps is a function to set SnakeTimestamp value from model timestamp
+func (ts *SnakeTimestamp) SetTimestamps(m *Model) {
+	ts.SnakeCreatedAt = m.CreatedAt
+	ts.SnakeUpdatedAt = m.UpdatedAt
+	ts.SnakeDeletedAt = m.DeletedAt
 }
