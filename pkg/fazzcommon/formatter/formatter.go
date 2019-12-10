@@ -68,6 +68,11 @@ func IntegerToString(param int) string {
 	return fmt.Sprintf("%d", param)
 }
 
+// Int64ToString used to get string value from int64.
+func Int64ToString(param int64) string {
+	return fmt.Sprintf("%d", param)
+}
+
 // SliceUint8ToString used to convert []uint8 to string
 func SliceUint8ToString(ui []uint8) string {
 	runes := make([]rune, len(ui))

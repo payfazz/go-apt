@@ -57,6 +57,11 @@ func TestIntegerToString(t *testing.T) {
 	require.Equal(t, "10", result)
 }
 
+func TestInt64ToString(t *testing.T) {
+	result := Int64ToString(9000000000)
+	require.Equal(t, "9000000000", result)
+}
+
 func TestSanitizePhone(t *testing.T) {
 	SanitizePhone("08123456789")
 }
