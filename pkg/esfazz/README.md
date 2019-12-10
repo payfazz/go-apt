@@ -1,4 +1,6 @@
-# esfazz
+# esfazz (DEPRECATED)
+
+This package is not longer maintained. please use `fazzeventsource` package instead.
 
 ## Usage example
 
