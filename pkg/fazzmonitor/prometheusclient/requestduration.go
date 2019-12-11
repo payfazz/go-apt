@@ -22,8 +22,8 @@ func RequestDuration() func(next http.HandlerFunc) http.HandlerFunc {
 		prometheus.NewHistogram(
 			prometheus.HistogramOpts{
 				Name:    "http_request_duration_seconds_histogram",
-				Help:    "A histogram of latencies for requests.",
-				Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
+				Help:    "A histogram of latencies for requests in millisecond.",
+				Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000},
 			},
 		),
 	).(prometheus.Histogram)
