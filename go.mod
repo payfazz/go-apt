@@ -23,7 +23,7 @@ require (
 	github.com/payfazz/go-middleware v0.0.0-20190630114857-3c69e9a326a4
 	github.com/payfazz/go-router v0.0.0-20190701081537-248ed242457f
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v1.2.1 // indirect
+	github.com/prometheus/client_golang v1.2.1
 	github.com/stretchr/testify v1.3.0
 	github.com/tidwall/pretty v1.0.0 // indirect
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
