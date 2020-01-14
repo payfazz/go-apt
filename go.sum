@@ -152,6 +152,8 @@ github.com/onsi/ginkgo v1.8.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+W
 github.com/onsi/gomega v1.5.0 h1:izbySO9zDPmjJ8rDjLvkA2zJHIo+HkYXHnf7eN7SSyo=
 github.com/onsi/gomega v1.5.0/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
 github.com/pascaldekloe/goe v0.1.0/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
+github.com/payfazz/go-errors v0.0.0-20191025073222-7d2b25ce9a2f h1:BCImsRNTGTtHmeIf5BgYxFgo5FnQSJIt7BMKSwfeHqk=
+github.com/payfazz/go-errors v0.0.0-20191025073222-7d2b25ce9a2f/go.mod h1:0pfUhstdZUjwsGIvcOEn8hMWDiEZp4cgqGXfT16on6A=
 github.com/payfazz/go-middleware v0.0.0-20190630114857-3c69e9a326a4 h1:j0/j6gb1J8yElpROQtq3X8homJTUTXvmsYqVCogzX1c=
 github.com/payfazz/go-middleware v0.0.0-20190630114857-3c69e9a326a4/go.mod h1:pGgGdE8OMjA0auJIXfMtJxSdiix2m8uA9P/fbGGwosE=
 github.com/payfazz/go-router v0.0.0-20190701081537-248ed242457f h1:+mgQ/VOpZFeOwWnaIVLn7v+Oq7wY0wXXNYDvDMWcVko=

@@ -2,12 +2,14 @@ package response
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/payfazz/go-apt/pkg/fazzcommon/httpError"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/value/content"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/value/header"
+	"github.com/payfazz/go-errors"
 )
 
 // basicResponse is a struct to contain default response message
@@ -45,17 +47,27 @@ func NotFound(w http.ResponseWriter) {
 
 // Error is a function to return http error
 func Error(w http.ResponseWriter, err error) {
-	if be, ok := err.(httpError.HttpErrorInterface); ok {
+	cause := err
+	message := fmt.Sprint("[ERROR]", err.Error())
+	if ge, ok := err.(*errors.Error); ok {
+		cause = ge.Cause()
+		message = ge.String()
+	}
+
+	if be, ok := cause.(httpError.HttpErrorInterface); ok {
+		log.Println(message)
 		Json(w, be, be.GetCode())
 	} else {
-		Error(w, httpError.InternalServer(err))
+		Error(w, httpError.InternalServer(cause))
 	}
 }
 
 // ErrorWithLog is a function to return http error and a flag to show / hide log
+// to be deprecated because Error will automatically print error message into stderr
+// if possible change this to Error
 func ErrorWithLog(w http.ResponseWriter, err error, showLog bool) {
 	if showLog {
-		log.Println("[ERROR_LOG]", err.Error())
+		log.Println("[ERROR]", err.Error())
 	}
 	Error(w, err)
 }
