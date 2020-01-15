@@ -13,3 +13,10 @@ func InsufficientStorage(err interface{}) error {
 		BaseError: Code(http.StatusInsufficientStorage, err),
 	}
 }
+
+// IsInsufficientStorageError check whether given error is a InsufficientStorageError
+func IsInsufficientStorageError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*InsufficientStorageError)
+	return ok
+}

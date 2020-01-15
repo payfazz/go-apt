@@ -13,3 +13,10 @@ func ServiceUnavailable(err interface{}) error {
 		BaseError: Code(http.StatusServiceUnavailable, err),
 	}
 }
+
+// IsServiceUnavailableError check whether given error is a ServiceUnavailableError
+func IsServiceUnavailableError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*ServiceUnavailableError)
+	return ok
+}

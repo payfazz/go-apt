@@ -13,3 +13,10 @@ func BadRequest(err interface{}) error {
 		BaseError: Code(http.StatusBadRequest, err),
 	}
 }
+
+// IsBadRequestError check whether given error is a BadRequestError
+func IsBadRequestError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*BadRequestError)
+	return ok
+}

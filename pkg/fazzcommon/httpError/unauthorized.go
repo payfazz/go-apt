@@ -13,3 +13,10 @@ func Unauthorized(err interface{}) error {
 		BaseError: Code(http.StatusUnauthorized, err),
 	}
 }
+
+// IsUnauthorizedError check whether given error is a UnauthorizedError
+func IsUnauthorizedError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*UnauthorizedError)
+	return ok
+}

@@ -13,3 +13,10 @@ func Forbidden(err interface{}) error {
 		BaseError: Code(http.StatusForbidden, err),
 	}
 }
+
+// IsForbiddenError check whether given error is a ForbiddenError
+func IsForbiddenError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*ForbiddenError)
+	return ok
+}

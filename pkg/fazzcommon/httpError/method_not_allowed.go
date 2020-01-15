@@ -13,3 +13,10 @@ func MethodNotAllowed(err interface{}) error {
 		BaseError: Code(http.StatusMethodNotAllowed, err),
 	}
 }
+
+// IsMethodNotAllowedError check whether given error is a MethodNotAllowedError
+func IsMethodNotAllowedError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*MethodNotAllowedError)
+	return ok
+}

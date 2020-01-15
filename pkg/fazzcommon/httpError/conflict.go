@@ -13,3 +13,10 @@ func Conflict(err interface{}) error {
 		BaseError: Code(http.StatusConflict, err),
 	}
 }
+
+// IsConflictError check whether given error is a ConflictError
+func IsConflictError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*ConflictError)
+	return ok
+}

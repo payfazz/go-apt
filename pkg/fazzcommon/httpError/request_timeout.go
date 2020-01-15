@@ -13,3 +13,10 @@ func RequestTimeout(err interface{}) error {
 		BaseError: Code(http.StatusRequestTimeout, err),
 	}
 }
+
+// IsRequestTimeoutError check whether given error is a RequestTimeoutError
+func IsRequestTimeoutError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*RequestTimeoutError)
+	return ok
+}

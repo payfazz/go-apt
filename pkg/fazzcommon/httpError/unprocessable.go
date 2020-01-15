@@ -13,3 +13,10 @@ func UnprocessableEntity(err interface{}) error {
 		BaseError: Code(http.StatusUnprocessableEntity, err),
 	}
 }
+
+// IsUnprocessableEntityError check whether given error is a UnprocessableEntityError
+func IsUnprocessableEntityError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*UnprocessableEntityError)
+	return ok
+}

@@ -13,3 +13,10 @@ func NotImplemented(err interface{}) error {
 		BaseError: Code(http.StatusNotImplemented, err),
 	}
 }
+
+// IsNotImplementedError check whether given error is a NotImplementedError
+func IsNotImplementedError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*NotImplementedError)
+	return ok
+}

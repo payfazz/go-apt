@@ -13,3 +13,10 @@ func BadGateway(err interface{}) error {
 		BaseError: Code(http.StatusBadGateway, err),
 	}
 }
+
+// IsBadGatewayError check whether given error is a BadGatewayError
+func IsBadGatewayError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*BadGatewayError)
+	return ok
+}

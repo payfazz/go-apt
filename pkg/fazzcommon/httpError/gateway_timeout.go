@@ -13,3 +13,10 @@ func GatewayTimeout(err interface{}) error {
 		BaseError: Code(http.StatusGatewayTimeout, err),
 	}
 }
+
+// IsGatewayTimeoutError check whether given error is a GatewayTimeoutError
+func IsGatewayTimeoutError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*GatewayTimeoutError)
+	return ok
+}

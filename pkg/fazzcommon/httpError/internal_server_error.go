@@ -13,3 +13,10 @@ func InternalServer(err interface{}) error {
 		BaseError: Code(http.StatusInternalServerError, err),
 	}
 }
+
+// IsInternalServerError check whether given error is a InternalServerError
+func IsInternalServerError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*InternalServerError)
+	return ok
+}

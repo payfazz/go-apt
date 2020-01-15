@@ -13,3 +13,10 @@ func Gone(err interface{}) error {
 		BaseError: Code(http.StatusGone, err),
 	}
 }
+
+// IsGoneError check whether given error is a GoneError
+func IsGoneError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*GoneError)
+	return ok
+}

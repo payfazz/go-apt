@@ -13,3 +13,10 @@ func NotFound(err interface{}) error {
 		BaseError: Code(http.StatusNotFound, err),
 	}
 }
+
+// IsNotFoundError check whether given error is a NotFoundError
+func IsNotFoundError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*NotFoundError)
+	return ok
+}

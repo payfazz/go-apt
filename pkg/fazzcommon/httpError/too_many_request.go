@@ -13,3 +13,10 @@ func TooManyRequest(err interface{}) error {
 		BaseError: Code(http.StatusTooManyRequests, err),
 	}
 }
+
+// IsTooManyRequestError check whether given error is a TooManyRequestError
+func IsTooManyRequestError(err error) bool {
+	cause := getCause(err)
+	_, ok := cause.(*TooManyRequestError)
+	return ok
+}
