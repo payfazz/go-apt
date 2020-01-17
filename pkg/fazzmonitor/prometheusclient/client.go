@@ -3,29 +3,39 @@ package prometheusclient
 import (
 	"fmt"
 	"net/http"
-	"time"
+
+	"github.com/payfazz/go-apt/pkg/fazzrouter"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-var dateMinuteFormat = "2006-01-02 15:04"
+type prometheusResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
 
-func registerOnce(collector prometheus.Collector) prometheus.Collector {
-	if err := prometheus.DefaultRegisterer.Register(collector); err != nil {
-		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
-			return are.ExistingCollector
-		} else {
-			panic(err)
-		}
+func (writer *prometheusResponseWriter) Code() string {
+	return fmt.Sprint(writer.statusCode)
+}
+
+func (writer *prometheusResponseWriter) WriteHeader(statusCode int) {
+	writer.statusCode = statusCode
+	writer.ResponseWriter.WriteHeader(statusCode)
+}
+
+func wrapResponseWriter(writer http.ResponseWriter) *prometheusResponseWriter {
+	if _, ok := writer.(*prometheusResponseWriter); ok {
+		return writer.(*prometheusResponseWriter)
 	}
 
-	return collector
+	return &prometheusResponseWriter{ResponseWriter: writer}
 }
 
-func dateMinute() string {
-	return time.Now().Format(dateMinuteFormat)
-}
-
-func path(r *http.Request) string {
-	return fmt.Sprintf("%s%s", r.Host, r.URL.Path)
+func labels(serviceName string, writer *prometheusResponseWriter, req *http.Request) prometheus.Labels {
+	return prometheus.Labels{
+		"service": serviceName,
+		"path":    fazzrouter.GetPattern(req),
+		"method":  req.Method,
+		"code":    writer.Code(),
+	}
 }
