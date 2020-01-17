@@ -7,48 +7,50 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func RequestDuration() func(next http.HandlerFunc) http.HandlerFunc {
-	collector := registerOnce(
-		prometheus.NewSummaryVec(
-			prometheus.SummaryOpts{
-				Name: "http_request_duration_seconds",
-				Help: "Request latency distributions.",
-			},
-			[]string{"date", "metrics", "method", "path"},
-		),
-	).(*prometheus.SummaryVec)
+func httpRequestDurationSummary() *prometheus.SummaryVec {
+	summary := prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name: "http_request_duration_summary",
+			Help: "Request latency distributions in milliseconds.",
+		},
+		[]string{"service", "path", "method", "code"},
+	)
 
-	pathHistogramCollector := registerOnce(
-		prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
-				Name:    "http_request_duration_seconds_histogram",
-				Help:    "A histogram of latencies for requests in millisecond.",
-				Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000},
-			},
-			[]string{"date", "method", "path"},
-		),
-	).(*prometheus.HistogramVec)
+	prometheus.MustRegister(summary)
+
+	return summary
+}
+
+func httpRequestDurationHistogram() *prometheus.HistogramVec {
+	histogram := prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "http_request_duration_histogram",
+			Help:    "A histogram of latencies for requests in millisecond.",
+			Buckets: []float64{10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000},
+		},
+		[]string{"service", "path", "method", "code"},
+	)
+
+	prometheus.MustRegister(histogram)
+
+	return histogram
+}
+
+func RequestDuration(serviceName string) func(next http.HandlerFunc) http.HandlerFunc {
+	summary := httpRequestDurationSummary()
+	histogram := httpRequestDurationHistogram()
 
 	return func(next http.HandlerFunc) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
+		return func(writer http.ResponseWriter, req *http.Request) {
 			start := time.Now()
+			prometheusWriter := wrapResponseWriter(writer)
 
-			next(w, r)
+			next(prometheusWriter, req)
 
 			duration := float64(time.Since(start).Milliseconds())
 
-			collector.WithLabelValues(
-				dateMinute(),
-				"duration",
-				r.Method,
-				path(r),
-			).Observe(duration)
-
-			pathHistogramCollector.WithLabelValues(
-				dateMinute(),
-				r.Method,
-				path(r),
-			).Observe(duration)
+			summary.With(labels(serviceName, prometheusWriter, req)).Observe(duration)
+			histogram.With(labels(serviceName, prometheusWriter, req)).Observe(duration)
 		}
 	}
 }

@@ -12,13 +12,13 @@ var patternKey patternKeyType
 
 func InjectPattern(pattern string) func(next http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
-		return func(writer http.ResponseWriter, request *http.Request) {
-			kv.Set(request, patternKey, pattern)
-			next(writer, request)
+		return func(writer http.ResponseWriter, req *http.Request) {
+			kv.Set(req, patternKey, pattern)
+			next(writer, req)
 		}
 	}
 }
 
-func GetPattern(request *http.Request) string {
-	return kv.MustGet(request, patternKey).(string)
+func GetPattern(req *http.Request) string {
+	return kv.MustGet(req, patternKey).(string)
 }
