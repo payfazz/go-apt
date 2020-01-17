@@ -48,7 +48,7 @@ func NotFound(w http.ResponseWriter) {
 // Error is a function to return http error
 func Error(w http.ResponseWriter, err error) {
 	cause := err
-	message := fmt.Sprint("[ERROR]", err.Error())
+	message := fmt.Sprint("[ERROR] ", err.Error())
 	if ge, ok := err.(*errors.Error); ok {
 		cause = ge.Cause()
 		message = ge.String()
