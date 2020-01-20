@@ -3,6 +3,7 @@ package fazzrouter
 import (
 	"net/http"
 
+	"github.com/payfazz/go-apt/pkg/fazzmonitor/prometheusclient"
 	"github.com/payfazz/go-middleware/common/kv"
 )
 
@@ -14,6 +15,10 @@ type Pattern struct{}
 
 func (p *Pattern) Get(req *http.Request) string {
 	return GetPattern(req)
+}
+
+func NewPattern() prometheusclient.RoutePattern {
+	return &Pattern{}
 }
 
 func InjectPattern(pattern string) func(next http.HandlerFunc) http.HandlerFunc {
