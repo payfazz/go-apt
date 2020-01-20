@@ -7,20 +7,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func httpRequestDurationSummary() *prometheus.SummaryVec {
-	summary := prometheus.NewSummaryVec(
-		prometheus.SummaryOpts{
-			Name: "http_request_duration_summary",
-			Help: "Request latency distributions in milliseconds.",
-		},
-		[]string{"service", "path", "method", "code"},
-	)
-
-	prometheus.MustRegister(summary)
-
-	return summary
-}
-
 func httpRequestDurationHistogram() *prometheus.HistogramVec {
 	histogram := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -37,7 +23,6 @@ func httpRequestDurationHistogram() *prometheus.HistogramVec {
 }
 
 func RequestDuration(serviceName string, pattern RoutePattern) func(next http.HandlerFunc) http.HandlerFunc {
-	summary := httpRequestDurationSummary()
 	histogram := httpRequestDurationHistogram()
 
 	return func(next http.HandlerFunc) http.HandlerFunc {
@@ -49,7 +34,6 @@ func RequestDuration(serviceName string, pattern RoutePattern) func(next http.Ha
 
 			duration := float64(time.Since(start).Milliseconds())
 
-			summary.With(labels(serviceName, prometheusWriter, req, pattern)).Observe(duration)
 			histogram.With(labels(serviceName, prometheusWriter, req, pattern)).Observe(duration)
 		}
 	}
