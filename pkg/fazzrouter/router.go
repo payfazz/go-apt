@@ -6,6 +6,7 @@ import (
 	stdPath "path"
 
 	"github.com/payfazz/go-middleware"
+	"github.com/payfazz/go-middleware/common/kv"
 	"github.com/payfazz/go-router/method"
 	"github.com/payfazz/go-router/path"
 	"github.com/payfazz/go-router/segment"
@@ -114,6 +115,7 @@ func (r *Route) handle(pattern string, method string, handler http.HandlerFunc) 
 			method: handler,
 		},
 		Middlewares: []interface{}{
+			kv.New(),
 			InjectPattern(appendPattern(r.FullPattern, pattern)),
 		},
 	}
