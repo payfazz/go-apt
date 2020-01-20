@@ -36,7 +36,7 @@ func httpRequestDurationHistogram() *prometheus.HistogramVec {
 	return histogram
 }
 
-func RequestDuration(serviceName string) func(next http.HandlerFunc) http.HandlerFunc {
+func RequestDuration(serviceName string, pattern RoutePattern) func(next http.HandlerFunc) http.HandlerFunc {
 	summary := httpRequestDurationSummary()
 	histogram := httpRequestDurationHistogram()
 
@@ -49,8 +49,8 @@ func RequestDuration(serviceName string) func(next http.HandlerFunc) http.Handle
 
 			duration := float64(time.Since(start).Milliseconds())
 
-			summary.With(labels(serviceName, prometheusWriter, req)).Observe(duration)
-			histogram.With(labels(serviceName, prometheusWriter, req)).Observe(duration)
+			summary.With(labels(serviceName, prometheusWriter, req, pattern)).Observe(duration)
+			histogram.With(labels(serviceName, prometheusWriter, req, pattern)).Observe(duration)
 		}
 	}
 }

@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/payfazz/go-apt/pkg/fazzrouter"
-
 	"github.com/prometheus/client_golang/prometheus"
 )
+
+type RoutePattern interface {
+	Get(req *http.Request) string
+}
 
 type prometheusResponseWriter struct {
 	http.ResponseWriter
@@ -31,10 +33,10 @@ func wrapResponseWriter(writer http.ResponseWriter) *prometheusResponseWriter {
 	return &prometheusResponseWriter{ResponseWriter: writer}
 }
 
-func labels(serviceName string, writer *prometheusResponseWriter, req *http.Request) prometheus.Labels {
+func labels(serviceName string, writer *prometheusResponseWriter, req *http.Request, pattern RoutePattern) prometheus.Labels {
 	return prometheus.Labels{
 		"service": serviceName,
-		"path":    fazzrouter.GetPattern(req),
+		"path":    pattern.Get(req),
 		"method":  req.Method,
 		"code":    writer.Code(),
 	}

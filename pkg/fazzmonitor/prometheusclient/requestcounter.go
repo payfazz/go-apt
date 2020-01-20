@@ -20,14 +20,14 @@ func httpRequestCounter() *prometheus.CounterVec {
 	return counter
 }
 
-func RequestCounter(serviceName string) func(next http.HandlerFunc) http.HandlerFunc {
+func RequestCounter(serviceName string, pattern RoutePattern) func(next http.HandlerFunc) http.HandlerFunc {
 	counter := httpRequestCounter()
 
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(writer http.ResponseWriter, req *http.Request) {
 			prometheusWriter := wrapResponseWriter(writer)
 			next(prometheusWriter, req)
-			counter.With(labels(serviceName, prometheusWriter, req)).Inc()
+			counter.With(labels(serviceName, prometheusWriter, req, pattern)).Inc()
 		}
 	}
 }
