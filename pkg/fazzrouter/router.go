@@ -1,15 +1,19 @@
 package fazzrouter
 
 import (
+	"fmt"
+	"net/http"
+	stdPath "path"
+
 	"github.com/payfazz/go-middleware"
 	"github.com/payfazz/go-router/method"
 	"github.com/payfazz/go-router/path"
 	"github.com/payfazz/go-router/segment"
-	"net/http"
 )
 
 type Route struct {
 	Handlers    map[string]http.HandlerFunc
+	FullPattern string
 	Pattern     string
 	Middlewares []interface{}
 	Endpoints   []*Route
@@ -88,7 +92,8 @@ func (r *Route) Delete(pattern string, handler http.HandlerFunc) *Route {
 
 func (r *Route) group(pattern string, fn func(r *Route)) *Route {
 	route := &Route{
-		Pattern: pattern,
+		Pattern:     pattern,
+		FullPattern: appendPattern(r.FullPattern, pattern),
 	}
 	fn(route)
 	r.Groups = append(r.Groups, route)
@@ -108,7 +113,14 @@ func (r *Route) handle(pattern string, method string, handler http.HandlerFunc) 
 		Handlers: map[string]http.HandlerFunc{
 			method: handler,
 		},
+		Middlewares: []interface{}{
+			InjectPattern(appendPattern(r.FullPattern, pattern)),
+		},
 	}
 	r.Endpoints = append(r.Endpoints, route)
 	return route
+}
+
+func appendPattern(base string, pattern string) string {
+	return stdPath.Clean(fmt.Sprintf("%s/%s", base, pattern))
 }
