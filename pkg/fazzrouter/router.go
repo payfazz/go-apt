@@ -13,47 +13,41 @@ import (
 )
 
 type Route struct {
-	Handlers    map[string]http.HandlerFunc
-	FullPattern string
-	Pattern     string
-	Middlewares []interface{}
-	Endpoints   []*Route
-	Groups      []*Route
+	Handlers        map[string]http.HandlerFunc
+	Pattern         string
+	BaseMiddlewares []interface{}
+	Middlewares     []interface{}
+	Endpoints       []*Route
+	Groups          []*Route
 }
 
 func BaseRoute() *Route {
-	return &Route{}
+	return &Route{
+		BaseMiddlewares: []interface{}{
+			kv.New(),
+		},
+	}
 }
 
 func (r *Route) Compile() http.HandlerFunc {
-	var handlers []interface{}
-	pathGroups := path.H{}
+	pathHandlers := path.H{}
+	endpoints := r.compileEndpoints()
 
-	for _, m := range r.Middlewares {
-		handlers = append(handlers, m)
-	}
-
-	for _, g := range r.Groups {
-		pathGroups[g.Pattern] = g.Compile()
-	}
-
-	for _, e := range r.Endpoints {
-		mHandlers := method.H{}
-		for m, h := range e.Handlers {
-			mHandlers[m] = h
+	for _, endpoint := range endpoints {
+		methodHandlers := method.H{}
+		for httpMethod, handler := range endpoint.Handlers {
+			methodHandlers[httpMethod] = handler
 		}
 
-		pathGroups[e.Pattern] = middleware.Compile(
+		pathHandlers[endpoint.Pattern] = middleware.Compile(
 			segment.MustEnd,
-			e.Middlewares,
-			mHandlers.C(),
+			endpoint.BaseMiddlewares,
+			endpoint.Middlewares,
+			methodHandlers.C(),
 		)
 	}
-	if len(pathGroups) > 0 {
-		handlers = append(handlers, pathGroups.C())
-	}
 
-	return middleware.Compile(handlers)
+	return middleware.Compile(pathHandlers.C())
 }
 
 func (r *Route) Use(m ...interface{}) *Route {
@@ -91,11 +85,28 @@ func (r *Route) Delete(pattern string, handler http.HandlerFunc) *Route {
 	return r
 }
 
+func (r *Route) compileEndpoints() []*Route {
+	var endpoints []*Route
+
+	if len(r.Endpoints) > 0 {
+		endpoints = append(endpoints, r.Endpoints...)
+	}
+
+	for _, group := range r.Groups {
+		endpoints = append(endpoints, group.compileEndpoints()...)
+	}
+
+	return endpoints
+
+}
+
 func (r *Route) group(pattern string, fn func(r *Route)) *Route {
 	route := &Route{
-		Pattern:     pattern,
-		FullPattern: appendPattern(r.FullPattern, pattern),
+		Pattern:         appendPattern(r.Pattern, pattern),
+		BaseMiddlewares: r.BaseMiddlewares,
+		Middlewares:     r.Middlewares,
 	}
+
 	fn(route)
 	r.Groups = append(r.Groups, route)
 	return route
@@ -109,15 +120,17 @@ func (r *Route) handle(pattern string, method string, handler http.HandlerFunc) 
 		}
 	}
 
+	fullPattern := appendPattern(r.Pattern, pattern)
 	route := &Route{
-		Pattern: pattern,
+		Pattern: fullPattern,
 		Handlers: map[string]http.HandlerFunc{
 			method: handler,
 		},
-		Middlewares: []interface{}{
-			kv.New(),
-			InjectPattern(appendPattern(r.FullPattern, pattern)),
-		},
+		BaseMiddlewares: append(
+			r.BaseMiddlewares,
+			InjectPattern(fullPattern),
+		),
+		Middlewares: r.Middlewares,
 	}
 	r.Endpoints = append(r.Endpoints, route)
 	return route
