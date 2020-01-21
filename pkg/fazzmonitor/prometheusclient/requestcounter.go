@@ -2,10 +2,8 @@ package prometheusclient
 
 import (
 	"fmt"
-	"net/http"
 	"sync"
 
-	"github.com/payfazz/go-apt/pkg/fazzrouter"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -26,28 +24,6 @@ func httpRequestCounter() *prometheus.CounterVec {
 	})
 
 	return httpCounter
-}
-
-// HTTPRequestCounterMiddleware middleware wrapper for IncrementRequestCounter, recommended to be used if you are using `go-apt/pkg/fazzrouter` package, the only thing required: before using this middleware make sure you use `kv.New()` middleware from `github.com/payfazz/go-middleware`
-// required params:
-// - productName: your product / team name (snake_case)
-// - serviceName: your service name (snake_case)
-func HTTPRequestCounterMiddleware(productName string, serviceName string) func(next http.HandlerFunc) http.HandlerFunc {
-	return func(next http.HandlerFunc) http.HandlerFunc {
-		return func(writer http.ResponseWriter, req *http.Request) {
-			prometheusWriter := wrapResponseWriter(writer)
-
-			next(prometheusWriter, req)
-
-			IncrementRequestCounter(
-				productName,
-				serviceName,
-				fazzrouter.GetPattern(req),
-				req.Method,
-				prometheusWriter.Code(),
-			)
-		}
-	}
 }
 
 // IncrementRequestCounter increment http request count and store it as total requests, usage example can be seen in HTTPRequestCounterMiddleware method
