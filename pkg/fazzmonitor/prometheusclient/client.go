@@ -3,8 +3,6 @@ package prometheusclient
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 type RoutePattern interface {
@@ -31,13 +29,4 @@ func wrapResponseWriter(writer http.ResponseWriter) *prometheusResponseWriter {
 	}
 
 	return &prometheusResponseWriter{ResponseWriter: writer}
-}
-
-func labels(serviceName string, writer *prometheusResponseWriter, req *http.Request, pattern RoutePattern) prometheus.Labels {
-	return prometheus.Labels{
-		"service": serviceName,
-		"path":    pattern.Get(req),
-		"method":  req.Method,
-		"code":    writer.Code(),
-	}
 }
