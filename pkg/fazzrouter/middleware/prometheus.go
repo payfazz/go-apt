@@ -10,10 +10,7 @@ import (
 )
 
 // HTTPRequestCounterMiddleware middleware wrapper for IncrementRequestCounter, recommended to be used if you are using `go-apt/pkg/fazzrouter` package, the only thing required: before using this middleware make sure you use `kv.New()` middleware from `github.com/payfazz/go-middleware`
-// required params:
-// - productName: your product / team name (snake_case)
-// - serviceName: your service name (snake_case)
-func HTTPRequestCounterMiddleware(productName string, serviceName string) func(next http.HandlerFunc) http.HandlerFunc {
+func HTTPRequestCounterMiddleware() func(next http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(writer http.ResponseWriter, req *http.Request) {
 			prometheusWriter := response.WrapWriter(writer)
@@ -21,8 +18,6 @@ func HTTPRequestCounterMiddleware(productName string, serviceName string) func(n
 			next(prometheusWriter, req)
 
 			prometheusclient.IncrementRequestCounter(
-				productName,
-				serviceName,
 				fazzrouter.GetPattern(req),
 				req.Method,
 				prometheusWriter.Code(),
@@ -32,10 +27,7 @@ func HTTPRequestCounterMiddleware(productName string, serviceName string) func(n
 }
 
 // HTTPRequestDurationMiddleware middleware wrapper for ObserveRequestDuration, recommended to be used if you are using `go-apt/pkg/fazzrouter` package, the only thing required: before using this middleware make sure you use `kv.New()` middleware from `github.com/payfazz/go-middleware`
-// required params:
-// - productName: your product / team name (snake_case)
-// - serviceName: your service name (snake_case)
-func HTTPRequestDurationMiddleware(productName string, serviceName string) func(next http.HandlerFunc) http.HandlerFunc {
+func HTTPRequestDurationMiddleware() func(next http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(writer http.ResponseWriter, req *http.Request) {
 			start := time.Now()
@@ -44,8 +36,6 @@ func HTTPRequestDurationMiddleware(productName string, serviceName string) func(
 			next(prometheusWriter, req)
 
 			prometheusclient.ObserveRequestDuration(
-				productName,
-				serviceName,
 				fazzrouter.GetPattern(req),
 				req.Method,
 				prometheusWriter.Code(),

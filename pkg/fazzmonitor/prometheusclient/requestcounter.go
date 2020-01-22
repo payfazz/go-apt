@@ -1,7 +1,6 @@
 package prometheusclient
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -17,7 +16,7 @@ func httpRequestCounter() *prometheus.CounterVec {
 				Name: "http_requests_total",
 				Help: "A counter for requests to the wrapped handler.",
 			},
-			[]string{"service", "path", "method", "code"},
+			[]string{"path", "method", "code"},
 		)
 
 		prometheus.MustRegister(httpCounter)
@@ -28,18 +27,15 @@ func httpRequestCounter() *prometheus.CounterVec {
 
 // IncrementRequestCounter increment http request count and store it as total requests, usage example can be seen in HTTPRequestCounterMiddleware method
 // required params:
-// - productName: your product / team name (snake_case)
 // - serviceName: your service name (snake_case)
 // - pattern: your route pattern not the requested url, ex: `/v1/users/:id` (correct); `/v1/users/{id}` (correct); `/v1/users/1` (incorrect)
 // - method: your http request method (GET, POST, PATCH, etc)
 // - code: your http status code (200, 404, 500, etc)
-func IncrementRequestCounter(productName string, serviceName string, pattern string, method string, code string) {
-	service := fmt.Sprintf("%s_%s", productName, serviceName)
+func IncrementRequestCounter(pattern string, method string, code string) {
 	labels := prometheus.Labels{
-		"service": service,
-		"path":    pattern,
-		"method":  method,
-		"code":    code,
+		"path":   pattern,
+		"method": method,
+		"code":   code,
 	}
 	httpRequestCounter().With(labels).Inc()
 }
