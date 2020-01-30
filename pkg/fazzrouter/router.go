@@ -113,14 +113,15 @@ func (r *Route) group(pattern string, fn func(r *Route)) *Route {
 }
 
 func (r *Route) handle(pattern string, method string, handler http.HandlerFunc) *Route {
+	fullPattern := appendPattern(r.Pattern, pattern)
+
 	for i, e := range r.Endpoints {
-		if e.Pattern == pattern {
+		if e.Pattern == fullPattern {
 			r.Endpoints[i].Handlers[method] = handler
 			return r.Endpoints[i]
 		}
 	}
 
-	fullPattern := appendPattern(r.Pattern, pattern)
 	route := &Route{
 		Pattern: fullPattern,
 		Handlers: map[string]http.HandlerFunc{
