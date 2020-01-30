@@ -13,9 +13,10 @@ type RedisReport struct {
 	options *redis.Options
 }
 
-func (rds *RedisReport) Check() ping.Report {
+func (rds *RedisReport) Check(level int64) ping.Report {
 	report := ping.Report{
-		IsAvailable: false,
+		Service: "redis",
+		Status:  ping.NOT_AVAILABLE,
 	}
 
 	start := time.Now()
@@ -30,7 +31,7 @@ func (rds *RedisReport) Check() ping.Report {
 	}
 
 	report.Latency = ping.GetMillisecondDuration(start)
-	report.IsAvailable = true
+	report.Status = ping.AVAILABLE
 
 	return report
 }

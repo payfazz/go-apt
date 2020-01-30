@@ -3,31 +3,78 @@ package ping
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
+	"sync"
 	"time"
 )
 
+const (
+	LEVEL_KEY     = "level"
+	DEFAULT_LEVEL = 1
+)
+
+const (
+	AVAILABLE                = "AVAILABLE"
+	DEPENDENCY_NOT_AVAILABLE = "DEPENDENCY_NOT_AVAILABLE"
+	NOT_AVAILABLE            = "NOT_AVAILABLE"
+)
+
 type ReportInterface interface {
-	Check() Report
+	Check(level int64) Report
 }
 
 type Report struct {
-	Latency     int64  `json:"latency"`
-	IsAvailable bool   `json:"isAvailable"`
-	Message     string `json:"message"`
+	Service  string   `json:"service"`
+	Latency  int64    `json:"latency"`
+	Status   string   `json:"status"`
+	Message  string   `json:"message"`
+	Children []Report `json:"children"`
 }
 
 func GetMillisecondDuration(startRequestAt time.Time) int64 {
 	return time.Since(startRequestAt).Milliseconds()
 }
 
-func Ping(reportChecks map[string]ReportInterface) func(next http.HandlerFunc) http.HandlerFunc {
+func Ping(serviceName string, reportChecks []ReportInterface) func(next http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
-		return func(writer http.ResponseWriter, request *http.Request) {
-			result := make(map[string]Report, 0)
+		return func(writer http.ResponseWriter, req *http.Request) {
+			var wg sync.WaitGroup
+			children := make([]Report, 0)
+			start := time.Now()
 
-			for component, reportCheck := range reportChecks {
-				result[component] = reportCheck.Check()
+			result := Report{
+				Service: serviceName,
+				Status:  AVAILABLE,
+				Message: "",
 			}
+
+			level := getLevelFromQueryParam(req)
+			if level < 1 {
+				writer.Header().Set("Content-Type", "application/json")
+				writer.WriteHeader(http.StatusOK)
+				_ = json.NewEncoder(writer).Encode(result)
+				return
+			}
+
+			for _, reportCheck := range reportChecks {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					children = append(children, reportCheck.Check(level-1))
+				}()
+			}
+
+			wg.Wait()
+
+			for _, child := range children {
+				if child.Status != AVAILABLE {
+					result.Status = DEPENDENCY_NOT_AVAILABLE
+					break
+				}
+			}
+
+			result.Latency = GetMillisecondDuration(start)
+			result.Children = children
 
 			writer.Header().Set("Content-Type", "application/json")
 			writer.WriteHeader(http.StatusOK)
@@ -37,8 +84,18 @@ func Ping(reportChecks map[string]ReportInterface) func(next http.HandlerFunc) h
 	}
 }
 
-func PingHandler(reportChecks map[string]ReportInterface) func(next http.Handler) http.Handler {
+func getLevelFromQueryParam(req *http.Request) int64 {
+	var level int64 = DEFAULT_LEVEL
+	levels, ok := req.URL.Query()[LEVEL_KEY]
+	if ok && len(levels) > 0 {
+		level, _ = strconv.ParseInt(levels[0], 10, 32)
+	}
+
+	return level
+}
+
+func PingHandler(serviceName string, children []ReportInterface) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		return Ping(reportChecks)(next.ServeHTTP)
+		return Ping(serviceName, children)(next.ServeHTTP)
 	}
 }
