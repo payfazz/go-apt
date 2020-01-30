@@ -13,9 +13,10 @@ type MySQLReport struct {
 	connectionString string
 }
 
-func (mysql *MySQLReport) Check() ping.Report {
+func (mysql *MySQLReport) Check(level int64) ping.Report {
 	report := ping.Report{
-		IsAvailable: false,
+		Service: "mysql",
+		Status:  ping.NOT_AVAILABLE,
 	}
 
 	start := time.Now()
@@ -37,7 +38,7 @@ func (mysql *MySQLReport) Check() ping.Report {
 	}
 
 	report.Latency = ping.GetMillisecondDuration(start)
-	report.IsAvailable = true
+	report.Status = ping.AVAILABLE
 
 	return report
 }

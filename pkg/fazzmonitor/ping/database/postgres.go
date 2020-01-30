@@ -13,9 +13,10 @@ type PgSQLReport struct {
 	connectionString string
 }
 
-func (pg *PgSQLReport) Check() ping.Report {
+func (pg *PgSQLReport) Check(level int64) ping.Report {
 	report := ping.Report{
-		IsAvailable: false,
+		Service: "postgres",
+		Status:  ping.NOT_AVAILABLE,
 	}
 
 	start := time.Now()
@@ -37,7 +38,7 @@ func (pg *PgSQLReport) Check() ping.Report {
 	}
 
 	report.Latency = ping.GetMillisecondDuration(start)
-	report.IsAvailable = true
+	report.Status = ping.AVAILABLE
 
 	return report
 }
