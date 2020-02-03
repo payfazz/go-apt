@@ -15,8 +15,9 @@ type RedisReport struct {
 
 func (rds *RedisReport) Check(level int64) ping.Report {
 	report := ping.Report{
-		Service: "redis",
-		Status:  ping.NOT_AVAILABLE,
+		Service:  "redis",
+		Status:   ping.NOT_AVAILABLE,
+		Children: []ping.Report{},
 	}
 
 	start := time.Now()

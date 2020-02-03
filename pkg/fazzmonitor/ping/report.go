@@ -42,9 +42,10 @@ func Ping(serviceName string, reportChecks []ReportInterface) http.Handler {
 		start := time.Now()
 
 		result := Report{
-			Service: serviceName,
-			Status:  AVAILABLE,
-			Message: "",
+			Service:  serviceName,
+			Status:   AVAILABLE,
+			Message:  "",
+			Children: []Report{},
 		}
 
 		level := getLevelFromQueryParam(req)
@@ -57,10 +58,10 @@ func Ping(serviceName string, reportChecks []ReportInterface) http.Handler {
 
 		for _, reportCheck := range reportChecks {
 			wg.Add(1)
-			go func() {
+			go func(report ReportInterface) {
 				defer wg.Done()
-				children = append(children, reportCheck.Check(level-1))
-			}()
+				children = append(children, report.Check(level-1))
+			}(reportCheck)
 		}
 
 		wg.Wait()

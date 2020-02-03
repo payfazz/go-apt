@@ -15,8 +15,9 @@ type PgSQLReport struct {
 
 func (pg *PgSQLReport) Check(level int64) ping.Report {
 	report := ping.Report{
-		Service: "postgres",
-		Status:  ping.NOT_AVAILABLE,
+		Service:  "postgres",
+		Status:   ping.NOT_AVAILABLE,
+		Children: []ping.Report{},
 	}
 
 	start := time.Now()

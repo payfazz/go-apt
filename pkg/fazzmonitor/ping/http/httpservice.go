@@ -18,8 +18,9 @@ func (s *HttpServiceReport) Check(level int64) ping.Report {
 	urlWithLevel := fmt.Sprintf("%s?%s=%d", s.url, ping.LEVEL_KEY, level)
 
 	report := ping.Report{
-		Service: s.url,
-		Status:  ping.NOT_AVAILABLE,
+		Service:  s.url,
+		Status:   ping.NOT_AVAILABLE,
+		Children: []ping.Report{},
 	}
 
 	start := time.Now()
@@ -46,7 +47,7 @@ func (s *HttpServiceReport) Check(level int64) ping.Report {
 	if nil != err {
 		report.Latency = ping.GetMillisecondDuration(start)
 		report.Status = ping.AVAILABLE
-		report.Message = fmt.Sprintf("ping report not implemented\nbody:\n%s", string(body))
+		report.Message = fmt.Sprintf("ping report not implemented; body: %s", string(body))
 
 		return report
 	}

@@ -15,8 +15,9 @@ type MySQLReport struct {
 
 func (mysql *MySQLReport) Check(level int64) ping.Report {
 	report := ping.Report{
-		Service: "mysql",
-		Status:  ping.NOT_AVAILABLE,
+		Service:  "mysql",
+		Status:   ping.NOT_AVAILABLE,
+		Children: []ping.Report{},
 	}
 
 	start := time.Now()
