@@ -103,9 +103,11 @@ func (r *Route) compileEndpoints() []*Route {
 func (r *Route) group(pattern string, fn func(r *Route)) *Route {
 	route := &Route{
 		Pattern:         appendPattern(r.Pattern, pattern),
-		BaseMiddlewares: r.BaseMiddlewares,
-		Middlewares:     r.Middlewares,
+		BaseMiddlewares: make([]interface{}, len(r.BaseMiddlewares)),
+		Middlewares:     make([]interface{}, len(r.Middlewares)),
 	}
+	copy(route.BaseMiddlewares, r.BaseMiddlewares)
+	copy(route.Middlewares, r.Middlewares)
 
 	fn(route)
 	r.Groups = append(r.Groups, route)
@@ -122,17 +124,21 @@ func (r *Route) handle(pattern string, method string, handler http.HandlerFunc) 
 		}
 	}
 
+	preMiddleware := append(
+		r.BaseMiddlewares,
+		InjectPattern(fullPattern),
+	)
 	route := &Route{
 		Pattern: fullPattern,
 		Handlers: map[string]http.HandlerFunc{
 			method: handler,
 		},
-		BaseMiddlewares: append(
-			r.BaseMiddlewares,
-			InjectPattern(fullPattern),
-		),
-		Middlewares: r.Middlewares,
+		BaseMiddlewares: make([]interface{}, len(preMiddleware)),
+		Middlewares:     make([]interface{}, len(r.Middlewares)),
 	}
+	copy(route.BaseMiddlewares, preMiddleware)
+	copy(route.Middlewares, r.Middlewares)
+
 	r.Endpoints = append(r.Endpoints, route)
 	return route
 }
