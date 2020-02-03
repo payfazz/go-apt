@@ -35,53 +35,51 @@ func GetMillisecondDuration(startRequestAt time.Time) int64 {
 	return time.Since(startRequestAt).Milliseconds()
 }
 
-func Ping(serviceName string, reportChecks []ReportInterface) func(next http.HandlerFunc) http.HandlerFunc {
-	return func(next http.HandlerFunc) http.HandlerFunc {
-		return func(writer http.ResponseWriter, req *http.Request) {
-			var wg sync.WaitGroup
-			children := make([]Report, 0)
-			start := time.Now()
+func Ping(serviceName string, reportChecks []ReportInterface) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
+		var wg sync.WaitGroup
+		children := make([]Report, 0)
+		start := time.Now()
 
-			result := Report{
-				Service: serviceName,
-				Status:  AVAILABLE,
-				Message: "",
-			}
+		result := Report{
+			Service: serviceName,
+			Status:  AVAILABLE,
+			Message: "",
+		}
 
-			level := getLevelFromQueryParam(req)
-			if level < 1 {
-				writer.Header().Set("Content-Type", "application/json")
-				writer.WriteHeader(http.StatusOK)
-				_ = json.NewEncoder(writer).Encode(result)
-				return
-			}
-
-			for _, reportCheck := range reportChecks {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					children = append(children, reportCheck.Check(level-1))
-				}()
-			}
-
-			wg.Wait()
-
-			for _, child := range children {
-				if child.Status != AVAILABLE {
-					result.Status = DEPENDENCY_NOT_AVAILABLE
-					break
-				}
-			}
-
-			result.Latency = GetMillisecondDuration(start)
-			result.Children = children
-
+		level := getLevelFromQueryParam(req)
+		if level < 1 {
 			writer.Header().Set("Content-Type", "application/json")
 			writer.WriteHeader(http.StatusOK)
 			_ = json.NewEncoder(writer).Encode(result)
 			return
 		}
-	}
+
+		for _, reportCheck := range reportChecks {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				children = append(children, reportCheck.Check(level-1))
+			}()
+		}
+
+		wg.Wait()
+
+		for _, child := range children {
+			if child.Status != AVAILABLE {
+				result.Status = DEPENDENCY_NOT_AVAILABLE
+				break
+			}
+		}
+
+		result.Latency = GetMillisecondDuration(start)
+		result.Children = children
+
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(writer).Encode(result)
+		return
+	})
 }
 
 func getLevelFromQueryParam(req *http.Request) int64 {
@@ -92,10 +90,4 @@ func getLevelFromQueryParam(req *http.Request) int64 {
 	}
 
 	return level
-}
-
-func PingHandler(serviceName string, children []ReportInterface) func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return Ping(serviceName, children)(next.ServeHTTP)
-	}
 }
