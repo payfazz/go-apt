@@ -22,25 +22,28 @@ type Page struct {
 
 // ParsePage is a function to parse paging attribute from query params to Page struct
 func ParsePage(queryParams url.Values, defaultLimit int) *Page {
-	p := &Page{
-		BaseLimit: defaultLimit,
-		Limit:     defaultLimit + 1,
-		Page:      1,
+	limit := defaultLimit
+	page := 1
+
+	if limitQuery := queryParams.Get(pagination.LIMIT_PARAM); "" != limitQuery {
+		limit = formatter.StringToInteger(limitQuery)
 	}
 
-	if limit := queryParams.Get(pagination.LIMIT_PARAM); "" != limit {
-		lm := formatter.StringToInteger(limit)
-		p.BaseLimit = lm
-		p.Limit = lm + 1
+	if pageQuery := queryParams.Get(pagination.PAGE_PARAM); "" != pageQuery {
+		page = int(math.Max(float64(1), formatter.StringToFloat(pageQuery)))
 	}
 
-	if page := queryParams.Get(pagination.PAGE_PARAM); "" != page {
-		p.Page = int(math.Max(float64(1), formatter.StringToFloat(page)))
+	return BuildPage(limit, page)
+}
+
+// BuildPage is a function to generate Page based on given limit and page
+func BuildPage(limit int, page int) *Page {
+	return &Page{
+		BaseLimit: limit,
+		Limit:     limit + 1,
+		Page:      page,
+		Offset:    (page - 1) * limit,
 	}
-
-	p.Offset = (p.Page - 1) * p.BaseLimit
-
-	return p
 }
 
 // PageResponse is a struct to handle data with paging details
