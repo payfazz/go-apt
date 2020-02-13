@@ -11,13 +11,23 @@ import (
 
 type PgSQLReport struct {
 	connectionString string
+	isCore           bool
 }
 
-func (pg *PgSQLReport) Check(level int64) ping.Report {
-	report := ping.Report{
+func (pg *PgSQLReport) IsCoreService() bool {
+	return pg.isCore
+}
+
+func (pg *PgSQLReport) Check(level int64) *ping.Report {
+	if !pg.isCore && level < 0 {
+		return nil
+	}
+
+	report := &ping.Report{
 		Service:  "postgres",
 		Status:   ping.NOT_AVAILABLE,
-		Children: []ping.Report{},
+		Children: []*ping.Report{},
+		IsCore:   pg.isCore,
 	}
 
 	start := time.Now()
@@ -44,15 +54,16 @@ func (pg *PgSQLReport) Check(level int64) ping.Report {
 	return report
 }
 
-func NewPgSQLReportWithConnectionString(connectionString string) ping.ReportInterface {
+func NewPgSQLReportWithConnectionString(connectionString string, isCore bool) ping.ReportInterface {
 	return &PgSQLReport{
 		connectionString: connectionString,
+		isCore:           isCore,
 	}
 }
 
-func NewPgSQLReport(host string, port string, user string, password string, dbName string) ping.ReportInterface {
+func NewPgSQLReport(host string, port string, user string, password string, dbName string, isCore bool) ping.ReportInterface {
 	return NewPgSQLReportWithConnectionString(fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbName,
-	))
+	), isCore)
 }

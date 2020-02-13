@@ -10,7 +10,7 @@ import (
 
 const (
 	LEVEL_KEY     = "level"
-	DEFAULT_LEVEL = 1
+	DEFAULT_LEVEL = 0
 )
 
 const (
@@ -20,15 +20,17 @@ const (
 )
 
 type ReportInterface interface {
-	Check(level int64) Report
+	IsCoreService() bool
+	Check(level int64) *Report
 }
 
 type Report struct {
-	Service  string   `json:"service"`
-	Latency  int64    `json:"latency"`
-	Status   string   `json:"status"`
-	Message  string   `json:"message"`
-	Children []Report `json:"children"`
+	Service  string    `json:"service"`
+	Latency  int64     `json:"latency"`
+	Status   string    `json:"status"`
+	Message  string    `json:"message"`
+	Children []*Report `json:"children"`
+	IsCore   bool      `json:"-"`
 }
 
 func GetMillisecondDuration(startRequestAt time.Time) int64 {
@@ -38,43 +40,47 @@ func GetMillisecondDuration(startRequestAt time.Time) int64 {
 func Ping(serviceName string, reportChecks []ReportInterface) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 		var wg sync.WaitGroup
-		children := make([]Report, 0)
+		children := make([]*Report, 0)
 		start := time.Now()
 
-		result := Report{
+		result := &Report{
 			Service:  serviceName,
 			Status:   AVAILABLE,
 			Message:  "",
-			Children: []Report{},
+			Children: []*Report{},
+			IsCore:   true,
 		}
 
 		level := getLevelFromQueryParam(req)
-		if level < 1 {
-			writer.Header().Set("Content-Type", "application/json")
-			writer.WriteHeader(http.StatusOK)
-			_ = json.NewEncoder(writer).Encode(result)
-			return
-		}
 
-		for _, reportCheck := range reportChecks {
+		for _, report := range reportChecks {
 			wg.Add(1)
 			go func(report ReportInterface) {
 				defer wg.Done()
-				children = append(children, report.Check(level-1))
-			}(reportCheck)
+				result := report.Check(level - 1)
+				if nil != result {
+					children = append(children, result)
+				}
+			}(report)
 		}
 
 		wg.Wait()
 
-		for _, child := range children {
-			if child.Status != AVAILABLE {
+		for _, c := range children {
+			if c.Status != AVAILABLE && !c.IsCore {
 				result.Status = DEPENDENCY_NOT_AVAILABLE
+			}
+			if c.Status != AVAILABLE && c.IsCore {
+				result.Status = NOT_AVAILABLE
 				break
 			}
 		}
 
+		if level > 0 {
+			result.Children = children
+		}
+
 		result.Latency = GetMillisecondDuration(start)
-		result.Children = children
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusOK)
