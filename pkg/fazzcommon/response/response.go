@@ -54,12 +54,14 @@ func Error(w http.ResponseWriter, err error) {
 		message = ge.String()
 	}
 
-	if be, ok := cause.(httpError.HttpErrorInterface); ok {
-		log.Println(message)
-		Json(w, be, be.GetCode())
-	} else {
-		Error(w, errors.Wrap(httpError.InternalServer(cause)))
+	log.Println(message)
+
+	if _, ok := cause.(httpError.HttpErrorInterface); !ok {
+		cause = httpError.InternalServer(cause)
 	}
+
+	be := cause.(httpError.HttpErrorInterface)
+	Json(w, be, be.GetCode())
 }
 
 // ErrorWithLog is a function to return http error and a flag to show / hide log
