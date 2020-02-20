@@ -58,7 +58,7 @@ func Error(w http.ResponseWriter, err error) {
 		log.Println(message)
 		Json(w, be, be.GetCode())
 	} else {
-		Error(w, httpError.InternalServer(cause))
+		Error(w, errors.Wrap(httpError.InternalServer(cause)))
 	}
 }
 
