@@ -33,6 +33,7 @@ func (pg *PgSQLReport) Check(level int64) *ping.Report {
 	start := time.Now()
 
 	db, err := sqlx.Connect("postgres", pg.connectionString)
+	defer db.Close()
 	if nil != err {
 		report.Latency = ping.GetMillisecondDuration(start)
 		report.Message = err.Error()

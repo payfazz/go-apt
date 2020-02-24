@@ -33,6 +33,7 @@ func (mysql *MySQLReport) Check(level int64) *ping.Report {
 	start := time.Now()
 
 	db, err := sqlx.Connect("mysql", mysql.connectionString)
+	defer db.Close()
 	if nil != err {
 		report.Latency = ping.GetMillisecondDuration(start)
 		report.Message = err.Error()
