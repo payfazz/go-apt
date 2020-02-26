@@ -14,9 +14,9 @@ func httpRequestDurationHistogram() *prometheus.HistogramVec {
 	httpDurationHistogramOnce.Do(func() {
 		httpDurationHistogram = prometheus.NewHistogramVec(
 			prometheus.HistogramOpts{
-				Name:    "http_request_duration_milliseconds",
-				Help:    "A histogram of latencies for requests in millisecond.",
-				Buckets: []float64{50, 100, 250, 500, 1000, 5000, 10000},
+				Name:    "http_request_duration_seconds",
+				Help:    "A histogram of latencies for requests in second.",
+				Buckets: []float64{0.05, 0.1, 0.25, 0.5, 1, 5, 10},
 			},
 			[]string{"path", "method", "code"},
 		)
@@ -40,6 +40,6 @@ func ObserveRequestDuration(pattern string, method string, code string, startReq
 		"method": method,
 		"code":   code,
 	}
-	duration := float64(time.Since(startRequestAt).Milliseconds())
+	duration := float64(time.Since(startRequestAt).Seconds())
 	httpRequestDurationHistogram().With(labels).Observe(duration)
 }
