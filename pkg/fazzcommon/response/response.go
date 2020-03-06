@@ -12,6 +12,10 @@ import (
 	"github.com/payfazz/go-errors"
 )
 
+const (
+	DEFAULT_FORMAT_DEEP = 8
+)
+
 // basicResponse is a struct to contain default response message
 type basicResponse struct {
 	Message string `json:"message"`
@@ -50,8 +54,8 @@ func Error(w http.ResponseWriter, err error) {
 	cause := err
 	message := fmt.Sprint("[ERROR] ", err.Error())
 	if ge, ok := err.(*errors.Error); ok {
-		cause = ge.Cause()
-		message = ge.String()
+		cause = ge.Cause
+		message = errors.FormatWithDeep(ge, DEFAULT_FORMAT_DEEP)
 	}
 
 	log.Println(message)

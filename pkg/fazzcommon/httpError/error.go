@@ -70,7 +70,7 @@ func getError(err interface{}) string {
 // getCause is a function to get error cause whether code use error interface or go-errors
 func getCause(err error) error {
 	if goErr, ok := err.(*errors.Error); ok {
-		return goErr.Cause()
+		return goErr.Cause
 	}
 
 	return err

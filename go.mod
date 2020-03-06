@@ -20,7 +20,7 @@ require (
 	github.com/nats-io/nats.go v1.8.1
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
-	github.com/payfazz/go-errors v0.0.0-20191025073222-7d2b25ce9a2f
+	github.com/payfazz/go-errors v0.0.0-20200306064529-cba3fc24420f
 	github.com/payfazz/go-middleware v0.0.0-20190630114857-3c69e9a326a4
 	github.com/payfazz/go-router v0.0.0-20190701081537-248ed242457f
 	github.com/pkg/errors v0.8.1
