@@ -33,6 +33,7 @@ func (rds *RedisReport) Check(level int64) *ping.Report {
 	start := time.Now()
 
 	redisClient := redis.NewClient(rds.options)
+	defer redisClient.Close()
 
 	if err := redisClient.Ping().Err(); err != nil {
 		report.Latency = ping.GetMillisecondDuration(start)
