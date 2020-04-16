@@ -55,7 +55,7 @@ func (kv *fazzRedis) SetWithExpire(key string, value interface{}, duration time.
 	return kv.client.Set(key, value, duration).Err()
 }
 
-// SetWithExpireIfNotExists allow user to set data and expired time at one time.
+// SetWithExpireIfNotExist allow user to set data and expired time at one time.
 // It returns error if key already exists
 func (kv *fazzRedis) SetWithExpireIfNotExist(key string, value interface{}, duration time.Duration) error {
 	set, err := kv.client.SetNX(key, value, duration).Result()
