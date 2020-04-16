@@ -1,8 +1,10 @@
 package redis
 
 import (
+	"fmt"
 	"testing"
 	"time"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -51,4 +53,24 @@ func TestTruncate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("set function doesn't work!")
 	}
+}
+
+func TestSetWithExpireIfNotExists(t *testing.T) {
+	key := "test_ex_nx"
+	val := "test"
+	err := getManager(t).SetWithExpireIfNotExist(key, val, 10*time.Second)
+	if err != nil {
+		t.Fatalf("set function doesn't work!")
+	}
+	result, err := getManager(t).Get(key)
+	require.Equal(t, val, result, fmt.Sprintf("require %s", val))
+
+	err = getManager(t).SetWithExpireIfNotExist(key, val, 1*time.Second)
+	if err.Error() != "key exists" {
+		t.Fatalf("key should exist")
+	}
+}
+
+func TestGetClient(t *testing.T) {
+	require.NotNil(t, getManager(t).GetClient())
 }

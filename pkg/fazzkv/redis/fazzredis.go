@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"errors"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -11,8 +12,10 @@ import (
 // for adding expire time in redis set.
 type RedisInterface interface {
 	fazzkv.Store
+	GetClient() *redis.Client
 	Increment(key string) error
 	SetWithExpire(key string, value interface{}, duration time.Duration) error
+	SetWithExpireIfNotExist(key string, value interface{}, duration time.Duration) error
 }
 
 // private struct for wrapping go-redis client
@@ -50,6 +53,24 @@ func (kv *fazzRedis) Increment(key string) error {
 // SetWithExpire allow user to set data and expired time at one time.
 func (kv *fazzRedis) SetWithExpire(key string, value interface{}, duration time.Duration) error {
 	return kv.client.Set(key, value, duration).Err()
+}
+
+// SetWithExpireIfNotExists allow user to set data and expired time at one time.
+// It returns error if key already exists
+func (kv *fazzRedis) SetWithExpireIfNotExist(key string, value interface{}, duration time.Duration) error {
+	set, err := kv.client.SetNX(key, value, duration).Result()
+	if err != nil {
+		return err
+	}
+	if !set {
+		return errors.New("key exists")
+	}
+	return nil
+}
+
+// GetClient returns the underlying redis client connection
+func (kv *fazzRedis) GetClient() *redis.Client {
+	return kv.client
 }
 
 // NewFazzRedis is a function that act as constructor and injector for FazzRedis.
