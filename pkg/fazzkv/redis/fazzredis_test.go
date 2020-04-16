@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -57,18 +56,18 @@ func TestTruncate(t *testing.T) {
 
 func TestSetWithExpireIfNotExists(t *testing.T) {
 	key := "test_ex_nx"
-	val := "test"
-	err := getManager(t).SetWithExpireIfNotExist(key, val, 10*time.Second)
+	err := getManager(t).SetWithExpireIfNotExist(key, "test1", 1*time.Second)
 	if err != nil {
 		t.Fatalf("set function doesn't work!")
 	}
 	result, err := getManager(t).Get(key)
-	require.Equal(t, val, result, fmt.Sprintf("require %s", val))
-
-	err = getManager(t).SetWithExpireIfNotExist(key, val, 1*time.Second)
+	require.Equal(t, "test1", result, "require test1")
+	err = getManager(t).SetWithExpireIfNotExist(key, "test2", 1*time.Second)
 	if err.Error() != "key exists" {
 		t.Fatalf("key should exist")
 	}
+	result, err = getManager(t).Get(key)
+	require.Equal(t, "test1", result, "require test1")
 }
 
 func TestGetClient(t *testing.T) {
