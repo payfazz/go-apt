@@ -2,6 +2,7 @@ package fazzdb
 
 import (
 	"fmt"
+	"strings"
 )
 
 // SliceCondition is a struct that will handle condition in a slice
@@ -45,10 +46,11 @@ func (c *Condition) QueryString(table string) string {
 func (c *Condition) namedString(table string) string {
 	query := ""
 	key := c.Field.ToString(table)
-	switch c.Operator {
-	case OP_IS_NOT_NULL, OP_IS_NULL:
+	switch {
+	case strings.HasSuffix(string(c.Operator), string(OP_IS_NOT_NULL)) ||
+		strings.HasSuffix(string(c.Operator), string(OP_IS_NULL)):
 		query = fmt.Sprintf("%s %s %s", c.Connector, key, c.Operator)
-	case OP_IN:
+	case strings.HasSuffix(string(c.Operator), string(OP_IN)):
 		query = fmt.Sprintf("%s %s %s (:%s)", c.Connector, key, c.Operator, c.Prefix)
 	default:
 		query = fmt.Sprintf("%s %s %s :%s", c.Connector, key, c.Operator, c.Prefix)
