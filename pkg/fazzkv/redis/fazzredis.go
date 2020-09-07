@@ -13,6 +13,7 @@ import (
 type RedisInterface interface {
 	fazzkv.Store
 	GetClient() *redis.Client
+	Keys(pattern string) ([]string, error)
 	Increment(key string) error
 	SetWithExpire(key string, value interface{}, duration time.Duration) error
 	SetWithExpireIfNotExist(key string, value interface{}, duration time.Duration) error
@@ -43,6 +44,11 @@ func (kv *fazzRedis) Delete(key string) error {
 // Truncate allow user to remove all data from redis.
 func (kv *fazzRedis) Truncate() error {
 	return kv.client.FlushAll().Err()
+}
+
+// Keys allow user to get all keys by pattern from redis.
+func (kv *fazzRedis) Keys(pattern string) ([]string, error) {
+	return kv.client.Keys(pattern).Result()
 }
 
 // Increment allow user to increment integer data without resetting expiry time
