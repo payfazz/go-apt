@@ -156,8 +156,12 @@ github.com/payfazz/go-errors v0.0.0-20200306064529-cba3fc24420f h1:aURLS3eEW2rs/
 github.com/payfazz/go-errors v0.0.0-20200306064529-cba3fc24420f/go.mod h1:0pfUhstdZUjwsGIvcOEn8hMWDiEZp4cgqGXfT16on6A=
 github.com/payfazz/go-middleware v0.0.0-20190630114857-3c69e9a326a4 h1:j0/j6gb1J8yElpROQtq3X8homJTUTXvmsYqVCogzX1c=
 github.com/payfazz/go-middleware v0.0.0-20190630114857-3c69e9a326a4/go.mod h1:pGgGdE8OMjA0auJIXfMtJxSdiix2m8uA9P/fbGGwosE=
+github.com/payfazz/go-middleware v0.0.0-20200721081005-61cf397e357e h1:BPK5VyLLcGznHqdTbXBasnAetWIvfzWREqZUW55fULg=
+github.com/payfazz/go-middleware v0.0.0-20200721081005-61cf397e357e/go.mod h1:YwCs+VnHqPqJfJo6ZQ7oYfbSeKxhrdVpkmuMVbgVQvY=
 github.com/payfazz/go-router v0.0.0-20190701081537-248ed242457f h1:+mgQ/VOpZFeOwWnaIVLn7v+Oq7wY0wXXNYDvDMWcVko=
 github.com/payfazz/go-router v0.0.0-20190701081537-248ed242457f/go.mod h1:J1cAkrGlJ9w8+M7vx/MiylOqP6aVBpPkgwNf1RKEL9Y=
+github.com/payfazz/go-router v0.0.0-20200605124530-83a4c2fcae37 h1:UAILoySQJegx5DsH6maJY2nLAEQHTYCNUkMpkVQ4T9c=
+github.com/payfazz/go-router v0.0.0-20200605124530-83a4c2fcae37/go.mod h1:W0qhPdSb1Tf8FS6V4eZ/GgDQMUzKO6ZlKA6WV/n6nbc=
 github.com/pierrec/lz4 v2.0.5+incompatible h1:2xWsjqPFWcplujydGg4WmhC/6fZqK42wMM8aXeqhl0I=
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

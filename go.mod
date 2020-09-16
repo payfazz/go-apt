@@ -21,8 +21,8 @@ require (
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/payfazz/go-errors v0.0.0-20200306064529-cba3fc24420f
-	github.com/payfazz/go-middleware v0.0.0-20190630114857-3c69e9a326a4
-	github.com/payfazz/go-router v0.0.0-20190701081537-248ed242457f
+	github.com/payfazz/go-middleware v0.0.0-20200721081005-61cf397e357e
+	github.com/payfazz/go-router v0.0.0-20200605124530-83a4c2fcae37
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.2.1
 	github.com/stretchr/testify v1.3.0
