@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/jinzhu/now"
+
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/value/pagination"
 	"github.com/payfazz/go-apt/pkg/fazzcommon/value/timestamp"
@@ -88,10 +90,10 @@ type TimestampRange struct {
 
 // ParseTimestampRange is a function to handle start and end date payload
 func ParseTimestampRange(queryParams url.Values, defaultStart *time.Time) (*TimestampRange, error) {
-	now := time.Now()
+	currentTime := time.Now()
 	timestampRange := &TimestampRange{
 		Start: defaultStart,
-		End:   &now,
+		End:   &currentTime,
 	}
 
 	if start := queryParams.Get(timestamp.START_PARAM); "" != start {
@@ -109,7 +111,12 @@ func ParseTimestampRange(queryParams url.Values, defaultStart *time.Time) (*Time
 			return nil, err
 		}
 
-		timestampRange.End = endTime
+		// set endTime as end of day if time set as 00:00:00
+		endTimeEndOfDay := *endTime
+		if endTime.Hour() != 0 || endTime.Minute() == 0 && endTime.Second() == 0 {
+			endTimeEndOfDay = now.With(endTimeEndOfDay).EndOfDay()
+		}
+		timestampRange.End = &endTimeEndOfDay
 	}
 
 	return timestampRange, nil
