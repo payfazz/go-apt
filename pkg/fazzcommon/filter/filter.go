@@ -90,6 +90,11 @@ type TimestampRange struct {
 
 // ParseTimestampRange is a function to handle start and end date payload
 func ParseTimestampRange(queryParams url.Values, defaultStart *time.Time) (*TimestampRange, error) {
+	return ParseTimestampRangeInLocation(queryParams, defaultStart, time.UTC)
+}
+
+// ParseTimestampRangeInLocation is a function to handle start and end date payload in location
+func ParseTimestampRangeInLocation(queryParams url.Values, defaultStart *time.Time, loc *time.Location) (*TimestampRange, error) {
 	currentTime := time.Now()
 	timestampRange := &TimestampRange{
 		Start: defaultStart,
@@ -97,7 +102,7 @@ func ParseTimestampRange(queryParams url.Values, defaultStart *time.Time) (*Time
 	}
 
 	if start := queryParams.Get(timestamp.START_PARAM); "" != start {
-		startTime, err := ParseTimestamp(start)
+		startTime, err := ParseTimestampInLocation(start, loc)
 		if nil != err {
 			return nil, err
 		}
@@ -106,7 +111,7 @@ func ParseTimestampRange(queryParams url.Values, defaultStart *time.Time) (*Time
 	}
 
 	if end := queryParams.Get(timestamp.END_PARAM); "" != end {
-		endTime, err := ParseTimestamp(end)
+		endTime, err := ParseTimestampInLocation(end, loc)
 		if nil != err {
 			return nil, err
 		}
@@ -124,6 +129,11 @@ func ParseTimestampRange(queryParams url.Values, defaultStart *time.Time) (*Time
 
 // ParseTimestamp is a function to handle converting multiple Date / Datetime format to *time.Time
 func ParseTimestamp(arg string) (*time.Time, error) {
+	return ParseTimestampInLocation(arg, time.UTC)
+}
+
+// ParseTimestampInLocation is a function to handle converting multiple Date / Datetime format to *time.Time in location
+func ParseTimestampInLocation(arg string, loc *time.Location) (*time.Time, error) {
 	formats := []string{
 		timestamp.TS_RFC3339,
 		timestamp.TS_DATE,
@@ -132,7 +142,7 @@ func ParseTimestamp(arg string) (*time.Time, error) {
 	}
 
 	for _, f := range formats {
-		t, err := time.Parse(f, arg)
+		t, err := time.ParseInLocation(f, arg, loc)
 		if nil == err {
 			return &t, nil
 		}
