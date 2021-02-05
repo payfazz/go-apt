@@ -12,6 +12,7 @@ var pgConnectionIdleCount *prometheus.GaugeVec
 var pgConnectionUseCount *prometheus.GaugeVec
 var pgConnectionWaitCount *prometheus.GaugeVec
 
+// PGConnectionGauge monitor the pooling connection database inside application
 func PGConnectionGauge(labels prometheus.Labels, db *sqlx.DB) {
 	if !IsValidRequiredDBLabels(labels) {
 		return
