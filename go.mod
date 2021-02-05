@@ -9,7 +9,7 @@ require (
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/hashicorp/vault/api v1.0.4
-	github.com/jinzhu/now v1.1.1 // indirect
+	github.com/jinzhu/now v1.1.1
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/joncalhoun/qson v0.0.0-20170526102502-8a9cab3a62b1
 	github.com/kr/pretty v0.1.0 // indirect
