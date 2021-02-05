@@ -6,15 +6,17 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-var whitelist = []string{"host", "port", "name", "user"}
+var labels = []string{"host", "port", "name", "user"}
 
+// GetRequiredDBLabels return the required labels for infra
 func GetRequiredDBLabels() []string {
-	return whitelist
+	return labels
 }
 
-func IsValidRequiredDBLabels(labels prometheus.Labels) bool {
-	for _, name := range whitelist {
-		if _, ok := labels[name]; !ok {
+// IsValidRequiredDBLabels check if the argument labels is satify infra or not
+func IsValidRequiredDBLabels(l prometheus.Labels) bool {
+	for _, name := range labels {
+		if _, ok := l[name]; !ok {
 			log.Printf("[DBMetrics] %s is not exists & cannot continue monitor db", name)
 			return false
 		}

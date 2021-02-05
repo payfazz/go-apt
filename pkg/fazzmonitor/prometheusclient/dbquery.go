@@ -12,6 +12,7 @@ var pgQueryInflightCount *prometheus.GaugeVec
 var pgQueryErrorCount *prometheus.CounterVec
 var pgQueryDurationSeconds *prometheus.HistogramVec
 
+// DBQueryMetrics monitor the query execution includes latency, error and inflight
 func DBQueryMetrics(labels prometheus.Labels, query string, prometheusMode bool, fn func() error) error {
 	if !prometheusMode || !IsValidRequiredDBLabels(labels) {
 		return fn()
