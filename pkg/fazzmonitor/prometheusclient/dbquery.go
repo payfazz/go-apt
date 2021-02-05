@@ -13,7 +13,7 @@ var pgQueryErrorCount *prometheus.CounterVec
 var pgQueryDurationSeconds *prometheus.HistogramVec
 
 func DBQueryMetrics(labels prometheus.Labels, query string, prometheusMode bool, fn func() error) error {
-	if !prometheusMode {
+	if !prometheusMode || !IsValidRequiredDBLabels(labels) {
 		return fn()
 	}
 
@@ -21,16 +21,16 @@ func DBQueryMetrics(labels prometheus.Labels, query string, prometheusMode bool,
 		pgQueryInflightCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "pg_query_inflight_count",
 			Help: "requests that have been submitted but have not been completed.",
-		}, []string{"host", "port", "name", "user", "query"})
+		}, append([]string{"query"}, GetRequiredDBLabels()...))
 		pgQueryDurationSeconds = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Name:    "pg_query_duration_seconds",
 			Help:    "latency of query execution",
 			Buckets: []float64{0.1, 0.3, 1, 30, 60},
-		}, []string{"host", "port", "name", "user", "query"})
+		}, append([]string{"query"}, GetRequiredDBLabels()...))
 		pgQueryErrorCount = prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name: "pg_query_error_count",
 			Help: "error count when querying to db",
-		}, []string{"host", "port", "name", "user", "query"})
+		}, append([]string{"query"}, GetRequiredDBLabels()...))
 
 		prometheus.MustRegister(pgQueryInflightCount, pgQueryDurationSeconds, pgQueryErrorCount)
 	})
