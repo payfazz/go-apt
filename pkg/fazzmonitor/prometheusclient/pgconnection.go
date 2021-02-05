@@ -13,21 +13,25 @@ var pgConnectionUseCount *prometheus.GaugeVec
 var pgConnectionWaitCount *prometheus.GaugeVec
 
 func PGConnectionGauge(labels prometheus.Labels, db *sqlx.DB) {
+	if !IsValidRequiredDBLabels(labels) {
+		return
+	}
+
 	pgConnOnce.Do(func() {
 		pgConnectionIdleCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "pg_connection_idle_count",
 			Help: "show the count of database connection idle",
-		}, []string{"host", "port", "name", "user"})
+		}, GetRequiredDBLabels())
 
 		pgConnectionUseCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "pg_connection_use_count",
 			Help: "show the count of database connection used count",
-		}, []string{"host", "port", "name", "user"})
+		}, GetRequiredDBLabels())
 
 		pgConnectionWaitCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "pg_connection_wait_count",
 			Help: "show the count of database waiting for a new connection count",
-		}, []string{"host", "port", "name", "user"})
+		}, GetRequiredDBLabels())
 
 		prometheus.MustRegister(pgConnectionIdleCount, pgConnectionUseCount, pgConnectionWaitCount)
 	})
