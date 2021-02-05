@@ -8,6 +8,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/payfazz/go-apt/pkg/fazzmonitor/prometheusclient"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -77,11 +79,15 @@ func (q *Query) RawExecCtx(ctx context.Context, query string, payload ...interfa
 
 	info(query)
 
-	if nil == ctx {
-		_, err = q.Tx.Exec(query, payload...)
-	} else {
-		_, err = q.Tx.ExecContext(ctx, query, payload...)
-	}
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, query, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			_, err = q.Tx.Exec(query, payload...)
+		} else {
+			_, err = q.Tx.ExecContext(ctx, query, payload...)
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -130,11 +136,15 @@ func (q *Query) RawFirstCtx(ctx context.Context, sample interface{}, query strin
 		return nil, err
 	}
 
-	if nil == ctx {
-		err = stmt.Get(result, payload...)
-	} else {
-		err = stmt.GetContext(ctx, result, payload...)
-	}
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, query, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			err = stmt.Get(result, payload...)
+		} else {
+			err = stmt.GetContext(ctx, result, payload...)
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -183,11 +193,15 @@ func (q *Query) RawAllCtx(ctx context.Context, sample interface{}, query string,
 		return nil, err
 	}
 
-	if nil == ctx {
-		err = stmt.Select(results, payload...)
-	} else {
-		err = stmt.SelectContext(ctx, results, payload...)
-	}
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, query, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			err = stmt.Select(results, payload...)
+		} else {
+			err = stmt.SelectContext(ctx, results, payload...)
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -226,11 +240,15 @@ func (q *Query) RawNamedExecCtx(ctx context.Context, query string, payload map[s
 		return false, err
 	}
 
-	if nil == ctx {
-		_, err = stmt.Exec(payload)
-	} else {
-		_, err = stmt.ExecContext(ctx, payload)
-	}
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, query, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			_, err = stmt.Exec(payload)
+		} else {
+			_, err = stmt.ExecContext(ctx, payload)
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -285,11 +303,15 @@ func (q *Query) RawNamedFirstCtx(
 		return nil, err
 	}
 
-	if nil == ctx {
-		err = stmt.Get(result, payload)
-	} else {
-		err = stmt.GetContext(ctx, result, payload)
-	}
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, query, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			err = stmt.Get(result, payload)
+		} else {
+			err = stmt.GetContext(ctx, result, payload)
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -344,11 +366,15 @@ func (q *Query) RawNamedAllCtx(
 		return nil, err
 	}
 
-	if nil == ctx {
-		err = stmt.Select(results, payload)
-	} else {
-		err = stmt.SelectContext(ctx, results, payload)
-	}
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, query, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			err = stmt.Select(results, payload)
+		} else {
+			err = stmt.SelectContext(ctx, results, payload)
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -449,11 +475,15 @@ func (q *Query) InsertCtx(ctx context.Context, doNothing bool) (interface{}, err
 		return nil, err
 	}
 
-	if nil == ctx {
-		err = stmt.Get(&id, q.mergedPayload())
-	} else {
-		err = stmt.GetContext(ctx, &id, q.mergedPayload())
-	}
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, query, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			err = stmt.Get(&id, q.mergedPayload())
+		} else {
+			err = stmt.GetContext(ctx, &id, q.mergedPayload())
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -517,11 +547,15 @@ func (q *Query) BulkInsertCtx(ctx context.Context, data interface{}) (bool, erro
 		return false, err
 	}
 
-	if nil == ctx {
-		_, err = stmt.Exec(payloads)
-	} else {
-		_, err = stmt.ExecContext(ctx, payloads)
-	}
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, query, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			_, err = stmt.Exec(payloads)
+		} else {
+			_, err = stmt.ExecContext(ctx, payloads)
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -578,11 +612,15 @@ func (q *Query) UpdateCtx(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
-	if nil == ctx {
-		_, err = stmt.Exec(q.mergedPayload())
-	} else {
-		_, err = stmt.ExecContext(ctx, q.mergedPayload())
-	}
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, query, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			_, err = stmt.Exec(q.mergedPayload())
+		} else {
+			_, err = stmt.ExecContext(ctx, q.mergedPayload())
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -645,11 +683,15 @@ func (q *Query) DeleteCtx(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
-	if nil == ctx {
-		_, err = stmt.Exec(q.mergedPayload())
-	} else {
-		_, err = stmt.ExecContext(ctx, q.mergedPayload())
-	}
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, query, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			_, err = stmt.Exec(q.mergedPayload())
+		} else {
+			_, err = stmt.ExecContext(ctx, q.mergedPayload())
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -1021,11 +1063,17 @@ func (q *Query) first(ctx context.Context, withTrash TrashStatus) (interface{}, 
 		return nil, err
 	}
 
-	if nil == ctx {
-		err = stmt.Get(result, args)
-	} else {
-		err = stmt.GetContext(ctx, result, args)
-	}
+	info(stmt.QueryString)
+
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, stmt.QueryString, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			err = stmt.Get(result, args)
+		} else {
+			err = stmt.GetContext(ctx, result, args)
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -1066,11 +1114,17 @@ func (q *Query) all(ctx context.Context, withTrash TrashStatus) (interface{}, er
 		return nil, err
 	}
 
-	if nil == ctx {
-		err = stmt.Select(results, args)
-	} else {
-		err = stmt.SelectContext(ctx, results, args)
-	}
+	info(stmt.QueryString)
+
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, stmt.QueryString, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			err = stmt.Select(results, args)
+		} else {
+			err = stmt.SelectContext(ctx, results, args)
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()
@@ -1107,11 +1161,17 @@ func (q *Query) aggregate(ctx context.Context, aggregate Aggregate, column strin
 		return nil, err
 	}
 
-	if nil == ctx {
-		err = stmt.Get(&result, args)
-	} else {
-		err = stmt.GetContext(ctx, &result, args)
-	}
+	info(stmt.QueryString)
+
+	err = prometheusclient.DBQueryMetrics(q.Config.Labels, stmt.QueryString, q.Config.PrometheusMode, func() error {
+		if nil == ctx {
+			err = stmt.Get(&result, args)
+		} else {
+			err = stmt.GetContext(ctx, &result, args)
+		}
+
+		return err
+	})
 
 	if nil != err {
 		q.autoRollback()

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/payfazz/go-apt/pkg/fazzdb"
 )
@@ -13,7 +15,14 @@ var Parameter = fazzdb.Config{
 	Offset:          0,
 	Lock:            fazzdb.LO_NONE,
 	DevelopmentMode: true,
-	Opts:            fazzdb.GetTxOptions(nil),
+	PrometheusMode:  true,
+	Labels: prometheus.Labels{
+		"host": "host",
+		"port": "port",
+		"name": "name",
+		"user": "user",
+	},
+	Opts: fazzdb.GetTxOptions(nil),
 }
 
 var DbConf = map[string]string{
