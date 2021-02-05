@@ -9,6 +9,7 @@ import (
 
 var queryOnce sync.Once
 var pgQueryInflightCount *prometheus.GaugeVec
+var pgQueryErrorCount *prometheus.CounterVec
 var pgQueryDurationSeconds *prometheus.HistogramVec
 
 func DBQueryMetrics(labels prometheus.Labels, query string, prometheusMode bool, fn func() error) error {
@@ -26,8 +27,12 @@ func DBQueryMetrics(labels prometheus.Labels, query string, prometheusMode bool,
 			Help:    "latency of query execution",
 			Buckets: []float64{0.1, 0.3, 1, 30, 60},
 		}, []string{"host", "port", "name", "user", "query"})
+		pgQueryErrorCount = prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "pg_query_error_count",
+			Help: "error count when querying to db",
+		}, []string{"host", "port", "name", "user", "query"})
 
-		prometheus.MustRegister(pgQueryInflightCount, pgQueryDurationSeconds)
+		prometheus.MustRegister(pgQueryInflightCount, pgQueryDurationSeconds, pgQueryErrorCount)
 	})
 
 	labels["query"] = query
@@ -36,6 +41,9 @@ func DBQueryMetrics(labels prometheus.Labels, query string, prometheusMode bool,
 	pgQueryInflightCount.With(labels).Inc()
 
 	err := fn()
+	if err != nil {
+		pgQueryErrorCount.With(labels).Inc()
+	}
 
 	duration := time.Since(start)
 	pgQueryInflightCount.With(labels).Dec()
