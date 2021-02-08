@@ -14,10 +14,6 @@ var pgQueryDurationSeconds *prometheus.HistogramVec
 
 // DBQueryMetrics monitor the query execution includes latency, error and inflight
 func DBQueryMetrics(labels prometheus.Labels, query string, prometheusMode bool, fn func() error) error {
-	if !prometheusMode || !IsValidRequiredDBLabels(labels) {
-		return fn()
-	}
-
 	queryOnce.Do(func() {
 		pgQueryInflightCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "pg_query_inflight_count",
@@ -36,10 +32,15 @@ func DBQueryMetrics(labels prometheus.Labels, query string, prometheusMode bool,
 		prometheus.MustRegister(pgQueryInflightCount, pgQueryDurationSeconds, pgQueryErrorCount)
 	})
 
+	if !prometheusMode || !IsValidRequiredDBLabels(labels) {
+		return fn()
+	}
+
 	labels["query"] = query
 
 	start := time.Now()
 	pgQueryInflightCount.With(labels).Inc()
+	defer pgQueryInflightCount.With(labels).Dec()
 
 	err := fn()
 	if err != nil {
@@ -47,7 +48,6 @@ func DBQueryMetrics(labels prometheus.Labels, query string, prometheusMode bool,
 	}
 
 	duration := time.Since(start)
-	pgQueryInflightCount.With(labels).Dec()
 	pgQueryDurationSeconds.With(labels).Observe(duration.Seconds())
 
 	return err
