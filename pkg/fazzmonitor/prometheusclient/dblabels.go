@@ -15,12 +15,13 @@ func GetRequiredDBLabels() []string {
 
 // IsValidRequiredDBLabels check if the argument labels is satify infra or not
 func IsValidRequiredDBLabels(l prometheus.Labels) bool {
+	valid := true
 	for _, name := range labels {
 		if _, ok := l[name]; !ok {
 			log.Printf("[DBMetrics] %s is not exists & cannot continue monitor db", name)
-			return false
+			valid = false
 		}
 	}
 
-	return true
+	return valid
 }
