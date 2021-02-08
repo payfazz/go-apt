@@ -17,17 +17,17 @@ func PGConnectionGauge(labels prometheus.Labels, db *sqlx.DB) {
 	pgConnOnce.Do(func() {
 		pgConnectionIdleCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "pg_connection_idle_count",
-			Help: "show the count of database connection idle",
+			Help: "show the database connection idle",
 		}, GetRequiredDBLabels())
 
 		pgConnectionUseCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "pg_connection_use_count",
-			Help: "show the count of database connection used count",
+			Help: "show the database connection use count",
 		}, GetRequiredDBLabels())
 
 		pgConnectionWaitCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "pg_connection_wait_count",
-			Help: "show the count of database waiting for a new connection count",
+			Help: "show the database connection wait count",
 		}, GetRequiredDBLabels())
 
 		prometheus.MustRegister(pgConnectionIdleCount, pgConnectionUseCount, pgConnectionWaitCount)
