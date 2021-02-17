@@ -289,14 +289,14 @@ func NewHTTPClient(host string, duration *time.Duration) HTTPClientInterface {
 }
 
 // NewHTTPClientWithMetrics is a constructor function that used to http call include metrics.
-func NewHTTPClientWithMetrics(host string, duration *time.Duration, metricsEnable bool) HTTPClientInterface {
+func NewHTTPClientWithMetrics(host string, duration *time.Duration, enableMetrics bool) HTTPClientInterface {
 	timeout := time.Duration(5 * time.Second)
 	if duration != nil {
 		timeout = time.Duration(*duration)
 	}
 	httpClient := &http.Client{
 		Timeout:   timeout,
-		Transport: prometheusclient.OutgoingHTTPTransportWithMetrics(metricsEnable, &http.Transport{}),
+		Transport: prometheusclient.OutgoingHTTPTransportWithMetrics(enableMetrics, &http.Transport{}),
 	}
 	return &HTTPClient{host: host, httpClient: httpClient, httpCache: &httpCache{}}
 }
