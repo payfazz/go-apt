@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/payfazz/go-apt/pkg/fazzcommon/formatter"
+	"github.com/payfazz/go-apt/pkg/fazzmonitor/prometheusclient"
 )
 
 const (
@@ -283,6 +284,19 @@ func NewHTTPClient(host string, duration *time.Duration) HTTPClientInterface {
 	}
 	httpClient := &http.Client{
 		Timeout: timeout,
+	}
+	return &HTTPClient{host: host, httpClient: httpClient, httpCache: &httpCache{}}
+}
+
+// NewHTTPClientWithMetrics is a constructor function that used to http call include metrics.
+func NewHTTPClientWithMetrics(host string, duration *time.Duration, metricsEnable bool) HTTPClientInterface {
+	timeout := time.Duration(5 * time.Second)
+	if duration != nil {
+		timeout = time.Duration(*duration)
+	}
+	httpClient := &http.Client{
+		Timeout:   timeout,
+		Transport: prometheusclient.OutgoingHTTPTransportWithMetrics(metricsEnable, &http.Transport{}),
 	}
 	return &HTTPClient{host: host, httpClient: httpClient, httpCache: &httpCache{}}
 }
