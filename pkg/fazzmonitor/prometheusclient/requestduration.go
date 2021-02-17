@@ -18,7 +18,7 @@ func httpRequestDurationHistogram() *prometheus.HistogramVec {
 				Help:    "A histogram of latencies for requests in second.",
 				Buckets: []float64{0.05, 0.1, 0.25, 0.5, 1, 5, 10},
 			},
-			[]string{"path", "method", "code"},
+			[]string{"path", "method", "status"},
 		)
 
 		prometheus.MustRegister(httpDurationHistogram)
@@ -32,13 +32,13 @@ func httpRequestDurationHistogram() *prometheus.HistogramVec {
 // - serviceName: your service name (snake_case)
 // - pattern: your route pattern not the requested url, ex: `/v1/users/:id` (correct); `/v1/users/{id}` (correct); `/v1/users/1` (incorrect)
 // - method: your http request method (GET, POST, PATCH, etc)
-// - code: your http status code (200, 404, 500, etc)
+// - status: your http status code (200, 404, 500, etc)
 // - startRequestAt: your request start time, recommended to be initiated before `next` method call
-func ObserveRequestDuration(pattern string, method string, code string, startRequestAt time.Time) {
+func ObserveRequestDuration(pattern string, method string, status string, startRequestAt time.Time) {
 	labels := prometheus.Labels{
 		"path":   pattern,
 		"method": method,
-		"code":   code,
+		"status": status,
 	}
 	duration := float64(time.Since(startRequestAt).Seconds())
 	httpRequestDurationHistogram().With(labels).Observe(duration)
