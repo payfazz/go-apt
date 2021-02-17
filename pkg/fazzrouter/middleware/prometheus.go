@@ -48,6 +48,21 @@ func HTTPRequestDurationMiddleware() func(next http.HandlerFunc) http.HandlerFun
 	}
 }
 
+// HTTPInflightRequestMiddleware middleware wrapper for IncrementInflightRequest and DecrementInflightRequest, recommended to be used if you are using `go-apt/pkg/fazzrouter` package, the only thing required: before using this middleware make sure you use `kv.New()` middleware from `github.com/payfazz/go-middleware`
+func HTTPInflightRequestMiddleware() func(next http.HandlerFunc) http.HandlerFunc {
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		return func(writer http.ResponseWriter, req *http.Request) {
+			prometheusWriter := response.WrapWriter(writer)
+			prometheusclient.IncrementInflightRequest(fazzrouter.GetPattern(req), req.Method)
+			defer func() {
+				prometheusclient.DecrementInflightRequest(fazzrouter.GetPattern(req), req.Method)
+			}()
+
+			next(prometheusWriter, req)
+		}
+	}
+}
+
 // PGConnectionMiddleware middleware wrapper for PGConnectionGauge, recommended to be used if you are using `go-apt/pkg/fazzrouter` package, the only thing required: before using this middleware make sure you use `kv.New()` middleware from `github.com/payfazz/go-middleware`
 func PGConnectionMiddleware(labels prometheus.Labels, db *sqlx.DB) func(next http.HandlerFunc) http.HandlerFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
