@@ -54,7 +54,7 @@ func OutgoingHTTPTransportWithMetrics(enable bool, transport *http.Transport) ht
 		outgoingHTTPDurationSeconds = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Name:    "outgoing_http_request_duration_seconds",
 			Help:    "latency of the outgoing requests.",
-			Buckets: []float64{0.1, 0.3, 1, 30, 60},
+			Buckets: prometheus.DefBuckets,
 		}, []string{"host", "path", "method", "protocol", "status"})
 
 		prometheus.MustRegister(outgoingHTTPInflightCount, outgoingHTTPDurationSeconds)
