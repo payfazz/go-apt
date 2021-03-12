@@ -22,7 +22,7 @@ func DBQueryMetrics(labels prometheus.Labels, query string, prometheusMode bool,
 		pgQueryDurationSeconds = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Name:    "pg_query_duration_seconds",
 			Help:    "latency of query execution",
-			Buckets: []float64{0.1, 0.3, 1, 30, 60},
+			Buckets: prometheus.DefBuckets,
 		}, append([]string{"query"}, GetRequiredDBLabels()...))
 		pgQueryErrorCount = prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name: "pg_query_error_count",

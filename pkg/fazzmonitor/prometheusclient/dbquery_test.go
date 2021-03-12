@@ -2,7 +2,6 @@ package prometheusclient
 
 import (
 	"errors"
-	"log"
 	"strings"
 	"testing"
 
@@ -89,7 +88,6 @@ func TestDBQueryMetrics(t *testing.T) {
 				pgQueryErrorCount.Reset()
 				pgQueryDurationSeconds.Reset()
 			}()
-			log.Println("kondel", err, s.validValidation, name)
 			if err != nil && s.validValidation {
 				require.Nil(t, testutil.CollectAndCompare(pgQueryInflightCount, strings.NewReader(s.afterInflightCountExpected)))
 				require.Nil(t, testutil.CollectAndCompare(pgQueryErrorCount, strings.NewReader(s.errorCountExpected)))
