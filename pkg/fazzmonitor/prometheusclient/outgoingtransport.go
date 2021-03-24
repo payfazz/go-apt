@@ -38,7 +38,7 @@ func (m *metricsRoundTriper) RoundTrip(req *http.Request) (*http.Response, error
 		"path":     req.URL.Path,
 		"method":   strings.ToUpper(req.Method),
 		"protocol": req.URL.Scheme,
-		"status":   strconv.Itoa(res.StatusCode),
+		"code":     strconv.Itoa(res.StatusCode),
 	}
 	outgoingHTTPDurationSeconds.With(durationLabels).Observe(durationSeconds)
 	return res, err
@@ -55,7 +55,7 @@ func OutgoingHTTPTransportWithMetrics(enable bool, transport *http.Transport) ht
 			Name:    "outgoing_http_request_duration_seconds",
 			Help:    "latency of the outgoing requests.",
 			Buckets: prometheus.DefBuckets,
-		}, []string{"host", "path", "method", "protocol", "status"})
+		}, []string{"host", "path", "method", "protocol", "code"})
 
 		prometheus.MustRegister(outgoingHTTPInflightCount, outgoingHTTPDurationSeconds)
 	})
