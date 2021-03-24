@@ -16,7 +16,7 @@ func httpRequestCounter() *prometheus.CounterVec {
 				Name: "http_requests_total",
 				Help: "A counter for requests to the wrapped handler.",
 			},
-			[]string{"path", "method", "status"},
+			[]string{"path", "method", "code"},
 		)
 
 		prometheus.MustRegister(httpCounter)
@@ -30,12 +30,12 @@ func httpRequestCounter() *prometheus.CounterVec {
 // - serviceName: your service name (snake_case)
 // - pattern: your route pattern not the requested url, ex: `/v1/users/:id` (correct); `/v1/users/{id}` (correct); `/v1/users/1` (incorrect)
 // - method: your http request method (GET, POST, PATCH, etc)
-// - status: your http status code (200, 404, 500, etc)
-func IncrementRequestCounter(pattern string, method string, status string) {
+// - code: your http status code (200, 404, 500, etc)
+func IncrementRequestCounter(pattern string, method string, code string) {
 	labels := prometheus.Labels{
 		"path":   pattern,
 		"method": method,
-		"status": status,
+		"code":   code,
 	}
 	httpRequestCounter().With(labels).Inc()
 }
