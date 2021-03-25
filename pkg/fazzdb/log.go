@@ -26,7 +26,7 @@ func info(str string) {
 		return
 	}
 
-	fmt.Printf("[FazzDB.Info] %s\n", str)
+	log.Printf("[FazzDB.Info] %s\n", str)
 }
 
 // alert NOT FOR USE IN PRODUCTION
