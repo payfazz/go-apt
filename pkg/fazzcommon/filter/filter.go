@@ -40,9 +40,14 @@ func ParsePage(queryParams url.Values, defaultLimit int) *Page {
 
 // BuildPage is a function to generate Page based on given limit and page
 func BuildPage(limit int, page int) *Page {
+	finalLimit := limit + 1
+	if limit == -1 {
+		finalLimit = limit
+	}
+
 	return &Page{
 		BaseLimit: limit,
-		Limit:     limit + 1,
+		Limit:     finalLimit,
 		Page:      page,
 		Offset:    (page - 1) * limit,
 	}
@@ -64,6 +69,10 @@ func BuildPageResponse(page *Page, data interface{}) (*PageResponse, error) {
 	s := reflect.ValueOf(data)
 	hasNext := s.Len() > page.BaseLimit
 	length := s.Len()
+
+	if page.BaseLimit == -1 {
+		hasNext = false
+	}
 
 	result := s.Interface()
 	if hasNext {
