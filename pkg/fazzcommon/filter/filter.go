@@ -41,15 +41,17 @@ func ParsePage(queryParams url.Values, defaultLimit int) *Page {
 // BuildPage is a function to generate Page based on given limit and page
 func BuildPage(limit int, page int) *Page {
 	finalLimit := limit + 1
+	offset := (page - 1) * limit
 	if limit == -1 {
 		finalLimit = limit
+		offset = 0
 	}
 
 	return &Page{
 		BaseLimit: limit,
 		Limit:     finalLimit,
 		Page:      page,
-		Offset:    (page - 1) * limit,
+		Offset:    offset,
 	}
 }
 
