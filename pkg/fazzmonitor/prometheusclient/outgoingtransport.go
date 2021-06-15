@@ -1,6 +1,7 @@
 package prometheusclient
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -31,6 +32,8 @@ func (m *metricsRoundTriper) RoundTrip(req *http.Request) (*http.Response, error
 
 	start := time.Now()
 	res, err := m.transport.RoundTrip(req)
+	fmt.Println("err", err)
+	fmt.Println("res", res)
 	durationSeconds := time.Since(start).Seconds()
 
 	durationLabels := prometheus.Labels{
