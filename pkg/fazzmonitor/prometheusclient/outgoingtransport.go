@@ -38,8 +38,12 @@ func (m *metricsRoundTriper) RoundTrip(req *http.Request) (*http.Response, error
 		"path":     req.URL.Path,
 		"method":   strings.ToUpper(req.Method),
 		"protocol": req.URL.Scheme,
-		"code":     strconv.Itoa(res.StatusCode),
 	}
+
+	if res != nil {
+		durationLabels["code"] = strconv.Itoa(res.StatusCode)
+	}
+
 	outgoingHTTPDurationSeconds.With(durationLabels).Observe(durationSeconds)
 	return res, err
 }
