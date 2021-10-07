@@ -29,7 +29,6 @@ func (m *metricsRoundTriper) RoundTrip(req *http.Request) (*http.Response, error
 	}
 	outgoingHTTPInflightCount.With(inflightLabels).Inc()
 	defer outgoingHTTPInflightCount.With(inflightLabels).Dec()
-	outgoingHTTPRequestsTotal.With(inflightLabels).Inc()
 
 	start := time.Now()
 	res, err := m.transport.RoundTrip(req)
@@ -42,12 +41,24 @@ func (m *metricsRoundTriper) RoundTrip(req *http.Request) (*http.Response, error
 		"protocol": req.URL.Scheme,
 		"code":     "",
 	}
-
 	if res != nil {
 		durationLabels["code"] = strconv.Itoa(res.StatusCode)
 	}
 
 	outgoingHTTPDurationSeconds.With(durationLabels).Observe(durationSeconds)
+
+	requestCountLabels := prometheus.Labels{
+		"host":     req.URL.Host,
+		"path":     req.URL.Path,
+		"method":   strings.ToUpper(req.Method),
+		"protocol": req.URL.Scheme,
+		"code":     "",
+	}
+	if res != nil {
+		requestCountLabels["code"] = strconv.Itoa(res.StatusCode)
+	}
+	outgoingHTTPRequestsTotal.With(requestCountLabels).Inc()
+
 	return res, err
 }
 
