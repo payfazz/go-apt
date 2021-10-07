@@ -38,6 +38,7 @@ func (m *metricsRoundTriper) RoundTrip(req *http.Request) (*http.Response, error
 		"path":     req.URL.Path,
 		"method":   strings.ToUpper(req.Method),
 		"protocol": req.URL.Scheme,
+		"code":     "",
 	}
 
 	if res != nil {
