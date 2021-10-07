@@ -13,6 +13,7 @@ import (
 var outgoingHTTPTransportOnce sync.Once
 var outgoingHTTPInflightCount *prometheus.GaugeVec
 var outgoingHTTPDurationSeconds *prometheus.HistogramVec
+var outgoingHTTPRequestsTotal *prometheus.CounterVec
 
 type metricsRoundTriper struct {
 	transport *http.Transport
@@ -28,6 +29,7 @@ func (m *metricsRoundTriper) RoundTrip(req *http.Request) (*http.Response, error
 	}
 	outgoingHTTPInflightCount.With(inflightLabels).Inc()
 	defer outgoingHTTPInflightCount.With(inflightLabels).Dec()
+	outgoingHTTPRequestsTotal.With(inflightLabels).Inc()
 
 	start := time.Now()
 	res, err := m.transport.RoundTrip(req)
@@ -61,8 +63,12 @@ func OutgoingHTTPTransportWithMetrics(enable bool, transport *http.Transport) ht
 			Help:    "latency of the outgoing requests.",
 			Buckets: prometheus.DefBuckets,
 		}, []string{"host", "path", "method", "protocol", "code"})
+		outgoingHTTPRequestsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "outgoing_http_requests_total",
+			Help: "Total number of HTTP requests completed on the server, regardless of success or failure",
+		}, []string{"host", "path", "method", "protocol", "code"})
 
-		prometheus.MustRegister(outgoingHTTPInflightCount, outgoingHTTPDurationSeconds)
+		prometheus.MustRegister(outgoingHTTPInflightCount, outgoingHTTPDurationSeconds, outgoingHTTPRequestsTotal)
 	})
 
 	if transport == nil {
