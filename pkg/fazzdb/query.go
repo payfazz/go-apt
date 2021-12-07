@@ -1057,7 +1057,7 @@ func (q *Query) first(ctx context.Context, withTrash TrashStatus) (interface{}, 
 	}
 
 	q.setLimit(1)
-	stmt, args, err := q.prepareSelect(AG_NONE, "", withTrash, "first[prepareSelect]")
+	stmt, args, err := q.prepareSelect(ctx, AG_NONE, "", withTrash, "first[prepareSelect]")
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -1108,7 +1108,7 @@ func (q *Query) all(ctx context.Context, withTrash TrashStatus) (interface{}, er
 		return nil, err
 	}
 
-	stmt, args, err := q.prepareSelect(AG_NONE, "", withTrash, "all[prepareSelect]")
+	stmt, args, err := q.prepareSelect(ctx, AG_NONE, "", withTrash, "all[prepareSelect]")
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -1155,7 +1155,7 @@ func (q *Query) aggregate(ctx context.Context, aggregate Aggregate, column strin
 		return nil, err
 	}
 
-	stmt, args, err := q.prepareSelect(aggregate, column, withTrash, "aggregate[prepareSelect]")
+	stmt, args, err := q.prepareSelect(ctx, aggregate, column, withTrash, "aggregate[prepareSelect]")
 	if nil != err {
 		q.autoRollback()
 		return nil, err
@@ -1187,7 +1187,7 @@ func (q *Query) aggregate(ctx context.Context, aggregate Aggregate, column strin
 }
 
 // prepareSelect is a function that will return query statement as NamedStmt and parsed payload as a map[string]interface
-func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withTrash TrashStatus, prefix string) (*sqlx.NamedStmt, map[string]interface{}, error) {
+func (q *Query) prepareSelect(ctx context.Context, aggregate Aggregate, aggregateColumn string, withTrash TrashStatus, prefix string) (*sqlx.NamedStmt, map[string]interface{}, error) {
 	if q.Model.IsSoftDelete() && withTrash == NO_TRASH {
 		q.WhereNil(DELETED_AT)
 	}
@@ -1205,7 +1205,13 @@ func (q *Query) prepareSelect(aggregate Aggregate, aggregateColumn string, withT
 
 	info(query)
 
-	stmt, err := q.Tx.PrepareNamed(query)
+	var stmt *sqlx.NamedStmt
+	var err error
+	if nil == ctx {
+		stmt, err = q.Tx.PrepareNamed(query)
+	} else {
+		stmt, err = q.Tx.PrepareNamedContext(ctx, query)
+	}
 	if nil != err {
 		if q.Config.DevelopmentMode {
 			return nil, nil, q.errorWithQuery(prefix, query, err)
