@@ -15,7 +15,7 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/leekchan/accounting v0.0.0-20190702062627-a09595581342
 	github.com/lib/pq v1.10.2
-	github.com/microcosm-cc/bluemonday v1.0.2
+	github.com/microcosm-cc/bluemonday v1.0.16
 	github.com/nats-io/nats-server/v2 v2.0.2 // indirect
 	github.com/nats-io/nats.go v1.8.1
 	github.com/payfazz/go-errors v0.0.0-20200306064529-cba3fc24420f
