@@ -230,7 +230,12 @@ func (q *Query) RawNamedExecCtx(ctx context.Context, query string, payload map[s
 
 	info(query)
 
-	stmt, err := q.Tx.PrepareNamed(query)
+	var stmt *sqlx.NamedStmt
+	if nil == ctx {
+		stmt, err = q.Tx.PrepareNamed(query)
+	} else {
+		stmt, err = q.Tx.PrepareNamedContext(ctx, query)
+	}
 	if nil != err {
 		q.autoRollback()
 
@@ -293,7 +298,12 @@ func (q *Query) RawNamedFirstCtx(
 
 	info(query)
 
-	stmt, err := q.Tx.PrepareNamed(query)
+	var stmt *sqlx.NamedStmt
+	if nil == ctx {
+		stmt, err = q.Tx.PrepareNamed(query)
+	} else {
+		stmt, err = q.Tx.PrepareNamedContext(ctx, query)
+	}
 	if nil != err {
 		q.autoRollback()
 
@@ -356,7 +366,12 @@ func (q *Query) RawNamedAllCtx(
 
 	info(query)
 
-	stmt, err := q.Tx.PrepareNamed(query)
+	var stmt *sqlx.NamedStmt
+	if nil == ctx {
+		stmt, err = q.Tx.PrepareNamed(query)
+	} else {
+		stmt, err = q.Tx.PrepareNamedContext(ctx, query)
+	}
 	if nil != err {
 		q.autoRollback()
 
@@ -465,7 +480,12 @@ func (q *Query) InsertCtx(ctx context.Context, doNothing bool) (interface{}, err
 
 	info(query)
 
-	stmt, err := q.Tx.PrepareNamed(query)
+	var stmt *sqlx.NamedStmt
+	if nil == ctx {
+		stmt, err = q.Tx.PrepareNamed(query)
+	} else {
+		stmt, err = q.Tx.PrepareNamedContext(ctx, query)
+	}
 	if nil != err {
 		q.autoRollback()
 
@@ -537,7 +557,12 @@ func (q *Query) BulkInsertCtx(ctx context.Context, data interface{}) (bool, erro
 
 	info(query)
 
-	stmt, err := q.Tx.PrepareNamed(query)
+	var stmt *sqlx.NamedStmt
+	if nil == ctx {
+		stmt, err = q.Tx.PrepareNamed(query)
+	} else {
+		stmt, err = q.Tx.PrepareNamedContext(ctx, query)
+	}
 	if nil != err {
 		q.autoRollback()
 
@@ -602,7 +627,12 @@ func (q *Query) UpdateCtx(ctx context.Context) (bool, error) {
 
 	info(query)
 
-	stmt, err := q.Tx.PrepareNamed(query)
+	var stmt *sqlx.NamedStmt
+	if nil == ctx {
+		stmt, err = q.Tx.PrepareNamed(query)
+	} else {
+		stmt, err = q.Tx.PrepareNamedContext(ctx, query)
+	}
 	if nil != err {
 		q.autoRollback()
 
@@ -673,7 +703,12 @@ func (q *Query) DeleteCtx(ctx context.Context) (bool, error) {
 
 	info(query)
 
-	stmt, err := q.Tx.PrepareNamed(query)
+	var stmt *sqlx.NamedStmt
+	if nil == ctx {
+		stmt, err = q.Tx.PrepareNamed(query)
+	} else {
+		stmt, err = q.Tx.PrepareNamedContext(ctx, query)
+	}
 	if nil != err {
 		q.autoRollback()
 
