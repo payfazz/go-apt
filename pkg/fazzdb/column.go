@@ -64,6 +64,7 @@ func (c *Column) ToString(table string) string {
 // Order is a struct that is used to contain order by attributes
 type Order struct {
 	Field     Column
+	RawField  string
 	Direction OrderDirection
 	NullsLast bool
 }

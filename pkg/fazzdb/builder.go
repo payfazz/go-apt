@@ -258,11 +258,14 @@ func (b *Builder) BuildSelect(model ModelInterface, param *Parameter, aggregate 
 		query = fmt.Sprintf(`%s ORDER BY`, query)
 		for i, order := range param.Orders {
 			key := order.Field.ToString(model.GetTable())
+			if order.RawField != "" {
+				key = " " + order.RawField
+			}
 			if i != 0 {
 				query = fmt.Sprintf(`%s, `, query)
 			}
-			query = fmt.Sprintf(`%s %s %s`, query, key, order.Direction)
 
+			query = fmt.Sprintf(`%s %s %s`, query, key, order.Direction)
 			if order.NullsLast {
 				query = fmt.Sprintf(`%s NULLS LAST`, query)
 			}

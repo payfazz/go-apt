@@ -1006,32 +1006,32 @@ func (q *Query) GroupBy(column string) *Query {
 // OrderByMany is a function that will add new orders from slice
 func (q *Query) OrderByMany(orders ...Order) *Query {
 	for _, o := range orders {
-		q.appendOrderBy(q.Model.GetTable(), o.Field, o.Direction, o.NullsLast)
+		q.appendOrderBy(q.Model.GetTable(), o.Field, o.RawField, o.Direction, o.NullsLast)
 	}
 	return q
 }
 
 // OrderByNullsLast is a function that will add new order by column with direction and nulls last
 func (q *Query) OrderByNullsLast(key string, direction OrderDirection) *Query {
-	q.appendOrderBy(q.Model.GetTable(), Col(key), direction, true)
+	q.appendOrderBy(q.Model.GetTable(), Col(key), "", direction, true)
 	return q
 }
 
 // OrderBy is a function that will add new order by column with direction and nulls first
 func (q *Query) OrderBy(key string, direction OrderDirection) *Query {
-	q.appendOrderBy(q.Model.GetTable(), Col(key), direction, false)
+	q.appendOrderBy(q.Model.GetTable(), Col(key), "", direction, false)
 	return q
 }
 
 // OrderByAggregateNullsLast is a function that will add new order by aggregate column with direction and nulls last
 func (q *Query) OrderByAggregateNullsLast(key Column, direction OrderDirection) *Query {
-	q.appendOrderBy(q.Model.GetTable(), key, direction, true)
+	q.appendOrderBy(q.Model.GetTable(), key, "", direction, true)
 	return q
 }
 
 // OrderByAggregate is a function that will add new order by aggregate column with direction and nulls first
 func (q *Query) OrderByAggregate(key Column, direction OrderDirection) *Query {
-	q.appendOrderBy(q.Model.GetTable(), key, direction, false)
+	q.appendOrderBy(q.Model.GetTable(), key, "", direction, false)
 	return q
 }
 

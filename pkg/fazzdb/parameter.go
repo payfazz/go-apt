@@ -129,9 +129,10 @@ func (p *Parameter) appendHaving(
 }
 
 // appendOrderBy is a function to append order by column to Orders attribute
-func (p *Parameter) appendOrderBy(table string, field Column, direction OrderDirection, nullsLast bool) *Parameter {
+func (p *Parameter) appendOrderBy(table string, field Column, rawField string, direction OrderDirection, nullsLast bool) *Parameter {
 	p.Orders = append(p.Orders, Order{
 		Field:     field,
+		RawField:  rawField,
 		Direction: direction,
 		NullsLast: nullsLast,
 	})
