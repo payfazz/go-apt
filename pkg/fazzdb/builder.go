@@ -259,7 +259,7 @@ func (b *Builder) BuildSelect(model ModelInterface, param *Parameter, aggregate 
 		for i, order := range param.Orders {
 			key := order.Field.ToString(model.GetTable())
 			if order.RawField != "" {
-				key = " " + order.RawField
+				key = order.RawField
 			}
 			if i != 0 {
 				query = fmt.Sprintf(`%s, `, query)
