@@ -1330,6 +1330,9 @@ func (q *Query) autoBegin(ctx context.Context) error {
 
 	if q.AutoCommit && nil != q.Db {
 		q.Tx, err = q.Db.BeginTxx(ctx, q.Opts)
+		if err != nil {
+			q.Tx = nil
+		}
 		return err
 	}
 	return nil
@@ -1340,6 +1343,7 @@ func (q *Query) autoBegin(ctx context.Context) error {
 func (q *Query) autoCommit() {
 	if q.AutoCommit {
 		_ = q.Tx.Commit()
+		q.Tx = nil
 	}
 }
 
@@ -1348,6 +1352,7 @@ func (q *Query) autoCommit() {
 func (q *Query) autoRollback() {
 	if q.AutoCommit {
 		_ = q.Tx.Rollback()
+		q.Tx = nil
 	}
 }
 
