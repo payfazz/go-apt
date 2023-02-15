@@ -21,7 +21,7 @@ require (
 	github.com/payfazz/go-middleware v0.0.0-20200721081005-61cf397e357e
 	github.com/payfazz/go-router v0.0.0-20200605124530-83a4c2fcae37
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.2.1
+	github.com/prometheus/client_golang v1.11.1
 	github.com/stretchr/testify v1.6.1
 	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
