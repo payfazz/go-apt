@@ -24,5 +24,5 @@ require (
 	github.com/prometheus/client_golang v1.2.1
 	github.com/stretchr/testify v1.6.1
 	go.mongodb.org/mongo-driver v1.5.1
-	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
+	golang.org/x/crypto v0.1.0
 )
